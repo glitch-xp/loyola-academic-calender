@@ -38,7 +38,7 @@ export default function WelcomeScreen() {
             // but we can try to key off the first department
             if (data.departments[0]?.years.length > 0) setYear(data.departments[0].years[0].year);
 
-            if (data.shifts.length > 0) setShift(data.shifts[0].id);
+            // Note: shift will be auto-selected in useEffect when availableShifts changes
         } catch (e) {
             if (e instanceof NetworkError) {
                 setError({ type: 'network', message: e.message });
@@ -52,9 +52,36 @@ export default function WelcomeScreen() {
         }
     };
 
+    // Compute available shifts based on selected department and year
+    const availableShifts = React.useMemo(() => {
+        if (!config || !dept || !year) return [];
+
+        const selectedDept = config.departments.find(d => d.name === dept);
+        if (!selectedDept) return [];
+
+        const selectedYear = selectedDept.years.find(y => y.year === year);
+        if (!selectedYear) return [];
+
+        // If year specifies shifts, use those; otherwise fall back to all global shifts
+        const shiftIds = selectedYear.shifts || config.shifts.map(s => s.id);
+
+        return config.shifts.filter(s => shiftIds.includes(s.id));
+    }, [config, dept, year]);
+
+    // Auto-select shift when only one is available or reset when selection changes
+    React.useEffect(() => {
+        if (availableShifts.length === 1) {
+            setShift(availableShifts[0].id);
+        } else if (availableShifts.length > 1 && !availableShifts.find(s => s.id === shift)) {
+            // Reset shift if current selection is not in available shifts
+            setShift(availableShifts[0]?.id || '');
+        }
+    }, [availableShifts]);
+
     const handleComplete = async () => {
-        if (!dept || !year || !shift) {
-            Alert.alert('Incomplete', 'Please select all fields');
+        // For single-shift courses, shift is auto-selected; for multi-shift, user must select
+        if (!dept || !year || (availableShifts.length > 1 && !shift)) {
+            Alert.alert('Incomplete', 'Please select all required fields');
             return;
         }
 
@@ -132,12 +159,17 @@ export default function WelcomeScreen() {
                         ))}
                     </View>
 
-                    <Text style={styles.label}>Shift</Text>
-                    <View style={styles.pillsContainer}>
-                        {config?.shifts.map((s) => (
-                            <OptionPill key={s.id} label={s.name} selected={shift === s.id} onPress={() => setShift(s.id)} />
-                        ))}
-                    </View>
+                    {/* Only show shift selector if multiple shifts are available */}
+                    {availableShifts.length > 1 && (
+                        <>
+                            <Text style={styles.label}>Shift</Text>
+                            <View style={styles.pillsContainer}>
+                                {availableShifts.map((s) => (
+                                    <OptionPill key={s.id} label={s.name} selected={shift === s.id} onPress={() => setShift(s.id)} />
+                                ))}
+                            </View>
+                        </>
+                    )}
                 </Card>
 
                 <View style={styles.footer}>

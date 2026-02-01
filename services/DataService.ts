@@ -39,7 +39,7 @@ export const DataService = {
         }
     },
 
-    async fetchCourseData(dept: string, year: string, shift: string): Promise<{
+    async fetchCourseData(dept: string, year: string, shift?: string): Promise<{
         timetable: TimeTable;
         calendar: DayOrderConfig;
     }> {
@@ -57,7 +57,7 @@ export const DataService = {
             }
 
             // 2. Fetch the timetable using the timetableId
-            const timetableUrl = `${GITHUB_BASE_URL}/timetables/${timetableId}.json`;
+            const timetableUrl = `${GITHUB_BASE_URL}/assets/data/timetable/${timetableId}.json`;
             let timetableResponse;
             try {
                 timetableResponse = await fetch(timetableUrl);
@@ -74,7 +74,7 @@ export const DataService = {
             const timetable: TimeTable = await timetableResponse.json();
 
             // 3. Fetch the calendar data
-            const calendarUrl = `${GITHUB_BASE_URL}/calendar.json`;
+            const calendarUrl = `${GITHUB_BASE_URL}/assets/data/calendar.json`;
             let calendarResponse;
             try {
                 calendarResponse = await fetch(calendarUrl);

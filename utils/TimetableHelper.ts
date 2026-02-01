@@ -50,11 +50,14 @@ export class TimetableHelper {
      */
     static enrichSubjectsWithTiming(
         subjects: Subject[],
-        shiftId: string,
+        shiftId: string | undefined,
         masterConfig: MasterConfig | null
     ): SubjectWithTiming[] {
+        // Default to first shift if not provided (for single-shift courses)
+        const effectiveShiftId = shiftId || masterConfig?.shifts[0]?.id || '1';
+
         return subjects.map((subject, index) =>
-            this.getSubjectTiming(subject, index, shiftId, masterConfig)
+            this.getSubjectTiming(subject, index, effectiveShiftId, masterConfig)
         );
     }
 }

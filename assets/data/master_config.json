@@ -5,41 +5,26 @@
             "years": [
                 {
                     "year": "I",
-                    "timetableId": "bcom_ca_1"
+                    "timetableId": "bcom_ca_1",
+                    "shifts": [
+                        "1",
+                        "2"
+                    ]
                 },
                 {
                     "year": "II",
-                    "timetableId": "bcom_ca_2"
+                    "timetableId": "bcom_ca_2",
+                    "shifts": [
+                        "1"
+                    ]
                 },
                 {
                     "year": "III",
-                    "timetableId": "bcom_ca_3"
-                }
-            ]
-        },
-        {
-            "name": "B.Sc CS",
-            "years": [
-                {
-                    "year": "I",
-                    "timetableId": "bsc_cs_1"
-                },
-                {
-                    "year": "II",
-                    "timetableId": "bsc_cs_2"
-                },
-                {
-                    "year": "III",
-                    "timetableId": "bsc_cs_3"
-                }
-            ]
-        },
-        {
-            "name": "B.A English",
-            "years": [
-                {
-                    "year": "I",
-                    "timetableId": "ba_eng_1"
+                    "timetableId": "bcom_ca_3",
+                    "shifts": [
+                        "1",
+                        "2"
+                    ]
                 }
             ]
         }
@@ -109,7 +94,7 @@
         }
     ],
     "dataUrls": {
-        "calendar": "https://raw.githubusercontent.com/yuvar/loyola-data/main/calendar.json",
-        "timetableBase": "https://raw.githubusercontent.com/yuvar/loyola-data/main/timetable"
+        "calendar": "https://raw.githubusercontent.com/glitch-xp/loyola-data/main/calendar.json",
+        "timetableBase": "https://raw.githubusercontent.com/glitch-xp/loyola-data/main/timetable"
     }
 }

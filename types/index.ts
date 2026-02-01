@@ -20,6 +20,7 @@ export interface Shift {
 export interface CourseYearConfig {
     year: 'I' | 'II' | 'III';
     timetableId: string; // e.g., "cs_1"
+    shifts?: string[]; // Optional: IDs of available shifts for this year (e.g., ["1", "2"] or ["1"])
 }
 
 export interface DepartmentConfig {
@@ -51,7 +52,7 @@ export interface DayOrderConfig {
 export interface UserProfile {
     department: string;
     year: 'I' | 'II' | 'III';
-    shift: string; // "1" or "2"
+    shift?: string; // Optional: "1" or "2", auto-selected for single-shift courses
 }
 
 export interface MasterConfig {
