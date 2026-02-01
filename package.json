@@ -7,7 +7,9 @@
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "build:web": "expo export --platform web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -48,9 +50,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@react-native-community/cli": "^14.0.1",
     "@types/react": "~19.1.10",
     "baseline-browser-mapping": "^2.9.19",
     "cross-env": "^10.1.0",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "fast-xml-parser": "5.3.4"
   }
 }
