@@ -1,12 +1,1827 @@
 {
-    "2026-02-14": {
+    "2025-06-01": {
         "dayOrder": null,
         "isHoliday": true,
-        "event": "Valentine's Day (Sample)"
+        "event": "Weekend"
+    },
+    "2025-06-02": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-03": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-04": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-05": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-06": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-07": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Bakrid (Eid-al-Adha)"
+    },
+    "2025-06-08": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-06-09": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "PG Entrance Exam"
+    },
+    "2025-06-10": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "FDP for Junior Academic Staff Day -1"
+    },
+    "2025-06-11": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "FDP for Junior Academic Staff Day -2"
+    },
+    "2025-06-12": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "General Orientation for Academic Staff Day-1"
+    },
+    "2025-06-13": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "General Orientation for Academic Staff Day-2 / General Orientation for Administrative Staff"
+    },
+    "2025-06-14": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Leadership Programme for Officials, HoDs & Coordinators"
+    },
+    "2025-06-15": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-06-16": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "College Reopens for II, III UG and II PG & Inaugural Prayer Service"
+    },
+    "2025-06-17": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-18": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Registration Begins for ODD Semester Repeaters / IQAC Meeting - External Members"
+    },
+    "2025-06-19": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "ODD Semester Fee Payment Begins"
+    },
+    "2025-06-20": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-21": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Loyola Students' Council (LSC) Election"
+    },
+    "2025-06-22": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-06-23": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Inaugural Prayer Service I UG & Student Induction Programme Day-1"
+    },
+    "2025-06-24": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Student Induction Programme Day - 2"
+    },
+    "2025-06-25": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Student Induction Programme Day-3 / Internal Arrear Registration Begins"
+    },
+    "2025-06-26": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Inaugural Prayer Service & Classes Begin for I PG"
+    },
+    "2025-06-27": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-06-28": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Stock Verification"
+    },
+    "2025-06-29": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-06-30": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "I UG English Bridge Course Day-1"
+    },
+    "2025-07-01": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "I UG English Bridge Course Day-2"
+    },
+    "2025-07-02": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "I UG English Bridge Course Day-3"
+    },
+    "2025-07-03": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "I UG English Bridge Course Day-4"
+    },
+    "2025-07-04": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "I UG English Bridge Course Day-5"
+    },
+    "2025-07-05": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for III UG Catholic Boys / Weekend"
+    },
+    "2025-07-06": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Muharram / Weekend"
+    },
+    "2025-07-07": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-08": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Inauguration of Loyola Students' Council (LSC)"
+    },
+    "2025-07-09": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Last date for Registration of ODD Semester Repeaters"
+    },
+    "2025-07-10": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Academic Audit 2024-2025"
+    },
+    "2025-07-11": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Academic Audit 2024-2025"
+    },
+    "2025-07-12": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for all UG & PG Catholic Girls / Weekend"
+    },
+    "2025-07-13": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-07-14": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-15": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-16": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Last date for Payment of Semester Fee without fine"
+    },
+    "2025-07-17": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-18": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Fresher's Day"
+    },
+    "2025-07-19": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for II UG Catholic Boys / Weekend"
+    },
+    "2025-07-20": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-07-21": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Administrative Audit"
+    },
+    "2025-07-22": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-23": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Last Date for Internal Arrear Registration"
+    },
+    "2025-07-24": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-25": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-26": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-27": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-07-28": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Last date for Payment of Semester Fee with fine / Springboard Leadership Programme Session - 1"
+    },
+    "2025-07-29": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-07-30": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Homage to St. Ignatius of Loyola"
+    },
+    "2025-07-31": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Feast of St. Ignatius of Loyola - Founder's Day"
+    },
+    "2025-08-01": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-02": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-08-03": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Alumni Day / Weekend"
+    },
+    "2025-08-04": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-05": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-06": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-07": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-08": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2025-08-09": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2025-08-10": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-08-11": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2025-08-12": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "First CIA / Departments ATR Presentations (Academic Audit 2024-25)"
+    },
+    "2025-08-13": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "First CIA / Departments ATR Presentations (Academic Audit 2024-25)"
+    },
+    "2025-08-14": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "First CIA / Departments ATR Presentations (Academic Audit 2024-25)"
+    },
+    "2025-08-15": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Independence Day / Assumption of Our Lady & Inauguration of Bertram Tournament"
+    },
+    "2025-08-16": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Krishna Jayanthi / Weekend"
+    },
+    "2025-08-17": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-08-18": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Online Registration for Semester Exam Begins"
+    },
+    "2025-08-19": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-20": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-21": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-22": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Springboard Leadership Programme Session-II"
+    },
+    "2025-08-23": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Parent-Teacher Meeting (Department Level)"
+    },
+    "2025-08-24": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-08-25": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-26": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-08-27": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Vinayakar Chathurthi"
+    },
+    "2025-08-28": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Skill-Based Training for Administrative Staff"
+    },
+    "2025-08-29": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Skill-Based Training for Administrative Staff"
+    },
+    "2025-08-30": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for I & II PG Catholic Boys / Weekend"
+    },
+    "2025-08-31": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Bertram Tournament Valediction / Weekend"
+    },
+    "2025-09-01": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-02": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-03": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-04": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Ovations 2025 Inauguration"
+    },
+    "2025-09-05": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Teacher's Day / Milad-un-Nabi / Onam"
+    },
+    "2025-09-06": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-09-07": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-09-08": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Nativity of Mother Mary"
+    },
+    "2025-09-09": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Last date for Online Registration of Semester Exams without fine"
+    },
+    "2025-09-10": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Open Forum for Students"
+    },
+    "2025-09-11": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-12": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-13": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-09-14": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-09-15": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-16": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-17": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-18": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-19": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Ovations 2025"
+    },
+    "2025-09-20": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Ovations 2025"
+    },
+    "2025-09-21": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-09-22": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Last date for Online Registration of Semester Exams with fine / Mentoring for III UG"
+    },
+    "2025-09-23": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Mentoring for II UG"
+    },
+    "2025-09-24": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Mentoring for I UG"
+    },
+    "2025-09-25": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Mentoring for I & II PG"
+    },
+    "2025-09-26": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "FDP for Academic Faculty / Online Staff Assessment"
+    },
+    "2025-09-27": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for I UG Catholic Boys / Weekend"
+    },
+    "2025-09-28": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-09-29": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-09-30": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-10-01": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Ayudha Pooja"
+    },
+    "2025-10-02": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Gandhi Jayanthi / Vijaya Dasami"
+    },
+    "2025-10-03": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-10-04": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-10-05": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-10-06": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2025-10-07": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Second CIA / Corpus Christi Celebration / IQAC Core Committee Meeting"
+    },
+    "2025-10-08": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Second CIA / Academic Council Meeting"
+    },
+    "2025-10-09": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2025-10-10": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Second CIA / College Council Meeting"
+    },
+    "2025-10-11": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2025-10-12": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-10-13": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Release of Retest & One Test List; Practical Examinations UG - Allied/PG"
+    },
+    "2025-10-14": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Retest / Practical Examinations UG - Allied/PG"
+    },
+    "2025-10-15": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Retest / Practical Examinations UG - Allied/PG"
+    },
+    "2025-10-16": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Retest / Practical Examinations UG-Major/PG"
+    },
+    "2025-10-17": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Practical Examinations UG - Major/PG / General Staff Meeting & Last Signing Day"
+    },
+    "2025-10-18": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Hall Ticket Release / Practical Examinations UG-Major/PG / Weekend"
+    },
+    "2025-10-19": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-10-20": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Deepavali"
+    },
+    "2025-10-21": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-10-22": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-10-23": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations Begin"
+    },
+    "2025-10-24": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-10-25": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-10-26": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-10-27": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-10-28": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-10-29": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-10-30": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-10-31": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-11-01": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "All Saints' Day / Weekend"
+    },
+    "2025-11-02": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "All Souls' Day / Weekend"
+    },
+    "2025-11-03": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-11-04": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-11-05": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-11-06": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2025-11-07": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-08": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-11-09": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-11-10": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-11": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-12": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "College Reopens for EVEN Semester"
+    },
+    "2025-11-13": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Registration Begins for EVEN Semester Repeaters"
+    },
+    "2025-11-14": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "EVEN Semester Fee Payment Begins"
+    },
+    "2025-11-15": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-16": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-11-17": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-18": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-19": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-20": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-21": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-22": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-11-23": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-11-24": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Feast of Christ the King"
+    },
+    "2025-11-25": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-26": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-11-27": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Internal Arrear Registration Begins"
+    },
+    "2025-11-28": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Springboard Leadership Programme Session - III"
+    },
+    "2025-11-29": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for Religious Brothers & Sisters / Weekend"
+    },
+    "2025-11-30": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-12-01": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-02": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-03": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Feast of St. Francis Xavier"
+    },
+    "2025-12-04": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-05": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Department Festival Day - 1"
+    },
+    "2025-12-06": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Department Festival Day - 2"
+    },
+    "2025-12-07": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-12-08": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Immaculate Conception of Our Lady"
+    },
+    "2025-12-09": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-10": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "III UG Internship Begins"
+    },
+    "2025-12-11": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Last date for Payment of Semester Fee without fine"
+    },
+    "2025-12-12": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "FDP for Junior Academic Staff / Last date for Registration of Even Semester Repeaters"
+    },
+    "2025-12-13": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-12-14": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-12-15": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-16": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "IQAC Meeting - External Members"
+    },
+    "2025-12-17": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-18": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Last date for Internal Arrear Registration"
+    },
+    "2025-12-19": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2025-12-20": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Christmas Celebrations"
+    },
+    "2025-12-21": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays Begin / Weekend"
+    },
+    "2025-12-22": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2025-12-23": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2025-12-24": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2025-12-25": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas"
+    },
+    "2025-12-26": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2025-12-27": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays / Weekend"
+    },
+    "2025-12-28": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2025-12-29": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2025-12-30": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2025-12-31": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2026-01-01": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "New Year"
+    },
+    "2026-01-02": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays"
+    },
+    "2026-01-03": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Christmas Holidays / Weekend"
+    },
+    "2026-01-04": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-01-05": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "College reopens after Christmas vacation"
+    },
+    "2026-01-06": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-01-07": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-01-08": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Last date for Payment of Semester Fee with fine"
+    },
+    "2026-01-09": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-01-10": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "III UG join classes after Internship"
+    },
+    "2026-01-11": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-01-12": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-01-13": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Pongal celebrations (Mann Manam) / Bhogi"
+    },
+    "2026-01-14": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Pongal"
+    },
+    "2026-01-15": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Thiruvalluvar Day"
+    },
+    "2026-01-16": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Uzhavar Thirunal"
+    },
+    "2026-01-17": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-01-18": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-01-19": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-01-20": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-01-21": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2026-01-22": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2026-01-23": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2026-01-24": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2026-01-25": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
     },
     "2026-01-26": {
         "dayOrder": null,
         "isHoliday": true,
         "event": "Republic Day"
+    },
+    "2026-01-27": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2026-01-28": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "First CIA"
+    },
+    "2026-01-29": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Online Registration for Semester Exam Begins"
+    },
+    "2026-01-30": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Springboard Leadership Programme Session - IV & Valedictory"
+    },
+    "2026-01-31": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Parent-Teacher Meeting"
+    },
+    "2026-02-01": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Thaipusam / Weekend"
+    },
+    "2026-02-02": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-03": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-04": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Feast of St. John de Britto"
+    },
+    "2026-02-05": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-06": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Open Forum for Students"
+    },
+    "2026-02-07": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Retreat for Teaching and Non-Teaching Staff & Student Defaulters / Weekend"
+    },
+    "2026-02-08": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-02-09": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-10": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-11": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Feast of Our Lady of Lourdes-Candlelight Procession"
+    },
+    "2026-02-12": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-13": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Last date for Online Registration of Semester Exams without fine"
+    },
+    "2026-02-14": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Sports Day"
+    },
+    "2026-02-15": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-02-16": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-17": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-18": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Ash Wednesday"
+    },
+    "2026-02-19": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-20": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "FDP for Academic Staff & Workshop for Administrative Staff"
+    },
+    "2026-02-21": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Men's Hostel Day / Weekend"
+    },
+    "2026-02-22": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Women's Hostel Day / Weekend"
+    },
+    "2026-02-23": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Mentoring for III UG"
+    },
+    "2026-02-24": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Mentoring for II UG/ Last date for Online Registration of Semester Exams with fine"
+    },
+    "2026-02-25": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Mentoring for I UG"
+    },
+    "2026-02-26": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Mentoring for I & II PG"
+    },
+    "2026-02-27": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Farewell Day for III UG and II PG"
+    },
+    "2026-02-28": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Loyola Research Day"
+    },
+    "2026-03-01": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-03-02": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-03-03": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Loyola Students' Council (LSC) Valedictory"
+    },
+    "2026-03-04": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-03-05": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-03-06": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-03-07": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "College Day"
+    },
+    "2026-03-08": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "International Women's Day / Weekend"
+    },
+    "2026-03-09": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2026-03-10": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Second CIA / Online Staff Assessment & Exit Poll"
+    },
+    "2026-03-11": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2026-03-12": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2026-03-13": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Second CIA / Academic Council Meeting"
+    },
+    "2026-03-14": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2026-03-15": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-03-16": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Release of Retest & One Test List"
+    },
+    "2026-03-17": {
+        "dayOrder": "Day-2",
+        "isHoliday": false,
+        "event": "Retest / IQAC Meeting - External Members / Practical Examinations UG-Allied/PG"
+    },
+    "2026-03-18": {
+        "dayOrder": "Day-3",
+        "isHoliday": false,
+        "event": "Retest / College Council Meeting / Practical Examinations UG - Allied / PG"
+    },
+    "2026-03-19": {
+        "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": "Retest / Practical Examinations UG-Allied/PG / Stock Verification"
+    },
+    "2026-03-20": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Telugu New Year"
+    },
+    "2026-03-21": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Penitential Walk to St. Thomas Mount / Ramzan (Eid-ul-Fitr) / Weekend"
+    },
+    "2026-03-22": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-03-23": {
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Hall Ticket Release / Practical Examinations UG-Major/PG"
+    },
+    "2026-03-24": {
+        "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": "Practical Examinations UG-Major/PG / General Staff Meeting & Last Signing Day"
+    },
+    "2026-03-25": {
+        "dayOrder": "Day-1",
+        "isHoliday": false,
+        "event": "Practical Examinations UG- Major/PG"
+    },
+    "2026-03-26": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations Begin"
+    },
+    "2026-03-27": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-03-28": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-03-29": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-03-30": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-03-31": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Mahavir Jayanthi"
+    },
+    "2026-04-01": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-02": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Maundy Thursday"
+    },
+    "2026-04-03": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Good Friday"
+    },
+    "2026-04-04": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Holy Saturday / Weekend"
+    },
+    "2026-04-05": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Easter Sunday / Weekend"
+    },
+    "2026-04-06": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-07": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-08": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-09": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-10": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-11": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-12": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-04-13": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-14": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Tamil New Year's Day / Dr. Ambedkar Jayanthi"
+    },
+    "2026-04-15": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": "Semester Examinations"
+    },
+    "2026-04-16": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-17": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-18": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-04-19": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-04-20": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-21": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-22": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-23": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-24": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-25": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-04-26": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-04-27": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-28": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-29": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-04-30": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-01": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "May Day"
+    },
+    "2026-05-02": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-03": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-04": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-05": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-06": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-07": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-08": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-09": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-10": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-11": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-12": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-13": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-14": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-15": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-16": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-17": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-18": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-19": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-20": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-21": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-22": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-23": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-24": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
+    },
+    "2026-05-25": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-26": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-27": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Bakrid (Eidal--Adha)"
+    },
+    "2026-05-28": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-29": {
+        "dayOrder": null,
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-05-30": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Shavesh / Weekend"
+    },
+    "2026-05-31": {
+        "dayOrder": null,
+        "isHoliday": true,
+        "event": "Weekend"
     }
 }

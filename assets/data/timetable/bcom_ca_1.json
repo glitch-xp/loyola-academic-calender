@@ -1,70 +1,134 @@
 {
     "1": [
         {
-            "name": "Java Programming",
-            "code": "CS101"
+            "name": "DATA BASE MANAGEMENT SYSTEM (DBMS)",
+            "code": "UCC2MC02"
         },
         {
-            "name": "Digital Logic",
-            "code": "CS102"
+            "name": "PRINCIPLES OF MANAGEMENT",
+            "code": "UAF2AR01"
         },
         {
-            "name": "Mathematics",
-            "code": "MAT101"
+            "name": "DIGITAL ACCOUNTING",
+            "code": "UCC2MC01"
         },
         {
-            "name": "Lab",
-            "code": "CSL101"
+            "name": "BEGINNERS FRENCH-II",
+            "code": "UFR2GL04"
         },
         {
-            "name": "Lab",
-            "code": "CSL101"
+            "name": "PRESENTATION SKILL",
+            "code": "UEL2GE06"
         }
     ],
     "2": [
         {
-            "name": "Web Dev",
-            "code": "CS103"
+            "name": "PRINCIPLES OF MANAGEMENT",
+            "code": "UAF2AR01"
         },
         {
-            "name": "Java Programming",
-            "code": "CS101"
+            "name": "DIGITAL ACCOUNTING",
+            "code": "UCC2MC01"
         },
         {
-            "name": "English",
-            "code": "ENG101"
+            "name": "LIFE ISSUES AND COPING STRATEGIES",
+            "code": "UHE2FC04"
         },
         {
-            "name": "Language",
-            "code": "TAM101"
+            "name": "BASIC TAMIL (AF,CC) - II",
+            "code": "UTL2CD05"
         },
         {
-            "name": "Library",
-            "code": "LIB"
+            "name": "BEGINNERS FRENCH-II",
+            "code": "UFR2GL04"
         }
     ],
     "3": [
         {
-            "name": "Data Structures",
-            "code": "CS104"
+            "name": "DATA BASE MANAGEMENT SYSTEM (DBMS)",
+            "code": "UCC2MC02"
+        },
+        {
+            "name": "PRINCIPLES OF MANAGEMENT",
+            "code": "UAF2AR01"
+        },
+        {
+            "name": "DIGITAL ACCOUNTING",
+            "code": "UCC2MC01"
+        },
+        {
+            "name": "PRESENTATION SKILL",
+            "code": "UEL2GE06"
+        },
+        {
+            "name": "BEGINNERS FRENCH-II",
+            "code": "UFR2GL04"
         }
     ],
     "4": [
         {
-            "name": "Statistics",
-            "code": "STA101"
+            "name": "DIGITAL ACCOUNTING",
+            "code": "UCC2MC01"
+        },
+        {
+            "name": "PRINCIPLES OF MANAGEMENT",
+            "code": "UAF2AR01"
+        },
+        {
+            "name": "LIFE ISSUES AND COPING STRATEGIES",
+            "code": "UHE2FC04"
+        },
+        {
+            "name": "DIGITAL ACCOUNTING",
+            "code": "UCC2MC01"
+        },
+        {
+            "name": "BEGINNERS FRENCH-II",
+            "code": "UFR2GL04"
         }
     ],
     "5": [
         {
-            "name": "Physics",
-            "code": "PHY101"
+            "name": "LIFE ISSUES AND COPING STRATEGIES",
+            "code": "UHE2FC04"
+        },
+        {
+            "name": "DATA BASE MANAGEMENT SYSTEM (DBMS)",
+            "code": "UCC2MC02"
+        },
+        {
+            "name": "DATA BASE MANAGEMENT SYSTEM (DBMS)",
+            "code": "UCC2MC02"
+        },
+        {
+            "name": "BASIC TAMIL (AF,CC) - II",
+            "code": "UTL2CD05"
+        },
+        {
+            "name": "PRESENTATION SKILL",
+            "code": "UEL2GE06"
         }
     ],
     "6": [
         {
-            "name": "Value Ed",
-            "code": "VED101"
+            "name": "DATA BASE MANAGEMENT SYSTEM (DBMS)",
+            "code": "UCC2MC02"
+        },
+        {
+            "name": "DATA BASE MANAGEMENT SYSTEM (DBMS)",
+            "code": "UCC2MC02"
+        },
+        {
+            "name": "PRINCIPLES OF MANAGEMENT",
+            "code": "UAF2AR01"
+        },
+        {
+            "name": "DIGITAL ACCOUNTING",
+            "code": "UCC2MC01"
+        },
+        {
+            "name": "PRESENTATION SKILL",
+            "code": "UEL2GE06"
         }
     ]
 }

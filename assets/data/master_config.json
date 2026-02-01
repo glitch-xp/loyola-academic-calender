@@ -7,23 +7,7 @@
                     "year": "I",
                     "timetableId": "bcom_ca_1",
                     "shifts": [
-                        "1",
-                        "2"
-                    ]
-                },
-                {
-                    "year": "II",
-                    "timetableId": "bcom_ca_2",
-                    "shifts": [
                         "1"
-                    ]
-                },
-                {
-                    "year": "III",
-                    "timetableId": "bcom_ca_3",
-                    "shifts": [
-                        "1",
-                        "2"
                     ]
                 }
             ]
