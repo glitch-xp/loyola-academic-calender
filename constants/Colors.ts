@@ -1,7 +1,7 @@
 export const Colors = {
-    primary: '#A5C8FF', // Soft Pastel Blue
-    primaryDark: '#5B86E5', // Slightly darker for text/icons on light bg
-    secondary: '#FDE68A', // Pastel Gold/Cream
+    primary: '#003DA5', // Vibrant Loyola Blue
+    primaryDark: '#0052D9', // Bright Blue for accents
+    secondary: '#F59E0B', // Vibrant Gold
     background: '#FAFAFA', // Soft Off-White
     surface: '#FFFFFF', // Pure White
     text: '#1F2937', // Dark Gray for readability

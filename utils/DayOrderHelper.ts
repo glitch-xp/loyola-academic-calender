@@ -68,8 +68,9 @@ export const DayOrderHelper = {
 
         for (const dateStr of sortedDates) {
             const entry = calendar[dateStr];
-            if (entry.event && new Date(dateStr) >= today) {
-                const daysLeft = differenceInDays(new Date(dateStr), today);
+            const eventDate = startOfDay(new Date(dateStr));
+            if (entry.event && eventDate > today) {
+                const daysLeft = differenceInDays(eventDate, today);
                 return {
                     name: entry.event,
                     date: dateStr,
