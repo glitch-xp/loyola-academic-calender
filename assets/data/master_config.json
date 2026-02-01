@@ -1,0 +1,115 @@
+{
+    "departments": [
+        {
+            "name": "B.Com CA",
+            "years": [
+                {
+                    "year": "I",
+                    "timetableId": "bcom_ca_1"
+                },
+                {
+                    "year": "II",
+                    "timetableId": "bcom_ca_2"
+                },
+                {
+                    "year": "III",
+                    "timetableId": "bcom_ca_3"
+                }
+            ]
+        },
+        {
+            "name": "B.Sc CS",
+            "years": [
+                {
+                    "year": "I",
+                    "timetableId": "bsc_cs_1"
+                },
+                {
+                    "year": "II",
+                    "timetableId": "bsc_cs_2"
+                },
+                {
+                    "year": "III",
+                    "timetableId": "bsc_cs_3"
+                }
+            ]
+        },
+        {
+            "name": "B.A English",
+            "years": [
+                {
+                    "year": "I",
+                    "timetableId": "ba_eng_1"
+                }
+            ]
+        }
+    ],
+    "shifts": [
+        {
+            "id": "1",
+            "name": "Shift 1",
+            "timings": [
+                {
+                    "period": 1,
+                    "startTime": "08:15",
+                    "endTime": "09:15"
+                },
+                {
+                    "period": 2,
+                    "startTime": "09:15",
+                    "endTime": "10:15"
+                },
+                {
+                    "period": 3,
+                    "startTime": "10:30",
+                    "endTime": "11:30"
+                },
+                {
+                    "period": 4,
+                    "startTime": "11:30",
+                    "endTime": "12:30"
+                },
+                {
+                    "period": 5,
+                    "startTime": "12:30",
+                    "endTime": "01:30"
+                }
+            ]
+        },
+        {
+            "id": "2",
+            "name": "Shift 2",
+            "timings": [
+                {
+                    "period": 1,
+                    "startTime": "01:30",
+                    "endTime": "02:30"
+                },
+                {
+                    "period": 2,
+                    "startTime": "02:30",
+                    "endTime": "03:30"
+                },
+                {
+                    "period": 3,
+                    "startTime": "03:45",
+                    "endTime": "04:45"
+                },
+                {
+                    "period": 4,
+                    "startTime": "04:45",
+                    "endTime": "05:45"
+                },
+                {
+                    "period": 5,
+                    "startTime": "05:45",
+                    "endTime": "06:45"
+                }
+            ]
+        }
+    ],
+    "dataUrls": {
+        "calendar": "https://raw.githubusercontent.com/yuvar/loyola-data/main/calendar.json",
+        "timetableBase": "https://raw.githubusercontent.com/yuvar/loyola-data/main/timetable"
+    }
+}

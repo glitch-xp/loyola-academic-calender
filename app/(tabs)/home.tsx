@@ -4,16 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { DayOrderHelper } from '../../utils/DayOrderHelper';
+import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper';
 import { StorageService } from '../../services/StorageService';
 import { Card } from '../../components/Card';
-import { Subject, TimeTable, DayOrderConfig } from '../../types';
+import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '../../types';
 
 export default function HomeScreen() {
     const [loading, setLoading] = useState(true);
     const [timetable, setTimetable] = useState<TimeTable | null>(null);
     const [calendar, setCalendar] = useState<DayOrderConfig | null>(null);
+    const [masterConfig, setMasterConfig] = useState<MasterConfig | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [todayConfig, setTodayConfig] = useState<{ dayOrder: number | null, isHoliday: boolean, event?: string } | null>(null);
-    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [subjects, setSubjects] = useState<SubjectWithTiming[]>([]);
     const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number } | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -22,11 +25,15 @@ export default function HomeScreen() {
         try {
             const storedTimetable = await StorageService.getData<TimeTable>('timetable');
             const storedCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
+            const storedMasterConfig = await StorageService.getData<MasterConfig>('master_config');
+            const storedUserProfile = await StorageService.getUserProfile();
 
             if (storedTimetable) setTimetable(storedTimetable);
             if (storedCalendar) setCalendar(storedCalendar);
+            if (storedMasterConfig) setMasterConfig(storedMasterConfig);
+            if (storedUserProfile) setUserProfile(storedUserProfile);
 
-            calculateDay(storedTimetable, storedCalendar);
+            calculateDay(storedTimetable, storedCalendar, storedMasterConfig, storedUserProfile);
         } catch (e) {
             console.error(e);
         } finally {
@@ -34,7 +41,12 @@ export default function HomeScreen() {
         }
     };
 
-    const calculateDay = (tt: TimeTable | null, cal: DayOrderConfig | null) => {
+    const calculateDay = (
+        tt: TimeTable | null,
+        cal: DayOrderConfig | null,
+        mc: MasterConfig | null,
+        profile: UserProfile | null
+    ) => {
         const today = new Date();
         // For demo purposes, let's fix the date or use real
         // today.setDate(2); // Uncomment to test specific logic 
@@ -45,8 +57,14 @@ export default function HomeScreen() {
             const todayConf = DayOrderHelper.getDayConfig(today, cal);
             setTodayConfig(todayConf);
 
-            if (todayConf && todayConf.dayOrder && tt) {
-                setSubjects(tt[todayConf.dayOrder] || []);
+            if (todayConf && todayConf.dayOrder && tt && profile) {
+                const rawSubjects = tt[todayConf.dayOrder] || [];
+                const enrichedSubjects = TimetableHelper.enrichSubjectsWithTiming(
+                    rawSubjects,
+                    profile.shift,
+                    mc
+                );
+                setSubjects(enrichedSubjects);
             } else {
                 setSubjects([]);
             }

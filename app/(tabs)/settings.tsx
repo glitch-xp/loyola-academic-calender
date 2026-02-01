@@ -49,7 +49,7 @@ export default function SettingsScreen() {
 
                 <View style={styles.footer}>
                     <Text style={styles.version}>Version 1.0.0</Text>
-                    <Text style={styles.branding}>Loyola Academic Companion</Text>
+                    <Text style={styles.branding}>Loyola Time Table App</Text>
                 </View>
             </View>
         </SafeAreaView>

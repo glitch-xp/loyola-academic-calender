@@ -17,7 +17,7 @@ export default function WelcomeScreen() {
     // Selection State
     const [dept, setDept] = useState('');
     const [year, setYear] = useState('');
-    const [section, setSection] = useState('');
+    const [shift, setShift] = useState('');
 
     useEffect(() => {
         loadConfig();
@@ -28,9 +28,12 @@ export default function WelcomeScreen() {
             const data = await DataService.fetchMasterConfig();
             setConfig(data);
             // Pre-select first options if available to save clicks
-            if (data.departments.length > 0) setDept(data.departments[0]);
-            if (data.years.length > 0) setYear(data.years[0]);
-            if (data.sections.length > 0) setSection(data.sections[0]);
+            if (data.departments.length > 0) setDept(data.departments[0].name);
+            // Default year will be handled by useEffect or user selection logic, 
+            // but we can try to key off the first department
+            if (data.departments[0]?.years.length > 0) setYear(data.departments[0].years[0].year);
+
+            if (data.shifts.length > 0) setShift(data.shifts[0].id);
         } catch (e) {
             Alert.alert('Error', 'Failed to load configuration. Please check your connection.');
         } finally {
@@ -39,7 +42,7 @@ export default function WelcomeScreen() {
     };
 
     const handleComplete = async () => {
-        if (!dept || !year || !section) {
+        if (!dept || !year || !shift) {
             Alert.alert('Incomplete', 'Please select all fields');
             return;
         }
@@ -47,10 +50,11 @@ export default function WelcomeScreen() {
         setSubmitting(true);
         try {
             // Fetch and cache the initial data for this course
-            const courseData = await DataService.fetchCourseData(dept, year, section);
+            const courseData = await DataService.fetchCourseData(dept, year, shift);
 
             // Save Config & Data
-            await StorageService.saveUserProfile({ department: dept, year: year as any, section });
+            await StorageService.saveUserProfile({ department: dept, year: year as any, shift });
+            await StorageService.saveData('master_config', config);
             await StorageService.saveData('timetable', courseData.timetable);
             await StorageService.saveData('day_order_config', courseData.calendar);
 
@@ -83,21 +87,28 @@ export default function WelcomeScreen() {
                     <Text style={styles.label}>Department</Text>
                     <View style={styles.pillsContainer}>
                         {config?.departments.map((d) => (
-                            <OptionPill key={d} label={d} selected={dept === d} onPress={() => setDept(d)} />
+                            <OptionPill key={d.name} label={d.name} selected={dept === d.name} onPress={() => {
+                                setDept(d.name);
+                                // Reset year when dept changes if not valid
+                                const validYears = d.years.map(y => y.year);
+                                if (!validYears.includes(year as any)) {
+                                    setYear(validYears[0] || '');
+                                }
+                            }} />
                         ))}
                     </View>
 
                     <Text style={styles.label}>Year</Text>
                     <View style={styles.pillsContainer}>
-                        {config?.years.map((y) => (
-                            <OptionPill key={y} label={y} selected={year === y} onPress={() => setYear(y)} />
+                        {config?.departments.find(d => d.name === dept)?.years.map((y) => (
+                            <OptionPill key={y.year} label={y.year} selected={year === y.year} onPress={() => setYear(y.year)} />
                         ))}
                     </View>
 
-                    <Text style={styles.label}>Section</Text>
+                    <Text style={styles.label}>Shift</Text>
                     <View style={styles.pillsContainer}>
-                        {config?.sections.map((s) => (
-                            <OptionPill key={s} label={s} selected={section === s} onPress={() => setSection(s)} />
+                        {config?.shifts.map((s) => (
+                            <OptionPill key={s.id} label={s.name} selected={shift === s.id} onPress={() => setShift(s.id)} />
                         ))}
                     </View>
                 </Card>
@@ -137,6 +148,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         padding: 20,
+        paddingBottom: 60, // Extra padding for gesture gesture area
     },
     header: {
         marginBottom: 30,

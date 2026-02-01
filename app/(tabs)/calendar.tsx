@@ -3,8 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { StorageService } from '../../services/StorageService';
-import { DayOrderConfig, TimeTable } from '../../types';
+import { DayOrderConfig, TimeTable, MasterConfig, UserProfile } from '../../types';
 import { DayOrderHelper } from '../../utils/DayOrderHelper';
+import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper';
 import { Card } from '../../components/Card';
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
@@ -13,6 +14,8 @@ export default function CalendarScreen() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [calendarConfig, setCalendarConfig] = useState<DayOrderConfig | null>(null);
     const [timetable, setTimetable] = useState<TimeTable | null>(null);
+    const [masterConfig, setMasterConfig] = useState<MasterConfig | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
     // Modal State
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -25,8 +28,12 @@ export default function CalendarScreen() {
     const loadData = async () => {
         const cal = await StorageService.getData<DayOrderConfig>('day_order_config');
         const tt = await StorageService.getData<TimeTable>('timetable');
+        const mc = await StorageService.getData<MasterConfig>('master_config');
+        const profile = await StorageService.getUserProfile();
         setCalendarConfig(cal);
         setTimetable(tt);
+        setMasterConfig(mc);
+        setUserProfile(profile);
     };
 
     const days = eachDayOfInterval({
@@ -137,8 +144,13 @@ export default function CalendarScreen() {
                                     );
                                 }
 
-                                if (info.dayOrder && timetable) {
-                                    const classes = timetable[info.dayOrder] || [];
+                                if (info.dayOrder && timetable && userProfile) {
+                                    const rawClasses = timetable[info.dayOrder] || [];
+                                    const classes = TimetableHelper.enrichSubjectsWithTiming(
+                                        rawClasses,
+                                        userProfile.shift,
+                                        masterConfig
+                                    );
                                     return (
                                         <View style={styles.modalBody}>
                                             <Text style={styles.orderTitle}>Day Order {info.dayOrder}</Text>

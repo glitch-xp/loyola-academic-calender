@@ -3,8 +3,28 @@ export interface Subject {
     code: string;
     room?: string;
     teacher?: string;
-    startTime: string; // "08:30"
-    endTime: string;   // "09:25"
+}
+
+export interface ShiftTiming {
+    period: number;
+    startTime: string;
+    endTime: string;
+}
+
+export interface Shift {
+    id: string; // "1" or "2"
+    name: string; // "Shift 1" or "Shift 2"
+    timings: ShiftTiming[];
+}
+
+export interface CourseYearConfig {
+    year: 'I' | 'II' | 'III';
+    timetableId: string; // e.g., "cs_1"
+}
+
+export interface DepartmentConfig {
+    name: string;
+    years: CourseYearConfig[];
 }
 
 // Map of Day Order (1-6) to list of Subjects
@@ -31,17 +51,14 @@ export interface DayOrderConfig {
 export interface UserProfile {
     department: string;
     year: 'I' | 'II' | 'III';
-    section: string;
+    shift: string; // "1" or "2"
 }
 
 export interface MasterConfig {
-    departments: string[];
-    years: ['I', 'II', 'III'];
-    sections: string[];
+    departments: DepartmentConfig[];
+    shifts: Shift[];
     dataUrls: {
-        [dept_year_sec: string]: { // key format: "B.Com CA_I_A"
-            calendar: string;
-            timetable: string;
-        }
+        calendar: string; // URL to calendar.json
+        timetableBase: string;
     }
 }
