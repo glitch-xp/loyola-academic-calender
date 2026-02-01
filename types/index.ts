@@ -43,7 +43,7 @@ export interface CalendarEvent {
 
 export interface DayOrderConfig {
     [date: string]: {
-        dayOrder: number | null;
+        dayOrder: string | number | null; // Allow string format like "Day-1" or numeric format like 1
         isHoliday: boolean;
         event?: string;
     };

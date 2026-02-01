@@ -5,10 +5,32 @@ export const DayOrderHelper = {
     /**
      * Get the configuration for a specific date from the calendar config.
      * If no explicit config exists, return default (e.g., could be weekend or just unknown).
+     * Also normalizes dayOrder from string format "Day-1" to numeric 1.
       */
     getDayConfig(date: Date, calendar: DayOrderConfig) {
         const dateStr = date.toISOString().split('T')[0];
-        return calendar[dateStr] || null;
+        const config = calendar[dateStr];
+
+        if (!config) return null;
+
+        // Parse dayOrder if it's a string like "Day-1" to extract the number
+        let dayOrderValue: number | null = null;
+        if (config.dayOrder) {
+            if (typeof config.dayOrder === 'string') {
+                // Extract number from "Day-1", "Day-2", etc.
+                const match = config.dayOrder.match(/\d+/);
+                if (match) {
+                    dayOrderValue = parseInt(match[0], 10);
+                }
+            } else {
+                dayOrderValue = config.dayOrder;
+            }
+        }
+
+        return {
+            ...config,
+            dayOrder: dayOrderValue
+        };
     },
 
     /**
