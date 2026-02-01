@@ -20,7 +20,7 @@ export class DataFetchError extends Error {
 export const DataService = {
     async fetchMasterConfig(): Promise<MasterConfig> {
         try {
-            const response = await fetch(`${GITHUB_BASE_URL}/master_config.json`);
+            const response = await fetch(`${GITHUB_BASE_URL}/assets/data/master_config.json`);
             if (!response.ok) {
                 throw new DataFetchError(`Failed to fetch master config: ${response.status}`);
             }
