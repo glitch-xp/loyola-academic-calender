@@ -5,14 +5,17 @@ import { router } from 'expo-router';
 import { Colors } from '../constants/Colors';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { DataService } from '../services/DataService';
+import { DataService, NetworkError, DataFetchError } from '../services/DataService';
 import { StorageService } from '../services/StorageService';
 import { MasterConfig } from '../types';
+import { NoNetworkScreen } from '../components/NoNetworkScreen';
+import { ErrorScreen } from '../components/ErrorScreen';
 
 export default function WelcomeScreen() {
     const [config, setConfig] = useState<MasterConfig | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<{ type: 'network' | 'general'; message: string } | null>(null);
 
     // Selection State
     const [dept, setDept] = useState('');
@@ -24,6 +27,8 @@ export default function WelcomeScreen() {
     }, []);
 
     const loadConfig = async () => {
+        setLoading(true);
+        setError(null);
         try {
             const data = await DataService.fetchMasterConfig();
             setConfig(data);
@@ -35,7 +40,13 @@ export default function WelcomeScreen() {
 
             if (data.shifts.length > 0) setShift(data.shifts[0].id);
         } catch (e) {
-            Alert.alert('Error', 'Failed to load configuration. Please check your connection.');
+            if (e instanceof NetworkError) {
+                setError({ type: 'network', message: e.message });
+            } else if (e instanceof DataFetchError) {
+                setError({ type: 'general', message: e.message });
+            } else {
+                setError({ type: 'general', message: 'Failed to load configuration. Please try again.' });
+            }
         } finally {
             setLoading(false);
         }
@@ -48,6 +59,7 @@ export default function WelcomeScreen() {
         }
 
         setSubmitting(true);
+        setError(null);
         try {
             // Fetch and cache the initial data for this course
             const courseData = await DataService.fetchCourseData(dept, year, shift);
@@ -61,7 +73,13 @@ export default function WelcomeScreen() {
             // @ts-ignore
             router.replace('/(tabs)/home');
         } catch (e) {
-            Alert.alert('Error', 'Failed to setup course data.');
+            if (e instanceof NetworkError) {
+                setError({ type: 'network', message: e.message });
+            } else if (e instanceof DataFetchError) {
+                setError({ type: 'general', message: e.message });
+            } else {
+                setError({ type: 'general', message: 'Failed to setup course data.' });
+            }
         } finally {
             setSubmitting(false);
         }
@@ -73,6 +91,15 @@ export default function WelcomeScreen() {
                 <ActivityIndicator size="large" color={Colors.primary} />
             </View>
         );
+    }
+
+    // Show error screens
+    if (error) {
+        if (error.type === 'network') {
+            return <NoNetworkScreen onRetry={loadConfig} message={error.message} />;
+        } else {
+            return <ErrorScreen onRetry={loadConfig} message={error.message} />;
+        }
     }
 
     return (

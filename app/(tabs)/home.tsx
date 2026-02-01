@@ -8,6 +8,8 @@ import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper'
 import { StorageService } from '../../services/StorageService';
 import { Card } from '../../components/Card';
 import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '../../types';
+import { ErrorScreen } from '../../components/ErrorScreen';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
     const [loading, setLoading] = useState(true);
@@ -19,14 +21,23 @@ export default function HomeScreen() {
     const [subjects, setSubjects] = useState<SubjectWithTiming[]>([]);
     const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number } | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [error, setError] = useState<string | null>(null);
 
     const loadData = async () => {
         setLoading(true);
+        setError(null);
         try {
             const storedTimetable = await StorageService.getData<TimeTable>('timetable');
             const storedCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
             const storedMasterConfig = await StorageService.getData<MasterConfig>('master_config');
             const storedUserProfile = await StorageService.getUserProfile();
+
+            // Check if critical data is missing
+            if (!storedTimetable || !storedCalendar || !storedUserProfile) {
+                setError('Data is missing. Please reconfigure your settings.');
+                setLoading(false);
+                return;
+            }
 
             if (storedTimetable) setTimetable(storedTimetable);
             if (storedCalendar) setCalendar(storedCalendar);
@@ -36,6 +47,7 @@ export default function HomeScreen() {
             calculateDay(storedTimetable, storedCalendar, storedMasterConfig, storedUserProfile);
         } catch (e) {
             console.error(e);
+            setError('Failed to load data. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -84,6 +96,17 @@ export default function HomeScreen() {
         // @ts-ignore
         return Colors.dayOrder[order] || Colors.primary;
     };
+
+    // Show error screen if data is missing or error occurred
+    if (error && !loading) {
+        return (
+            <ErrorScreen
+                title="Data Error"
+                message={error}
+                onRetry={error.includes('missing') ? () => router.replace('/welcome') : loadData}
+            />
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>

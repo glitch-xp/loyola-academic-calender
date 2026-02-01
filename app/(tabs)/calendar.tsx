@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { StorageService } from '../../services/StorageService';
@@ -9,6 +9,8 @@ import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper'
 import { Card } from '../../components/Card';
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
+import { ErrorScreen } from '../../components/ErrorScreen';
+import { router } from 'expo-router';
 
 export default function CalendarScreen() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -16,6 +18,8 @@ export default function CalendarScreen() {
     const [timetable, setTimetable] = useState<TimeTable | null>(null);
     const [masterConfig, setMasterConfig] = useState<MasterConfig | null>(null);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     // Modal State
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -26,14 +30,31 @@ export default function CalendarScreen() {
     }, []);
 
     const loadData = async () => {
-        const cal = await StorageService.getData<DayOrderConfig>('day_order_config');
-        const tt = await StorageService.getData<TimeTable>('timetable');
-        const mc = await StorageService.getData<MasterConfig>('master_config');
-        const profile = await StorageService.getUserProfile();
-        setCalendarConfig(cal);
-        setTimetable(tt);
-        setMasterConfig(mc);
-        setUserProfile(profile);
+        setLoading(true);
+        setError(null);
+        try {
+            const cal = await StorageService.getData<DayOrderConfig>('day_order_config');
+            const tt = await StorageService.getData<TimeTable>('timetable');
+            const mc = await StorageService.getData<MasterConfig>('master_config');
+            const profile = await StorageService.getUserProfile();
+
+            // Check if critical data is missing
+            if (!cal || !profile) {
+                setError('Calendar data is missing. Please reconfigure your settings.');
+                setLoading(false);
+                return;
+            }
+
+            setCalendarConfig(cal);
+            setTimetable(tt);
+            setMasterConfig(mc);
+            setUserProfile(profile);
+        } catch (e) {
+            console.error(e);
+            setError('Failed to load calendar data. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const days = eachDayOfInterval({
@@ -91,6 +112,26 @@ export default function CalendarScreen() {
             </TouchableOpacity>
         );
     };
+
+    // Show loading state
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={Colors.primary} />
+            </SafeAreaView>
+        );
+    }
+
+    // Show error screen if data is missing or error occurred
+    if (error) {
+        return (
+            <ErrorScreen
+                title="Calendar Error"
+                message={error}
+                onRetry={error.includes('missing') ? () => router.replace('/welcome') : loadData}
+            />
+        );
+    }
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
