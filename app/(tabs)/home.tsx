@@ -11,6 +11,13 @@ import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '.
 import { ErrorScreen } from '../../components/ErrorScreen';
 import { router } from 'expo-router';
 
+interface NextClassInfo {
+    current: SubjectWithTiming | null;
+    next: SubjectWithTiming | null;
+    status: 'before' | 'during' | 'between' | 'after';
+    minutesUntilNext: number;
+}
+
 export default function HomeScreen() {
     const [loading, setLoading] = useState(true);
     const [timetable, setTimetable] = useState<TimeTable | null>(null);
@@ -22,6 +29,7 @@ export default function HomeScreen() {
     const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number } | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [error, setError] = useState<string | null>(null);
+    const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
 
     const loadData = async () => {
         setLoading(true);
@@ -77,8 +85,13 @@ export default function HomeScreen() {
                     mc
                 );
                 setSubjects(enrichedSubjects);
+
+                // Calculate next class info
+                const nextInfo = calculateNextClass(enrichedSubjects, today);
+                setNextClassInfo(nextInfo);
             } else {
                 setSubjects([]);
+                setNextClassInfo(null);
             }
 
             setNextEvent(DayOrderHelper.getNextEvent(cal));
@@ -90,6 +103,81 @@ export default function HomeScreen() {
             loadData();
         }, [])
     );
+
+    // Update current time every minute for live countdown
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            setCurrentDate(now);
+
+            // Recalculate next class info with current time
+            if (subjects.length > 0 && !todayConfig?.isHoliday) {
+                const nextInfo = calculateNextClass(subjects, now);
+                setNextClassInfo(nextInfo);
+            }
+        }, 60000); // Update every minute
+
+        return () => clearInterval(interval);
+    }, [subjects, todayConfig]);
+
+    // Helper function to calculate next class information
+    const calculateNextClass = (enrichedSubjects: SubjectWithTiming[], currentTime: Date): NextClassInfo | null => {
+        if (enrichedSubjects.length === 0) return null;
+
+        const now = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+        // Parse time string (HH:MM) to minutes since midnight
+        const parseTime = (timeStr: string): number => {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        };
+
+        let currentClass: SubjectWithTiming | null = null;
+        let nextClass: SubjectWithTiming | null = null;
+        let status: 'before' | 'during' | 'between' | 'after' = 'before';
+        let minutesUntilNext = 0;
+
+        for (let i = 0; i < enrichedSubjects.length; i++) {
+            const subject = enrichedSubjects[i];
+            const startMinutes = parseTime(subject.startTime);
+            const endMinutes = parseTime(subject.endTime);
+
+            // Check if current time is during this class
+            if (now >= startMinutes && now < endMinutes) {
+                currentClass = subject;
+                nextClass = i + 1 < enrichedSubjects.length ? enrichedSubjects[i + 1] : null;
+                status = 'during';
+                if (nextClass) {
+                    minutesUntilNext = parseTime(nextClass.startTime) - now;
+                }
+                break;
+            }
+
+            // Check if this is the next upcoming class
+            if (now < startMinutes) {
+                nextClass = subject;
+                status = i === 0 ? 'before' : 'between';
+                minutesUntilNext = startMinutes - now;
+                if (i > 0) {
+                    currentClass = enrichedSubjects[i - 1];
+                }
+                break;
+            }
+        }
+
+        // If we've gone through all classes and haven't found a current or next one
+        if (!currentClass && !nextClass) {
+            status = 'after';
+            currentClass = enrichedSubjects[enrichedSubjects.length - 1];
+        }
+
+        return {
+            current: currentClass,
+            next: nextClass,
+            status,
+            minutesUntilNext
+        };
+    };
 
     const getDayOrderColor = (order: number | null) => {
         if (!order) return Colors.dayOrder.holiday;
@@ -139,6 +227,70 @@ export default function HomeScreen() {
                         )}
                     </View>
                 </Card>
+
+                {/* Next Class Card */}
+                {!todayConfig?.isHoliday && nextClassInfo && (
+                    <Card style={styles.nextClassCard}>
+                        <View style={styles.nextClassContainer}>
+                            <View style={styles.nextClassHeader}>
+                                <Text style={styles.nextClassLabel}>
+                                    {nextClassInfo.status === 'during' ? 'CURRENT CLASS' :
+                                        nextClassInfo.status === 'before' ? 'FIRST CLASS TODAY' :
+                                            nextClassInfo.status === 'between' ? 'NEXT CLASS' :
+                                                'CLASSES COMPLETED'}
+                                </Text>
+                            </View>
+
+                            {nextClassInfo.status === 'during' && nextClassInfo.current && (
+                                <View style={styles.classDetailsContainer}>
+                                    <View style={styles.currentClassInfo}>
+                                        <Text style={styles.nextClassName}>{nextClassInfo.current.name}</Text>
+                                        <Text style={styles.nextClassCode}>{nextClassInfo.current.code}</Text>
+                                        <Text style={styles.nextClassTime}>
+                                            {nextClassInfo.current.startTime} - {nextClassInfo.current.endTime}
+                                        </Text>
+                                    </View>
+                                    {nextClassInfo.next && (
+                                        <View style={styles.upNextContainer}>
+                                            <Text style={styles.upNextLabel}>Up Next</Text>
+                                            <Text style={styles.upNextName}>{nextClassInfo.next.name}</Text>
+                                            <Text style={styles.upNextTime}>
+                                                in {Math.floor(nextClassInfo.minutesUntilNext / 60)}h {nextClassInfo.minutesUntilNext % 60}m
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+
+                            {(nextClassInfo.status === 'before' || nextClassInfo.status === 'between') && nextClassInfo.next && (
+                                <View style={styles.classDetailsContainer}>
+                                    <View style={styles.nextClassMainInfo}>
+                                        <Text style={styles.nextClassName}>{nextClassInfo.next.name}</Text>
+                                        <Text style={styles.nextClassCode}>{nextClassInfo.next.code}</Text>
+                                        <Text style={styles.nextClassTime}>
+                                            {nextClassInfo.next.startTime} - {nextClassInfo.next.endTime}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.countdownBox}>
+                                        <Text style={styles.countdownTime}>
+                                            {Math.floor(nextClassInfo.minutesUntilNext / 60)}:{String(nextClassInfo.minutesUntilNext % 60).padStart(2, '0')}
+                                        </Text>
+                                        <Text style={styles.countdownLabel}>
+                                            {nextClassInfo.minutesUntilNext < 60 ? 'minutes' : 'hours'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
+
+                            {nextClassInfo.status === 'after' && (
+                                <View style={styles.afterClassesContainer}>
+                                    <Text style={styles.afterClassesText}>All classes for today are complete!</Text>
+                                    <Text style={styles.afterClassesSubtext}>Great work today 🎉</Text>
+                                </View>
+                            )}
+                        </View>
+                    </Card>
+                )}
 
                 {/* Next Event Countdown */}
                 {nextEvent && (
@@ -340,5 +492,107 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: Colors.textLight,
         fontStyle: 'italic',
-    }
+    },
+    // Next Class Card
+    nextClassCard: {
+        backgroundColor: Colors.surface,
+        borderLeftWidth: 4,
+        borderLeftColor: Colors.primary,
+    },
+    nextClassContainer: {
+        gap: 12,
+    },
+    nextClassHeader: {
+        marginBottom: 4,
+    },
+    nextClassLabel: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        color: Colors.primary,
+        letterSpacing: 1,
+    },
+    classDetailsContainer: {
+        gap: 12,
+    },
+    currentClassInfo: {
+        flex: 1,
+    },
+    nextClassMainInfo: {
+        flex: 1,
+    },
+    nextClassName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: Colors.text,
+        marginBottom: 4,
+    },
+    nextClassCode: {
+        fontSize: 14,
+        color: Colors.textLight,
+        marginBottom: 4,
+    },
+    nextClassTime: {
+        fontSize: 14,
+        color: Colors.textLight,
+        fontWeight: '600',
+    },
+    upNextContainer: {
+        backgroundColor: Colors.background,
+        padding: 12,
+        borderRadius: 12,
+        borderLeftWidth: 3,
+        borderLeftColor: Colors.secondary,
+    },
+    upNextLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: Colors.textLight,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 4,
+    },
+    upNextName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.text,
+        marginBottom: 2,
+    },
+    upNextTime: {
+        fontSize: 13,
+        color: Colors.textLight,
+    },
+    countdownBox: {
+        backgroundColor: Colors.primary,
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 80,
+    },
+    countdownTime: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+    },
+    countdownLabel: {
+        fontSize: 11,
+        color: '#FFFFFF',
+        opacity: 0.9,
+        marginTop: 2,
+        textTransform: 'uppercase',
+    },
+    afterClassesContainer: {
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    afterClassesText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.text,
+        marginBottom: 4,
+    },
+    afterClassesSubtext: {
+        fontSize: 14,
+        color: Colors.textLight,
+    },
 });
