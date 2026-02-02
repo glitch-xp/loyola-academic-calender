@@ -3,16 +3,15 @@ name: Build & Release Android
 on:
   push:
     tags:
-      - "v*"
+      - "v*" # Triggers only when you push a tag like v1.0.1
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # Crucial for creating the GitHub Release
 
     steps:
-      # ---- SETUP ----
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -20,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: 'npm'
 
       - name: Install JS dependencies
         run: npm ci
@@ -28,21 +27,19 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # ---- PREBUILD ----
-      # Generates the android/ folder from your app.json / app.config.js
+      # Note: We use --no-install to keep it fast. 
+      # If you've modified android/ manually, consider removing this step.
       - name: Expo Prebuild
         env:
           EXPO_NO_GIT_STATUS: "1"
         run: npx expo prebuild --platform android --clean
 
-      # ---- GRADLE CACHE ----
-      # Placed after prebuild because gradle files are generated at that point
       - name: Restore Gradle cache
         uses: actions/cache@v4
         with:
@@ -53,41 +50,32 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
-      # ---- SIGNING ----
-      - name: Verify signing secrets
-        env:
-          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          if [ -z "$KEYSTORE" ]; then
-            echo "❌ Android signing secrets missing"
-            exit 1
-          fi
-
       - name: Decode keystore
-        env:
-          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE" | base64 -d > android/app/release.keystore
+          # Creates the physical file from your GitHub Secret string
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
-      # ---- BUILD ----
-      - name: Build Release APK & AAB
+      - name: Build Release (APK & AAB)
         run: |
+          export NODE_ENV=production
           cd android
+          chmod +x gradlew
+          # We pass signing info directly via properties for extra safety
           ./gradlew assembleRelease bundleRelease \
-            -PstoreFile=release.keystore \
-            -PstorePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-            -PkeyAlias=${{ secrets.ANDROID_KEY_ALIAS }} \
-            -PkeyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+            -Pandroid.injected.signing.store.file=release.keystore \
+            -Pandroid.injected.signing.store.password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      # ---- RELEASE ----
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Android Release ${{ github.ref_name }}
+          name: Loyola Calendar Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
           files: |
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
