@@ -38,24 +38,29 @@ jobs:
             -v gradle-cache:/root/.gradle \
             -e EXPO_NO_GIT_STATUS=1 \
             -e NODE_ENV=production \
+            -e KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD}" \
+            -e KEY_ALIAS="${KEY_ALIAS}" \
+            -e KEY_PASSWORD="${KEY_PASSWORD}" \
             loyola-calendar-builder:latest \
-            bash -c "
+            bash -c '
+              set -e
+              
               # Run Expo prebuild
               npx expo prebuild --platform android --clean
               
-              # Copy keystore into container's android directory
+              # Copy keystore into container android directory
               cp /app/release.keystore /app/android/app/release.keystore
               
               # Build APK and AAB
               cd android
               chmod +x gradlew
-              KEYSTORE_PATH=\"\$(pwd)/app/release.keystore\"
+              KEYSTORE_PATH="$(pwd)/app/release.keystore"
               ./gradlew assembleRelease bundleRelease \
-                -Pandroid.injected.signing.store.file=\"\${KEYSTORE_PATH}\" \
-                -Pandroid.injected.signing.store.password=\"${KEYSTORE_PASSWORD}\" \
-                -Pandroid.injected.signing.key.alias=\"${KEY_ALIAS}\" \
-                -Pandroid.injected.signing.key.password=\"${KEY_PASSWORD}\"
-            "
+                -Pandroid.injected.signing.store.file="${KEYSTORE_PATH}" \
+                -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD}" \
+                -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" \
+                -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
+            '
 
       - name: Clean up keystore
         if: always()

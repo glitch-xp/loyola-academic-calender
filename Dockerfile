@@ -65,7 +65,6 @@ COPY . .
 
 # Set environment for Expo
 ENV EXPO_NO_GIT_STATUS=1
-ENV NODE_ENV=production
 
 # Default command
 CMD ["bash"]
