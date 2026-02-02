@@ -39,6 +39,9 @@ jobs:
           EXPO_NO_GIT_STATUS: "1"
         run: npx expo prebuild --platform android --clean
 
+      # Gradle cache is placed AFTER prebuild because the android/ directory
+      # does not exist until prebuild generates it. Hashing it before that
+      # point produces an empty/useless cache key.
       - name: Restore Gradle cache
         uses: actions/cache@v4
         with:
@@ -51,20 +54,25 @@ jobs:
 
       - name: Decode keystore
         run: |
-          # Creates the actual file from your GitHub Secret string
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
+      # Secrets are passed via env vars rather than inlined into the shell
+      # command. This avoids quoting/parsing issues when secret values contain
+      # special characters like ", !, $, or backticks.
       - name: Build Release (APK & AAB)
+        env:
+          NODE_ENV: production
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          export NODE_ENV=production
           cd android
           chmod +x gradlew
-          # We use quotes around variables to avoid shell parsing errors
           ./gradlew assembleRelease bundleRelease \
-            -Pandroid.injected.signing.store.file=release.keystore \
-            -Pandroid.injected.signing.store.password="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
-            -Pandroid.injected.signing.key.alias="${{ secrets.ANDROID_KEY_ALIAS }}" \
-            -Pandroid.injected.signing.key.password="${{ secrets.ANDROID_KEY_PASSWORD }}"
+            -Pandroid.injected.signing.store.file=app/release.keystore \
+            -Pandroid.injected.signing.store.password="${KEYSTORE_PASSWORD}" \
+            -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" \
+            -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
