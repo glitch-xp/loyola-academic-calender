@@ -3,13 +3,14 @@ name: Build & Release Android
 on:
   push:
     tags:
-      - "v*" # Triggers only when you push a tag like v1.0.1
+      - "v*" # Triggers when you push a tag like v1.0.0
+  workflow_dispatch: # Allows you to run this manually from the GitHub website/app
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Crucial for creating the GitHub Release
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -33,8 +34,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Note: We use --no-install to keep it fast. 
-      # If you've modified android/ manually, consider removing this step.
       - name: Expo Prebuild
         env:
           EXPO_NO_GIT_STATUS: "1"
@@ -52,7 +51,7 @@ jobs:
 
       - name: Decode keystore
         run: |
-          # Creates the physical file from your GitHub Secret string
+          # Creates the actual file from your GitHub Secret string
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
       - name: Build Release (APK & AAB)
@@ -60,12 +59,12 @@ jobs:
           export NODE_ENV=production
           cd android
           chmod +x gradlew
-          # We pass signing info directly via properties for extra safety
+          # We use quotes around variables to avoid shell parsing errors
           ./gradlew assembleRelease bundleRelease \
             -Pandroid.injected.signing.store.file=release.keystore \
-            -Pandroid.injected.signing.store.password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
+            -Pandroid.injected.signing.store.password="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            -Pandroid.injected.signing.key.alias="${{ secrets.ANDROID_KEY_ALIAS }}" \
+            -Pandroid.injected.signing.key.password="${{ secrets.ANDROID_KEY_PASSWORD }}"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
