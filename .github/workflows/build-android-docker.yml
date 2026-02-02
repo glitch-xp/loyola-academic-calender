@@ -1,4 +1,4 @@
-Name: Build & Publish Release APK
+name: Build & Publish Release APK
 
 on:
   push:
@@ -35,13 +35,13 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./android/gradlew
 
-      # NEW STEP: Convert the Base64 secret back into a physical file
+      # FIX: We place the keystore inside the android/app directory
       - name: Decode Keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > ./android/app/release.keystore
 
       - name: Build Release APK
         working-directory: ./android
-        # Pass the secrets as Project Properties using -P
+        # Passing properties directly to Gradle to override the missing debug.keystore
         run: |
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=release.keystore \
