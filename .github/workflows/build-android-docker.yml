@@ -1,0 +1,75 @@
+name: Build & Release Android (Docker)
+
+on:
+  push:
+    tags:
+      - "v*" # Triggers when you push a tag like v1.0.0
+  workflow_dispatch: # Allows you to run this manually from the GitHub website/app
+
+jobs:
+  build-android-docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t loyola-calendar-builder:latest .
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+
+      - name: Build Android APK and AAB in Docker
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          docker run --rm \
+            -v "$(pwd):/app" \
+            -v gradle-cache:/root/.gradle \
+            -e EXPO_NO_GIT_STATUS=1 \
+            -e NODE_ENV=production \
+            loyola-calendar-builder:latest \
+            bash -c "
+              # Run Expo prebuild
+              npx expo prebuild --platform android --clean
+              
+              # Copy keystore into container's android directory
+              cp /app/release.keystore /app/android/app/release.keystore
+              
+              # Build APK and AAB
+              cd android
+              chmod +x gradlew
+              KEYSTORE_PATH=\"\$(pwd)/app/release.keystore\"
+              ./gradlew assembleRelease bundleRelease \
+                -Pandroid.injected.signing.store.file=\"\${KEYSTORE_PATH}\" \
+                -Pandroid.injected.signing.store.password=\"${KEYSTORE_PASSWORD}\" \
+                -Pandroid.injected.signing.key.alias=\"${KEY_ALIAS}\" \
+                -Pandroid.injected.signing.key.password=\"${KEY_PASSWORD}\"
+            "
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f release.keystore
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Loyola Calendar Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
