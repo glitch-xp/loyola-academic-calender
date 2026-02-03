@@ -8,6 +8,7 @@
     "scheme": "loyola",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "entryPoint": "expo-router/entry",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.loyola.timetableapp"
