@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
 import { StorageService } from '../../services/StorageService';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
 
 export default function SettingsScreen() {
 
@@ -25,6 +26,8 @@ export default function SettingsScreen() {
             ]
         );
     };
+
+    const appVersion = Constants.expoConfig?.version || '1.0.0';
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -48,7 +51,7 @@ export default function SettingsScreen() {
                 </View>
 
                 <View style={styles.footer}>
-                    <Text style={styles.version}>Version 1.0.0</Text>
+                    <Text style={styles.version}>Version {appVersion}</Text>
                     <Text style={styles.branding}>Loyola Time Table App</Text>
                 </View>
             </View>

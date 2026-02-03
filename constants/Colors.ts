@@ -6,11 +6,12 @@ export const Colors = {
     surface: '#FFFFFF', // Pure White
     text: '#1F2937', // Dark Gray for readability
     textLight: '#6B7280', // Medium Gray
-    error: '#FECACA', // Soft Red
-    success: '#A7F3D0', // Soft Green
+    error: '#DC2626', // Strong Red for better readability (red-600)
+    success: '#16A34A', // Strong Green for better readability (green-600)
     highlight: '#E0E7FF', // Very light indigo for active states
+    border: '#E5E7EB', // Light border color
 
-    // Specific Day Order Colors (Pastel)
+    // Specific Day Order Colors (Pastel but with better readability on text)
     dayOrder: {
         1: '#FFD1DC', // Pastel Pink
         2: '#FFDAC1', // Pastel Peach
