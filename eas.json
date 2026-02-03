@@ -23,7 +23,8 @@
             "android": {
                 "buildType": "apk",
                 "gradleCommand": ":app:assembleRelease"
-            }
+            },
+            "credentialsSource": "local"
         }
     },
     "submit": {
