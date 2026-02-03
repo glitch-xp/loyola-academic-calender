@@ -10,7 +10,6 @@ The Loyola Academic Companion helps you:
 - **� Check Your Calendar** - View all your academic events and holidays in one place
 - **🔔 Stay Organized** - Never miss a class with automatic timetable syncing
 - **📱 Work Offline** - Access your schedule even without internet
-- **🎨 Beautiful Design** - Enjoy a clean interface in Loyola's signature blue and gold colors
 
 ## 📱 How to Use This App
 
@@ -44,7 +43,7 @@ To work on this project, you'll need to install:
 ```bash
 # Download this project to your computer
 git clone https://github.com/glitch-xp/loyola-academic-calender
-cd project
+cd loyola-academic-calender
 ```
 
 **Step 2: Install Everything**
@@ -100,7 +99,6 @@ Here's where everything lives:
 
 This app is designed with:
 - **Simplicity First** - Clean and easy to understand
-- **Loyola Pride** - Uses the official blue and gold colors
 - **Smooth Experience** - Nice animations and easy navigation
 - **Offline Ready** - Works even without internet
 
