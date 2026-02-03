@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loyola-calendar-builder
+    volumes:
+      # Mount source code
+      - .:/app
+      # Persist node_modules
+      - node_modules:/app/node_modules
+      # Persist Gradle cache
+      - gradle_cache:/root/.gradle
+    environment:
+      - EXPO_NO_GIT_STATUS=1
+      - NODE_ENV=production
+    command: bash -c "npx expo prebuild --platform android --clean && cd android && chmod +x gradlew && ./gradlew assembleRelease"
+    stdin_open: true
+    tty: true
+
+  # Service for development server
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loyola-calendar-dev
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "8081:8081"
+    environment:
+      - EXPO_NO_GIT_STATUS=1
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+volumes:
+  node_modules:
+  gradle_cache:

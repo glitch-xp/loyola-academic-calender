@@ -36,3 +36,4 @@ yarn-error.*
 release.keystore
 keystore.txt
 android/app/debug.keystore
+BUILD.md

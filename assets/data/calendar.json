@@ -1230,27 +1230,27 @@
         "event": "Thaipusam / Weekend"
     },
     "2026-02-02": {
-        "dayOrder": "Day-3",
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-02-03": {
         "dayOrder": "Day-4",
         "isHoliday": false,
         "event": ""
     },
-    "2026-02-04": {
+    "2026-02-03": {
         "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-04": {
+        "dayOrder": "Day-6",
         "isHoliday": false,
         "event": "Feast of St. John de Britto"
     },
     "2026-02-05": {
-        "dayOrder": "Day-6",
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": ""
     },
     "2026-02-06": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": "Open Forum for Students"
     },
@@ -1265,32 +1265,32 @@
         "event": "Weekend"
     },
     "2026-02-09": {
-        "dayOrder": "Day-2",
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-02-10": {
         "dayOrder": "Day-3",
         "isHoliday": false,
         "event": ""
     },
-    "2026-02-11": {
+    "2026-02-10": {
         "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-11": {
+        "dayOrder": "Day-5",
         "isHoliday": false,
         "event": "Feast of Our Lady of Lourdes-Candlelight Procession"
     },
     "2026-02-12": {
-        "dayOrder": "Day-5",
+        "dayOrder": "Day-6",
         "isHoliday": false,
         "event": ""
     },
     "2026-02-13": {
-        "dayOrder": "Day-6",
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": "Last date for Online Registration of Semester Exams without fine"
     },
     "2026-02-14": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": "Sports Day"
     },
@@ -1300,27 +1300,27 @@
         "event": "Weekend"
     },
     "2026-02-16": {
-        "dayOrder": "Day-2",
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-02-17": {
         "dayOrder": "Day-3",
         "isHoliday": false,
         "event": ""
     },
-    "2026-02-18": {
+    "2026-02-17": {
         "dayOrder": "Day-4",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-02-18": {
+        "dayOrder": "Day-5",
         "isHoliday": false,
         "event": "Ash Wednesday"
     },
     "2026-02-19": {
-        "dayOrder": "Day-5",
+        "dayOrder": "Day-6",
         "isHoliday": false,
         "event": ""
     },
     "2026-02-20": {
-        "dayOrder": "Day-6",
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": "FDP for Academic Staff & Workshop for Administrative Staff"
     },
@@ -1335,32 +1335,32 @@
         "event": "Women's Hostel Day / Weekend"
     },
     "2026-02-23": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": "Mentoring for III UG"
     },
     "2026-02-24": {
-        "dayOrder": "Day-2",
+        "dayOrder": "Day-3",
         "isHoliday": false,
         "event": "Mentoring for II UG/ Last date for Online Registration of Semester Exams with fine"
     },
     "2026-02-25": {
-        "dayOrder": "Day-3",
+        "dayOrder": "Day-4",
         "isHoliday": false,
         "event": "Mentoring for I UG"
     },
     "2026-02-26": {
-        "dayOrder": "Day-4",
+        "dayOrder": "Day-5",
         "isHoliday": false,
         "event": "Mentoring for I & II PG"
     },
     "2026-02-27": {
-        "dayOrder": "Day-5",
+        "dayOrder": "Day-6",
         "isHoliday": false,
         "event": "Farewell Day for III UG and II PG"
     },
     "2026-02-28": {
-        "dayOrder": "Day-6",
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": "Loyola Research Day"
     },
@@ -1370,32 +1370,32 @@
         "event": "Weekend"
     },
     "2026-03-02": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": ""
     },
     "2026-03-03": {
-        "dayOrder": "Day-2",
+        "dayOrder": "Day-3",
         "isHoliday": false,
         "event": "Loyola Students' Council (LSC) Valedictory"
     },
     "2026-03-04": {
-        "dayOrder": "Day-3",
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-03-05": {
         "dayOrder": "Day-4",
         "isHoliday": false,
         "event": ""
     },
-    "2026-03-06": {
+    "2026-03-05": {
         "dayOrder": "Day-5",
         "isHoliday": false,
         "event": ""
     },
-    "2026-03-07": {
+    "2026-03-06": {
         "dayOrder": "Day-6",
+        "isHoliday": false,
+        "event": ""
+    },
+    "2026-03-07": {
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": "College Day"
     },
@@ -1405,32 +1405,32 @@
         "event": "International Women's Day / Weekend"
     },
     "2026-03-09": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": "Second CIA"
     },
     "2026-03-10": {
-        "dayOrder": "Day-2",
+        "dayOrder": "Day-3",
         "isHoliday": false,
         "event": "Second CIA / Online Staff Assessment & Exit Poll"
     },
     "2026-03-11": {
-        "dayOrder": "Day-3",
-        "isHoliday": false,
-        "event": "Second CIA"
-    },
-    "2026-03-12": {
         "dayOrder": "Day-4",
         "isHoliday": false,
         "event": "Second CIA"
     },
-    "2026-03-13": {
+    "2026-03-12": {
         "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Second CIA"
+    },
+    "2026-03-13": {
+        "dayOrder": "Day-6",
         "isHoliday": false,
         "event": "Second CIA / Academic Council Meeting"
     },
     "2026-03-14": {
-        "dayOrder": "Day-6",
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": "Second CIA"
     },
@@ -1440,22 +1440,22 @@
         "event": "Weekend"
     },
     "2026-03-16": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": "Release of Retest & One Test List"
     },
     "2026-03-17": {
-        "dayOrder": "Day-2",
+        "dayOrder": "Day-3",
         "isHoliday": false,
         "event": "Retest / IQAC Meeting - External Members / Practical Examinations UG-Allied/PG"
     },
     "2026-03-18": {
-        "dayOrder": "Day-3",
+        "dayOrder": "Day-4",
         "isHoliday": false,
         "event": "Retest / College Council Meeting / Practical Examinations UG - Allied / PG"
     },
     "2026-03-19": {
-        "dayOrder": "Day-4",
+        "dayOrder": "Day-5",
         "isHoliday": false,
         "event": "Retest / Practical Examinations UG-Allied/PG / Stock Verification"
     },
@@ -1475,17 +1475,17 @@
         "event": "Weekend"
     },
     "2026-03-23": {
-        "dayOrder": "Day-5",
+        "dayOrder": "Day-6",
         "isHoliday": false,
         "event": "Hall Ticket Release / Practical Examinations UG-Major/PG"
     },
     "2026-03-24": {
-        "dayOrder": "Day-6",
+        "dayOrder": "Day-1",
         "isHoliday": false,
         "event": "Practical Examinations UG-Major/PG / General Staff Meeting & Last Signing Day"
     },
     "2026-03-25": {
-        "dayOrder": "Day-1",
+        "dayOrder": "Day-2",
         "isHoliday": false,
         "event": "Practical Examinations UG- Major/PG"
     },
