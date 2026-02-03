@@ -312,7 +312,7 @@ export default function HomeScreen() {
                 {/* Timetable List */}
                 {!todayConfig?.isHoliday && subjects.length > 0 && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Today's Schedule</Text>
+                        <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
                         {subjects.map((sub, index) => (
                             <Card key={index} style={styles.subjectCard}>
                                 <View style={styles.timeContainer}>

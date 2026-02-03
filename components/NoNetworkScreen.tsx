@@ -44,7 +44,7 @@ export function NoNetworkScreen({ onRetry, message }: Props) {
 
                 {/* Additional Help Text */}
                 <Text style={styles.helpText}>
-                    Make sure you're connected to Wi-Fi or mobile data
+                    Make sure you&apos;re connected to Wi-Fi or mobile data
                 </Text>
             </View>
         </SafeAreaView>
