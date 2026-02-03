@@ -1,0 +1,31 @@
+{
+    "cli": {
+        "version": ">= 13.2.0"
+    },
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal"
+        },
+        "preview": {
+            "distribution": "internal",
+            "android": {
+                "buildType": "apk"
+            }
+        },
+        "production": {
+            "android": {
+                "buildType": "app-bundle"
+            }
+        },
+        "production-apk": {
+            "android": {
+                "buildType": "apk",
+                "gradleCommand": ":app:assembleRelease"
+            }
+        }
+    },
+    "submit": {
+        "production": {}
+    }
+}
