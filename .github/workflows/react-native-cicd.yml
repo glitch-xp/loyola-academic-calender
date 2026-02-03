@@ -41,31 +41,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
-
-      - name: 📦 Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-
-      - name: 📦 Setup yarn cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: "npm"
 
       - name: 📦 Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: 🧪 Run TypeScript check
-        run: yarn tsc
+        run: npm run typecheck
 
       - name: 🧹 Run ESLint
-        run: yarn lint
-
-      - name: 🎨 Run Prettier check
-        run: yarn format:check
+        run: npm run lint
 
   build-and-release:
     needs: test
@@ -79,24 +64,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
-
-      - name: 📦 Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-
-      - name: 📦 Setup yarn cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: "npm"
 
       - name: 📦 Install dependencies
         run: |
-          yarn install
-          yarn global add eas-cli@latest
+          npm ci
+          npm install -g eas-cli@latest
 
       - name: 📱 Setup EAS build cache
         uses: actions/cache@v3
@@ -175,7 +148,7 @@ jobs:
       - name: 🏷️ Generate build information
         id: build-info
         run: |
-          VERSION=$(node -p "require('./app.json').expo.version")
+          VERSION=$(node -p "require('./package.json').version")
           BUILD_NUMBER=$(date +%Y%m%d%H%M)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
@@ -191,8 +164,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          name: "Release v${{ steps.build-info.outputs.version }}-${{ steps.build-info.outputs.build_number }}"
-          tag_name: "v${{ steps.build-info.outputs.version }}-${{ steps.build-info.outputs.build_number }}"
+          name: "Release v${{ steps.build-info.outputs.version }} (Build ${{ steps.build-info.outputs.build_number }})"
+          tag_name: "v${{ steps.build-info.outputs.version }}"
           files: |
             ./app-prod.apk
           body_path: changelog.md
