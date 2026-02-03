@@ -46,8 +46,7 @@
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "^0.21.0",
     "react-native-webview": "13.15.0",
-    "tailwind-merge": "^3.4.0",
-    "yarn": "^1.22.22"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -55,6 +54,8 @@
     "@types/react": "~19.1.10",
     "baseline-browser-mapping": "^2.9.19",
     "cross-env": "^10.1.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
   },
   "overrides": {
