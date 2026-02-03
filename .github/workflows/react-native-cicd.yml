@@ -137,11 +137,20 @@ jobs:
             echo "metro.config.js not found"
           fi
 
+      - name: 🔧 Initialize EAS Project
+        run: |
+          # Set up EAS project ID if not already configured
+          if ! grep -q "\"projectId\"" app.json 2>/dev/null && ! grep -q "\"projectId\"" eas.json 2>/dev/null; then
+            echo "Configuring EAS for CI/CD..."
+            # For CI builds without full EAS setup, we skip the project link
+            # This allows local builds to work without needing an Expo account linkage
+          fi
+
       - name: 📱 Build Production APK
         if: github.event.inputs.buildType == 'all' || github.event.inputs.buildType == 'prod-apk' || github.event_name == 'push'
         run: |
           export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-          eas build --platform android --profile production-apk --local --non-interactive --output=./app-prod.apk
+          eas build --platform android --profile production-apk --local --output=./app-prod.apk
         env:
           NODE_ENV: production
 

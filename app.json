@@ -31,6 +31,12 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#003366"
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "50c8e57e-5092-45df-b5b2-075dd98f4511"
+      }
+    },
+    "owner": "glitch_xp"
   }
 }
