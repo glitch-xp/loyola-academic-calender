@@ -1,8 +1,9 @@
 import { Tabs } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Home, Calendar, Menu } from 'lucide-react-native';
-import { Platform } from 'react-native';
+import { Platform, View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 
 export default function TabLayout() {
     const insets = useSafeAreaInsets();
@@ -11,24 +12,44 @@ export default function TabLayout() {
         <Tabs
             screenOptions={{
                 headerShown: false,
+                tabBarBackground: () => (
+                    <View style={[StyleSheet.absoluteFill, { borderRadius: 30, overflow: 'hidden' }]}>
+                        <BlurView
+                            intensity={80}
+                            tint="light"
+                            style={StyleSheet.absoluteFill}
+                        />
+                    </View>
+                ),
                 tabBarStyle: {
-                    backgroundColor: Colors.surface,
-                    borderTopColor: '#E5E7EB',
-                    // Soft shadow for tab bar
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                    borderTopWidth: 0,
+                    elevation: 0,
+                    height: 70, // Fixed height for pill shape
+                    bottom: 30, // Float above bottom
+                    marginHorizontal: 20, // Float from sides
+                    borderRadius: 30, // Pill shape
+                    paddingBottom: 0, // Center icons vertically
+                    paddingTop: 0,
+                    // Stronger shadow for floating effect
                     shadowColor: '#000',
-                    shadowOffset: { width: 0, height: -2 },
-                    shadowOpacity: 0.05,
-                    shadowRadius: 10,
-                    elevation: 5,
-                    height: Platform.OS === 'ios' ? 88 : 60 + insets.bottom,
-                    paddingBottom: insets.bottom + 8,
-                    paddingTop: 12,
+                    shadowOffset: { width: 0, height: 10 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                },
+                tabBarItemStyle: {
+                    height: 70, // Match bar height
+                    paddingVertical: 10,
                 },
                 tabBarActiveTintColor: Colors.primary,
                 tabBarInactiveTintColor: Colors.textLight,
                 tabBarLabelStyle: {
-                    fontWeight: '500',
-                    marginTop: 4,
+                    fontWeight: '600',
+                    fontSize: 10,
+                    marginTop: 0,
                 },
             }}
         >
@@ -36,21 +57,21 @@ export default function TabLayout() {
                 name="home"
                 options={{
                     title: 'Today',
-                    tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+                    tabBarIcon: ({ color }) => <Home size={26} color={color} />,
                 }}
             />
             <Tabs.Screen
                 name="calendar"
                 options={{
                     title: 'Calendar',
-                    tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
+                    tabBarIcon: ({ color }) => <Calendar size={26} color={color} />,
                 }}
             />
             <Tabs.Screen
                 name="settings"
                 options={{
                     title: 'More',
-                    tabBarIcon: ({ color }) => <Menu size={24} color={color} />,
+                    tabBarIcon: ({ color }) => <Menu size={26} color={color} />,
                 }}
             />
         </Tabs>
