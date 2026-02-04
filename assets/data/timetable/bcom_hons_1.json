@@ -4,20 +4,20 @@
         { "name": "BUSINESS ECONOMICS - DR REENA", "code": "UBH2MC03" },
         { "name": "MANAGEMENT ACCOUNTING - DR LEEMA", "code": "UBH2MC01" },
         { "name": "PRESENTATION SKILLS - ENGLISH FACULTY", "code": "UEL2GE07" },
-        { "name": "BEGINNER FRENCH - II (BH)", "code": "UFR2GL06" }
+        { "name": "FRENCH (BASIC/ADVANCED)", "code": "NA" }
     ],
     "2": [
         { "name": "MANAGEMENT ACCOUNTING - DR REENA", "code": "UBH2MC01" },
         { "name": "BUSINESS ECONOMICS - DR LEEMA", "code": "UBH2MC03" },
         { "name": "ENVIRONMENTAL STUDIES", "code": "UHE2FC03" },
-        { "name": "BEGINNER FRENCH - II (BH)", "code": "UFR2GL06" },
+        { "name": "FRENCH (BASIC/ADVANCED)", "code": "NA" },
         { "name": "PRESENTATION SKILLS - ENGLISH FACULTY", "code": "UEL2GE07" }
     ],
     "3": [
         { "name": "MANAGEMENT ACCOUNTING - DR LEEMA", "code": "UBH2MC01" },
         { "name": "CORPORATE & BUSINESS LAW PART II - DR JERUSHA", "code": "UBH2MC02" },
         { "name": "BUSINESS ECONOMICS - DR REENA", "code": "UBH2MC03" },
-        { "name": "BEGINNER FRENCH - II (BH)", "code": "UFR2GL06" },
+        { "name": "FRENCH (BASIC/ADVANCED)", "code": "NA" },
         { "name": "PRESENTATION SKILLS - ENGLISH FACULTY", "code": "UEL2GE07" }
     ],
     "4": [
@@ -38,7 +38,7 @@
         { "name": "BUSINESS ECONOMICS - DR LEEMA", "code": "UBH2MC03" },
         { "name": "MANAGEMENT ACCOUNTING - DR REENA", "code": "UBH2MC01" },
         { "name": "CORPORATE & BUSINESS LAW PART II - DR JERUSHA", "code": "UBH2MC02" },
-        { "name": "BEGINNER FRENCH - II (BH)", "code": "UFR2GL06" },
+        { "name": "FRENCH (BASIC/ADVANCED)", "code": "NA" },
         { "name": "ADVANCED TAMIL (BH) - II", "code": "UTL2CD04" }
     ]
 }
