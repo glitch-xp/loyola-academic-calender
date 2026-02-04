@@ -1,3 +1,6 @@
-// This file is required for EAS builds to work with expo-router
-// It re-exports the expo-router entry point
-import 'expo-router/entry';
+import { ExpoRoot } from 'expo-router';
+
+export default function App() {
+    const ctx = require.context('./app');
+    return <ExpoRoot context={ctx} />;
+}
