@@ -12,6 +12,18 @@
                 }
             ]
         }
+{
+            "name": "B.Com Hons",
+            "years": [
+                {
+                    "year": "I",
+                    "timetableId": "bcom_hons_1",
+                    "shifts": [
+                        "1"
+                    ]
+                }
+            ]
+        }
     ],
     "shifts": [
         {
