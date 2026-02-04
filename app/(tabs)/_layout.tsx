@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Colors } from '../../constants/Colors';
-import { Home, Calendar, Settings } from 'lucide-react-native';
+import { Home, Calendar, Menu } from 'lucide-react-native';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -49,8 +49,8 @@ export default function TabLayout() {
             <Tabs.Screen
                 name="settings"
                 options={{
-                    title: 'Settings',
-                    tabBarIcon: ({ color }) => <Settings size={24} color={color} />,
+                    title: 'More',
+                    tabBarIcon: ({ color }) => <Menu size={24} color={color} />,
                 }}
             />
         </Tabs>

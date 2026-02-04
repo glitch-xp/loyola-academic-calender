@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, Share } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
@@ -27,12 +27,24 @@ export default function SettingsScreen() {
         );
     };
 
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: 'Check out the Loyola Academic Calendar app along with the source code: https://github.com/glitch-xp/loyola-academic-calender',
+                url: 'https://github.com/glitch-xp/loyola-academic-calender',
+                title: 'Share App'
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const appVersion = Constants.expoConfig?.version || '1.0.0';
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <View style={styles.header}>
-                <Text style={styles.title}>Settings</Text>
+                <Text style={styles.title}>More</Text>
             </View>
 
             <View style={styles.content}>
@@ -47,6 +59,19 @@ export default function SettingsScreen() {
                         onPress={handleReset}
                         textStyle={{ color: Colors.error }}
                         style={{ borderColor: Colors.error, marginTop: 12 }}
+                    />
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>About & Support</Text>
+                    <Text style={styles.infoText}>
+                        Love the app? Share the source code with your friends or contribute to the project!
+                    </Text>
+                    <Button
+                        title="Share GitHub Repository"
+                        variant="secondary"
+                        onPress={handleShare}
+                        style={{ marginTop: 12 }}
                     />
                 </View>
 
