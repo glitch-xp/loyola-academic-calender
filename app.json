@@ -8,6 +8,12 @@
     "scheme": "loyola",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "updates": {
+      "url": "https://u.expo.dev/50c8e57e-5092-45df-b5b2-075dd98f4511"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "entryPoint": "expo-router/entry",
     "ios": {
       "supportsTablet": true,

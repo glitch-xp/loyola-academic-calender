@@ -3,10 +3,12 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
 
+import { useUpdateChecker } from '../hooks/useUpdateChecker';
 import * as SystemUI from 'expo-system-ui';
 
 export default function RootLayout() {
   useFrameworkReady();
+  useUpdateChecker();
 
   useEffect(() => {
     // Set system UI background to black to ensure white navigation bar icons are visible
