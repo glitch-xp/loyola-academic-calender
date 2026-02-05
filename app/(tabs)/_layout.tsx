@@ -23,7 +23,7 @@ export default function TabLayout() {
                 ),
                 tabBarStyle: {
                     position: 'absolute',
-                    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
                     borderTopWidth: 0,
                     elevation: 0,
                     height: 70, // Fixed height for pill shape

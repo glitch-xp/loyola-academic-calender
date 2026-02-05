@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     },
     eventCard: {
         marginBottom: 12,
-        backgroundColor: Colors.surface,
+        // backgroundColor: Colors.surface, // Removed to allow Card gradient
     },
     eventRow: {
         flexDirection: 'row',
