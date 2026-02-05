@@ -19,6 +19,6 @@ export const Colors = {
         4: '#D1FAE5', // Emerald 100
         5: '#E0F2FE', // Sky 100
         6: '#E8EAED', // Gray 200 (Neutral for day 6)
-        holiday: '#FEE2E2', // Red 100
+        holiday: '#fc5959ff', // Red 100
     }
 };
