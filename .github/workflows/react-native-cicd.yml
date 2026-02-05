@@ -1,0 +1,143 @@
+name: React Native CI/CD
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildType:
+        type: choice
+        description: "Build type to run"
+        default: prod-apk
+        options:
+          - prod-apk
+          - all
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  NODE_OPTIONS: --max_old_space_size=4096
+  JAVA_TOOL_OPTIONS: "-Xmx4g -XX:MaxMetaspaceSize=1g"
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+
+jobs:
+  test:
+    # Only run tests when buildType = all
+    if: ${{ github.event.inputs.buildType == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run TypeScript check
+        run: npm run typecheck
+
+      - name: 🧹 Run ESLint
+        run: npm run lint
+
+  build-and-release:
+    needs: test
+    # If test job is skipped, we still want this job to run.
+    if: ${{ always() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      # BIG SPEED BOOST: Gradle cache
+      - name: ⚡ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Optional: EAS local cache
+      - name: ⚡ Cache EAS local build
+        uses: actions/cache@v4
+        with:
+          path: ~/.eas-build-local
+          key: ${{ runner.os }}-eas-build-local-${{ hashFiles('**/package-lock.json', '**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-eas-build-local-
+
+      # Remove jq + apt-get (slow)
+      - name: 📋 Fix package.json main entry (fast)
+        run: |
+          node -e "
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('package.json','utf8'));
+          p.main = 'node_modules/expo/AppEntry.js';
+          fs.writeFileSync('package.json', JSON.stringify(p, null, 2));
+          console.log('Updated package.json main entry');
+          "
+
+      - name: 📱 Build Production APK (local)
+        run: |
+          npx eas-cli@latest build \
+            --platform android \
+            --profile production-apk \
+            --local \
+            --non-interactive \
+            --output=./app-prod.apk
+        env:
+          NODE_ENV: production
+
+      - name: 🏷️ Generate build information
+        id: build-info
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          BUILD_NUMBER=$(date +%Y%m%d%H%M)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_number=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          git log --pretty=format:"- %s" -n 10 > changelog.md
+
+      - name: 📝 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: "Release v${{ steps.build-info.outputs.version }} (Build ${{ steps.build-info.outputs.build_number }})"
+          tag_name: "v${{ steps.build-info.outputs.version }}-${{ steps.build-info.outputs.build_number }}"
+          files: ./app-prod.apk
+          body_path: changelog.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Upload build artifacts to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-builds
+          path: ./app-prod.apk
+          retention-days: 7
