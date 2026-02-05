@@ -2,14 +2,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { Colors } from '../../constants/Colors';
-import { DayOrderHelper } from '../../utils/DayOrderHelper';
-import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper';
-import { StorageService } from '../../services/StorageService';
-import { Card } from '../../components/Card';
-import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '../../types';
-import { ErrorScreen } from '../../components/ErrorScreen';
+import { Colors } from '@/constants/Colors';
+import { DayOrderHelper } from '@/utils/DayOrderHelper';
+import { TimetableHelper, SubjectWithTiming } from '@/utils/TimetableHelper';
+import { StorageService } from '@/services/StorageService';
+import { Card } from '@/components/Card';
+import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '@/types';
+import { ErrorScreen } from '@/components/ErrorScreen';
 import { router } from 'expo-router';
+import { LiquidBackground } from '@/components/LiquidBackground';
 
 interface NextClassInfo {
     current: SubjectWithTiming | null;
@@ -26,7 +27,7 @@ export default function HomeScreen() {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [todayConfig, setTodayConfig] = useState<{ dayOrder: number | null, isHoliday: boolean, event?: string } | null>(null);
     const [subjects, setSubjects] = useState<SubjectWithTiming[]>([]);
-    const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number } | null>(null);
+    const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number, isHoliday: boolean } | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [error, setError] = useState<string | null>(null);
     const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
@@ -197,168 +198,182 @@ export default function HomeScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-            <StatusBar barStyle="dark-content" />
-            <ScrollView
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={<RefreshControl refreshing={loading} onRefresh={loadData} />}
-            >
-                <View style={styles.header}>
-                    <Text style={styles.greeting}>{DayOrderHelper.getGreeting(currentDate)}</Text>
-                    <Text style={styles.date}>{DayOrderHelper.formatDate(currentDate)}</Text>
-                </View>
-
-                {/* Day Order Card */}
-                <Card style={{ backgroundColor: getDayOrderColor(todayConfig?.dayOrder || null) }}>
-                    <View style={styles.dayOrderContainer}>
-                        <View>
-                            <Text style={styles.dayLabel}>
-                                {todayConfig?.isHoliday ? 'Holiday' : 'Day Order'}
-                            </Text>
-                            <Text style={styles.dayValue}>
-                                {todayConfig?.isHoliday ? (todayConfig?.event || 'No Classes') : todayConfig?.dayOrder || '-'}
-                            </Text>
-                        </View>
-                        {!todayConfig?.isHoliday && (
-                            <View style={styles.totalClasses}>
-                                <Text style={styles.classCount}>{subjects.length}</Text>
-                                <Text style={styles.classLabel}>Classes</Text>
-                            </View>
-                        )}
+        <LiquidBackground>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <StatusBar barStyle="dark-content" />
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    refreshControl={<RefreshControl refreshing={loading} onRefresh={loadData} />}
+                >
+                    <View style={styles.header}>
+                        <Text style={styles.greeting}>{DayOrderHelper.getGreeting(currentDate)}</Text>
+                        <Text style={styles.date}>{DayOrderHelper.formatDate(currentDate)}</Text>
                     </View>
-                </Card>
 
-                {/* Next Class Card */}
-                {!todayConfig?.isHoliday && nextClassInfo && (
-                    <Card style={styles.nextClassCard}>
-                        <View style={styles.nextClassContainer}>
-                            <View style={styles.nextClassHeader}>
-                                <Text style={styles.nextClassLabel}>
-                                    {nextClassInfo.status === 'during' ? 'CURRENT CLASS' :
-                                        nextClassInfo.status === 'before' ? 'FIRST CLASS TODAY' :
-                                            nextClassInfo.status === 'between' ? 'NEXT CLASS' :
-                                                'CLASSES COMPLETED'}
+                    {/* Day Order Card */}
+                    <Card style={{ backgroundColor: getDayOrderColor(todayConfig?.dayOrder || null) }}>
+                        <View style={styles.dayOrderContainer}>
+                            <View>
+                                <Text style={styles.dayLabel}>
+                                    {todayConfig?.isHoliday ? 'Holiday' : 'Day Order'}
                                 </Text>
+                                <Text style={styles.dayValue}>
+                                    {todayConfig?.isHoliday ? (todayConfig?.event || 'No Classes') : todayConfig?.dayOrder || '-'}
+                                </Text>
+                                {!todayConfig?.isHoliday && todayConfig?.event && (
+                                    <Text style={styles.eventSubText}>
+                                        {todayConfig.event}
+                                    </Text>
+                                )}
                             </View>
+                            {!todayConfig?.isHoliday && (
+                                <View style={styles.totalClasses}>
+                                    <Text style={styles.classCount}>{subjects.length}</Text>
+                                    <Text style={styles.classLabel}>Classes</Text>
+                                </View>
+                            )}
+                        </View>
+                    </Card>
 
-                            {nextClassInfo.status === 'during' && nextClassInfo.current && (
-                                <View style={styles.classDetailsContainer}>
-                                    <View style={styles.currentClassInfo}>
-                                        <Text style={styles.nextClassName}>{nextClassInfo.current.name}</Text>
-                                        <Text style={styles.nextClassCode}>{nextClassInfo.current.code}</Text>
-                                        <Text style={styles.nextClassTime}>
-                                            {nextClassInfo.current.startTime} - {nextClassInfo.current.endTime}
-                                        </Text>
-                                    </View>
-                                    {nextClassInfo.next && (
-                                        <View style={styles.upNextContainer}>
-                                            <Text style={styles.upNextLabel}>Up Next</Text>
-                                            <Text style={styles.upNextName}>{nextClassInfo.next.name}</Text>
-                                            <Text style={styles.upNextTime}>
-                                                in {Math.floor(nextClassInfo.minutesUntilNext / 60)}h {nextClassInfo.minutesUntilNext % 60}m
+                    {/* Next Class Card */}
+                    {!todayConfig?.isHoliday && nextClassInfo && (
+                        <Card style={styles.nextClassCard}>
+                            <View style={styles.nextClassContainer}>
+                                <View style={styles.nextClassHeader}>
+                                    <Text style={styles.nextClassLabel}>
+                                        {nextClassInfo.status === 'during' ? 'CURRENT CLASS' :
+                                            nextClassInfo.status === 'before' ? 'FIRST CLASS TODAY' :
+                                                nextClassInfo.status === 'between' ? 'NEXT CLASS' :
+                                                    'CLASSES COMPLETED'}
+                                    </Text>
+                                </View>
+
+                                {nextClassInfo.status === 'during' && nextClassInfo.current && (
+                                    <View style={styles.classDetailsContainer}>
+                                        <View style={styles.currentClassInfo}>
+                                            <Text style={styles.nextClassName}>{nextClassInfo.current.name}</Text>
+                                            <Text style={styles.nextClassCode}>{nextClassInfo.current.code}</Text>
+                                            <Text style={styles.nextClassTime}>
+                                                {nextClassInfo.current.startTime} - {nextClassInfo.current.endTime}
                                             </Text>
                                         </View>
-                                    )}
-                                </View>
-                            )}
-
-                            {(nextClassInfo.status === 'before' || nextClassInfo.status === 'between') && nextClassInfo.next && (
-                                <View style={styles.classDetailsContainer}>
-                                    <View style={styles.nextClassMainInfo}>
-                                        <Text style={styles.nextClassName}>{nextClassInfo.next.name}</Text>
-                                        <Text style={styles.nextClassCode}>{nextClassInfo.next.code}</Text>
-                                        <Text style={styles.nextClassTime}>
-                                            {nextClassInfo.next.startTime} - {nextClassInfo.next.endTime}
-                                        </Text>
+                                        {nextClassInfo.next && (
+                                            <View style={styles.upNextContainer}>
+                                                <Text style={styles.upNextLabel}>Up Next</Text>
+                                                <Text style={styles.upNextName}>{nextClassInfo.next.name}</Text>
+                                                <Text style={styles.upNextTime}>
+                                                    in {Math.floor(nextClassInfo.minutesUntilNext / 60)}h {nextClassInfo.minutesUntilNext % 60}m
+                                                </Text>
+                                            </View>
+                                        )}
                                     </View>
-                                    <View style={styles.countdownBox}>
-                                        <Text style={styles.countdownTime}>
-                                            {Math.floor(nextClassInfo.minutesUntilNext / 60)}:{String(nextClassInfo.minutesUntilNext % 60).padStart(2, '0')}
-                                        </Text>
-                                        <Text style={styles.countdownLabel}>
-                                            {nextClassInfo.minutesUntilNext < 60 ? 'minutes' : 'hours'}
-                                        </Text>
+                                )}
+
+                                {(nextClassInfo.status === 'before' || nextClassInfo.status === 'between') && nextClassInfo.next && (
+                                    <View style={styles.classDetailsContainer}>
+                                        <View style={styles.nextClassMainInfo}>
+                                            <Text style={styles.nextClassName}>{nextClassInfo.next.name}</Text>
+                                            <Text style={styles.nextClassCode}>{nextClassInfo.next.code}</Text>
+                                            <Text style={styles.nextClassTime}>
+                                                {nextClassInfo.next.startTime} - {nextClassInfo.next.endTime}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.countdownBox}>
+                                            <Text style={styles.countdownTime}>
+                                                {Math.floor(nextClassInfo.minutesUntilNext / 60)}:{String(nextClassInfo.minutesUntilNext % 60).padStart(2, '0')}
+                                            </Text>
+                                            <Text style={styles.countdownLabel}>
+                                                {nextClassInfo.minutesUntilNext < 60 ? 'minutes' : 'hours'}
+                                            </Text>
+                                        </View>
                                     </View>
-                                </View>
-                            )}
+                                )}
 
-                            {nextClassInfo.status === 'after' && (
-                                <View style={styles.afterClassesContainer}>
-                                    <Text style={styles.afterClassesText}>All classes for today are complete!</Text>
-                                    <Text style={styles.afterClassesSubtext}>Great work today 🎉</Text>
-                                </View>
-                            )}
-                        </View>
-                    </Card>
-                )}
-
-                {/* Next Event Countdown */}
-                {nextEvent && (
-                    <Card style={styles.eventCard}>
-                        <View style={styles.eventRow}>
-                            <View style={styles.eventInfo}>
-                                <Text style={styles.eventLabel}>UPCOMING EVENT</Text>
-                                <Text style={styles.eventName}>{nextEvent.name}</Text>
-                                <Text style={styles.eventDate}>{new Date(nextEvent.date).toDateString()}</Text>
+                                {nextClassInfo.status === 'after' && (
+                                    <View style={styles.classDetailsContainer}>
+                                        <View style={styles.nextClassMainInfo}>
+                                            <Text style={styles.nextClassName}>All Classes Completed</Text>
+                                            <Text style={styles.nextClassCode}>Great work today! 🎉</Text>
+                                        </View>
+                                    </View>
+                                )}
                             </View>
-                            <View style={styles.countdown}>
-                                <Text style={styles.daysLeft}>{nextEvent.daysLeft}</Text>
-                                <Text style={styles.daysLabel}>Days</Text>
+                        </Card>
+                    )}
+
+                    {/* Next Event Countdown */}
+                    {nextEvent && (
+                        <Card style={styles.eventCard}>
+                            <View style={styles.eventRow}>
+                                <View style={styles.eventInfo}>
+                                    <Text style={styles.eventLabel}>UPCOMING {nextEvent.isHoliday ? 'HOLIDAY' : 'EVENT'}</Text>
+                                    <Text style={styles.eventName}>{nextEvent.name}</Text>
+                                    <Text style={styles.eventDate}>{new Date(nextEvent.date).toDateString()}</Text>
+                                </View>
+                                <View style={styles.countdown}>
+                                    <Text style={styles.daysLeft}>{nextEvent.daysLeft}</Text>
+                                    <Text style={styles.daysLabel}>Days</Text>
+                                </View>
                             </View>
+                        </Card>
+                    )}
+
+                    {/* Timetable List */}
+                    {!todayConfig?.isHoliday && subjects.length > 0 && (
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
+                            {subjects.map((sub, index) => (
+                                <Card key={index} style={styles.subjectCard}>
+                                    <View style={styles.subjectCardContent}>
+                                        <View style={styles.timeContainer}>
+                                            <Text style={styles.time}>{sub.startTime}</Text>
+                                            <Text style={styles.timeEnd}>{sub.endTime}</Text>
+                                        </View>
+                                        <View style={styles.subjectInfo}>
+                                            <Text style={styles.subjectName}>{sub.name}</Text>
+                                            <Text style={styles.subjectCode}>{sub.code}</Text>
+                                        </View>
+                                    </View>
+                                </Card>
+                            ))}
                         </View>
-                    </Card>
-                )}
+                    )}
 
-                {/* Timetable List */}
-                {!todayConfig?.isHoliday && subjects.length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
-                        {subjects.map((sub, index) => (
-                            <Card key={index} style={styles.subjectCard}>
-                                <View style={styles.timeContainer}>
-                                    <Text style={styles.time}>{sub.startTime}</Text>
-                                    <Text style={styles.timeEnd}>{sub.endTime}</Text>
-                                </View>
-                                <View style={styles.subjectInfo}>
-                                    <Text style={styles.subjectName}>{sub.name}</Text>
-                                    <Text style={styles.subjectCode}>{sub.code}</Text>
-                                </View>
-                            </Card>
-                        ))}
-                    </View>
-                )}
+                    {todayConfig?.isHoliday && (
+                        <View style={styles.holidayContainer}>
+                            <Text style={styles.holidayText}>Enjoy your day off!</Text>
+                        </View>
+                    )}
 
-                {todayConfig?.isHoliday && (
-                    <View style={styles.holidayContainer}>
-                        <Text style={styles.holidayText}>Enjoy your day off!</Text>
-                    </View>
-                )}
-
-            </ScrollView>
-        </SafeAreaView>
+                </ScrollView>
+            </SafeAreaView>
+        </LiquidBackground >
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: 'transparent',
     },
     scrollContent: {
         padding: 20,
+        paddingBottom: 100, // Added bottom padding to avoid overlap with floating elements
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 24,
     },
     greeting: {
-        fontSize: 24,
-        fontWeight: 'bold',
+        fontSize: 28,
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
+        letterSpacing: -0.5,
     },
     date: {
-        fontSize: 16,
+        fontSize: 15,
         color: Colors.textLight,
         marginTop: 4,
+        fontFamily: 'Poppins_500Medium',
     },
     dayOrderContainer: {
         flexDirection: 'row',
@@ -366,37 +381,41 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     dayLabel: {
-        fontSize: 14,
-        color: Colors.textLight, // Darker for contrast on pastel
-        fontWeight: '600',
-        opacity: 0.8,
+        fontSize: 13,
+        color: Colors.textLight,
+        fontFamily: 'Poppins_600SemiBold',
+        opacity: 0.9,
         textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     dayValue: {
-        fontSize: 32,
-        fontWeight: 'bold',
+        fontSize: 34,
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.text,
         marginTop: 4,
     },
     totalClasses: {
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.5)',
+        backgroundColor: 'rgba(255,255,255,0.7)',
         paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 12,
+        paddingVertical: 10,
+        borderRadius: 16,
     },
     classCount: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 24,
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.text,
     },
     classLabel: {
         fontSize: 12,
         color: Colors.textLight,
+        fontFamily: 'Poppins_500Medium',
     },
     // Event
     eventCard: {
-        backgroundColor: Colors.secondary,
+        backgroundColor: Colors.dayOrder[3], // Subtle Amber/Yellow
+        marginTop: 16,
+        borderRadius: 24,
     },
     eventRow: {
         flexDirection: 'row',
@@ -407,82 +426,99 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     eventLabel: {
-        fontSize: 10,
-        fontWeight: 'bold',
-        color: Colors.textLight,
-        letterSpacing: 1,
+        fontSize: 11,
+        fontFamily: 'Poppins_700Bold',
+        color: Colors.text, // Darker for better contrast on yellow
+        opacity: 0.7,
+        letterSpacing: 1.5,
+        marginBottom: 4,
     },
     eventName: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
-        marginTop: 2,
+        lineHeight: 24,
     },
     eventDate: {
-        fontSize: 12,
-        color: Colors.textLight,
-        marginTop: 2,
+        fontSize: 14,
+        color: Colors.text, // Darker for better contrast on yellow
+        marginTop: 4,
+        fontFamily: 'Poppins_500Medium',
+        opacity: 0.8,
     },
     countdown: {
         alignItems: 'center',
-        backgroundColor: Colors.surface,
-        padding: 10,
-        borderRadius: 12,
-        minWidth: 60,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        padding: 12,
+        borderRadius: 16,
+        minWidth: 70,
+        marginLeft: 16,
     },
     daysLeft: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 24,
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.primaryDark,
     },
     daysLabel: {
-        fontSize: 10,
+        fontSize: 11,
         color: Colors.textLight,
+        fontFamily: 'Poppins_600SemiBold',
+        textTransform: 'uppercase',
     },
     // Subjects
     section: {
-        marginTop: 10,
+        marginTop: 28,
     },
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 20,
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
-        marginBottom: 12,
+        marginBottom: 16,
+        letterSpacing: -0.5,
     },
     subjectCard: {
+        marginBottom: 14,
+        width: '100%',
+    },
+    subjectCardContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
-        marginBottom: 12,
     },
     timeContainer: {
         paddingRight: 16,
-        borderRightWidth: 1,
-        borderRightColor: '#F3F4F6',
+        borderRightWidth: 2,
+        borderRightColor: Colors.border,
         alignItems: 'center',
-        minWidth: 70,
+        width: 85,
+        justifyContent: 'center',
     },
     time: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
     },
     timeEnd: {
         fontSize: 12,
         color: Colors.textLight,
+        marginTop: 2,
+        fontFamily: 'Poppins_500Medium',
     },
     subjectInfo: {
         paddingLeft: 16,
         flex: 1,
+        justifyContent: 'center',
     },
     subjectName: {
         fontSize: 16,
-        fontWeight: '600',
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
+        marginBottom: 2,
+        lineHeight: 22,
     },
     subjectCode: {
-        fontSize: 14,
+        fontSize: 13,
         color: Colors.textLight,
+        fontFamily: 'Poppins_500Medium',
     },
     holidayContainer: {
         padding: 40,
@@ -491,6 +527,7 @@ const styles = StyleSheet.create({
     holidayText: {
         fontSize: 18,
         color: Colors.textLight,
+        fontFamily: 'Poppins_500Medium',
         fontStyle: 'italic',
     },
     // Next Class Card
@@ -498,6 +535,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.surface,
         borderLeftWidth: 4,
         borderLeftColor: Colors.primary,
+        marginTop: 16,
     },
     nextClassContainer: {
         gap: 12,
@@ -507,12 +545,13 @@ const styles = StyleSheet.create({
     },
     nextClassLabel: {
         fontSize: 11,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins_700Bold',
         color: Colors.primary,
         letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     classDetailsContainer: {
-        gap: 12,
+        gap: 16,
     },
     currentClassInfo: {
         flex: 1,
@@ -521,20 +560,22 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     nextClassName: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 22,
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
         marginBottom: 4,
+        lineHeight: 28,
     },
     nextClassCode: {
         fontSize: 14,
         color: Colors.textLight,
-        marginBottom: 4,
+        marginBottom: 6,
+        fontFamily: 'Poppins_500Medium',
     },
     nextClassTime: {
-        fontSize: 14,
+        fontSize: 15,
         color: Colors.textLight,
-        fontWeight: '600',
+        fontFamily: 'Poppins_600SemiBold',
     },
     upNextContainer: {
         backgroundColor: Colors.background,
@@ -542,36 +583,38 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderLeftWidth: 3,
         borderLeftColor: Colors.secondary,
+        marginTop: 8,
     },
     upNextLabel: {
         fontSize: 10,
-        fontWeight: '600',
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.textLight,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
         marginBottom: 4,
     },
     upNextName: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 15,
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 2,
     },
     upNextTime: {
         fontSize: 13,
         color: Colors.textLight,
+        fontFamily: 'Poppins_500Medium',
     },
     countdownBox: {
         backgroundColor: Colors.primary,
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 80,
+        minWidth: 90,
     },
     countdownTime: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        fontSize: 26,
+        fontFamily: 'Poppins_700Bold',
         color: '#FFFFFF',
     },
     countdownLabel: {
@@ -580,19 +623,28 @@ const styles = StyleSheet.create({
         opacity: 0.9,
         marginTop: 2,
         textTransform: 'uppercase',
+        fontFamily: 'Poppins_600SemiBold',
     },
     afterClassesContainer: {
-        paddingVertical: 12,
+        paddingVertical: 16,
         alignItems: 'center',
     },
     afterClassesText: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 18,
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 4,
     },
     afterClassesSubtext: {
         fontSize: 14,
         color: Colors.textLight,
+        fontFamily: 'Poppins_400Regular',
+    },
+    eventSubText: {
+        fontSize: 14,
+        color: Colors.text,
+        fontFamily: 'Poppins_600SemiBold',
+        marginTop: 4,
+        opacity: 0.8
     },
 });

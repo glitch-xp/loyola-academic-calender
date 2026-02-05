@@ -62,7 +62,7 @@ export const DayOrderHelper = {
     /**
      * Find the next major event in the calendar
      */
-    getNextEvent(calendar: DayOrderConfig): { name: string, date: string, daysLeft: number } | null {
+    getNextEvent(calendar: DayOrderConfig): { name: string, date: string, daysLeft: number, isHoliday: boolean } | null {
         const today = startOfDay(new Date());
         const sortedDates = Object.keys(calendar).sort();
 
@@ -74,7 +74,8 @@ export const DayOrderHelper = {
                 return {
                     name: entry.event,
                     date: dateStr,
-                    daysLeft
+                    daysLeft,
+                    isHoliday: entry.isHoliday
                 };
             }
         }
