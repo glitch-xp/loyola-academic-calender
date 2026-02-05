@@ -8,6 +8,7 @@ import * as SystemUI from 'expo-system-ui';
 
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold, Poppins_800ExtraBold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
+import AddToHomeScreen from '../components/AddToHomeScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,6 +49,7 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
+      <AddToHomeScreen />
     </>
   );
 }

@@ -13,9 +13,9 @@ export default function TabLayout() {
             screenOptions={{
                 headerShown: false,
                 tabBarBackground: () => (
-                    <View style={[StyleSheet.absoluteFill, { borderRadius: 30, overflow: 'hidden' }]}>
+                    <View style={[StyleSheet.absoluteFill, { borderRadius: 35, overflow: 'hidden' }]}>
                         <BlurView
-                            intensity={80}
+                            intensity={90} // Increased intensity
                             tint="light"
                             style={StyleSheet.absoluteFill}
                         />
@@ -23,20 +23,24 @@ export default function TabLayout() {
                 ),
                 tabBarStyle: {
                     position: 'absolute',
-                    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                    borderTopWidth: 0,
-                    elevation: 0,
-                    height: 70, // Fixed height for pill shape
-                    bottom: 30, // Float above bottom
-                    marginHorizontal: 20, // Float from sides
-                    borderRadius: 30, // Pill shape
-                    paddingBottom: 0, // Center icons vertically
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)', // More opaque
+                    borderTopWidth: 1, // Add border
+                    borderLeftWidth: 1,
+                    borderRightWidth: 1,
+                    borderBottomWidth: 1,
+                    borderColor: 'rgba(0, 0, 0, 0.1)', // Subtle outline
+                    elevation: 10,
+                    height: 70,
+                    bottom: 30,
+                    marginHorizontal: 20,
+                    borderRadius: 35, // Slightly more rounded to match height/2
+                    paddingBottom: 0,
                     paddingTop: 0,
                     // Stronger shadow for floating effect
-                    shadowColor: '#000',
+                    shadowColor: '#0F172A', // Using text color for shadow
                     shadowOffset: { width: 0, height: 10 },
-                    shadowOpacity: 0.15,
-                    shadowRadius: 20,
+                    shadowOpacity: 0.25, // Increased from 0.15
+                    shadowRadius: 25, // Increased from 20
                     alignItems: 'center',
                     justifyContent: 'center',
                 },
