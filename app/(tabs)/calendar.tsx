@@ -24,6 +24,7 @@ export default function CalendarScreen() {
     // Modal State
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [upcomingEvents, setUpcomingEvents] = useState<Array<{ name: string, date: string, daysLeft: number, isHoliday: boolean }>>([]);
 
     useEffect(() => {
         loadData();
@@ -49,6 +50,10 @@ export default function CalendarScreen() {
             setTimetable(tt);
             setMasterConfig(mc);
             setUserProfile(profile);
+
+            // Load upcoming events
+            const events = DayOrderHelper.getUpcomingEvents(cal, 10);
+            setUpcomingEvents(events);
         } catch (e) {
             console.error(e);
             setError('Failed to load calendar data. Please try again.');
@@ -156,6 +161,37 @@ export default function CalendarScreen() {
                     {padding.map((_, i) => renderDay(null, i))}
                     {days.map((d, i) => renderDay(d, i))}
                 </View>
+
+                {/* Upcoming Events List */}
+                <View style={styles.eventsSection}>
+                    <Text style={styles.sectionTitle}>Upcoming Events & Holidays</Text>
+                    {upcomingEvents.length === 0 ? (
+                        <Text style={styles.emptyText}>No upcoming events found.</Text>
+                    ) : (
+                        upcomingEvents.map((event, index) => (
+                            <Card key={index} style={styles.eventCard}>
+                                <View style={styles.eventRow}>
+                                    <View style={styles.dateBox}>
+                                        <Text style={styles.dateMonth}>{format(new Date(event.date), 'MMM')}</Text>
+                                        <Text style={styles.dateDay}>{format(new Date(event.date), 'dd')}</Text>
+                                    </View>
+                                    <View style={styles.eventInfo}>
+                                        <View style={styles.eventHeader}>
+                                            <Text style={styles.eventName}>{event.name}</Text>
+                                            {event.isHoliday && <View style={styles.holidayBadge}><Text style={styles.holidayBadgeText}>Holiday</Text></View>}
+                                        </View>
+                                        <Text style={styles.eventTime}>
+                                            {event.daysLeft === 0 ? 'Today' :
+                                                event.daysLeft === 1 ? 'Tomorrow' :
+                                                    `in ${event.daysLeft} days`}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </Card>
+                        ))
+                    )}
+                </View>
+                <View style={{ height: 100 }} />
             </ScrollView>
 
             {/* Details Modal */}
@@ -214,7 +250,7 @@ export default function CalendarScreen() {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
@@ -357,6 +393,82 @@ const styles = StyleSheet.create({
     classCode: {
         fontSize: 12,
         color: Colors.textLight,
-    }
+    },
 
+    // Events Section
+    eventsSection: {
+        padding: 20,
+        marginTop: 10,
+    },
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: Colors.text,
+        marginBottom: 16,
+        fontFamily: 'Poppins_700Bold',
+    },
+    emptyText: {
+        color: Colors.textLight,
+        textAlign: 'center',
+        marginTop: 20,
+        fontStyle: 'italic',
+    },
+    eventCard: {
+        marginBottom: 12,
+        backgroundColor: Colors.surface,
+    },
+    eventRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    dateBox: {
+        backgroundColor: Colors.background,
+        borderRadius: 12,
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        minWidth: 60,
+    },
+    dateMonth: {
+        fontSize: 12,
+        color: Colors.textLight,
+        textTransform: 'uppercase',
+        fontWeight: '600',
+    },
+    dateDay: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: Colors.text,
+    },
+    eventInfo: {
+        flex: 1,
+    },
+    eventHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        marginBottom: 4,
+    },
+    eventName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.text,
+        marginRight: 8,
+    },
+    holidayBadge: {
+        backgroundColor: Colors.dayOrder.holiday,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+    },
+    holidayBadgeText: {
+        color: '#FFF',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    eventTime: {
+        fontSize: 14,
+        color: Colors.textLight,
+    }
 });

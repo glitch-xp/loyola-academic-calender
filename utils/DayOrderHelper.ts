@@ -80,5 +80,39 @@ export const DayOrderHelper = {
             }
         }
         return null;
+    },
+
+    /**
+     * Get a list of upcoming events and holidays
+     */
+    getUpcomingEvents(calendar: DayOrderConfig, limit: number = 5): Array<{ name: string, date: string, daysLeft: number, isHoliday: boolean }> {
+        const today = startOfDay(new Date());
+        const sortedDates = Object.keys(calendar).sort();
+        const events = [];
+
+        for (const dateStr of sortedDates) {
+            if (events.length >= limit) break;
+
+            const entry = calendar[dateStr];
+            const eventDate = startOfDay(new Date(dateStr));
+
+            // Only future events/holidays
+            if (eventDate >= today) {
+                // Must be a holiday OR have an event name
+                if (entry.isHoliday || entry.event) {
+                    const daysLeft = differenceInDays(eventDate, today);
+                    // Use event name, or "Holiday" if no name provided
+                    const name = entry.event || (entry.isHoliday ? 'Holiday' : 'Event');
+
+                    events.push({
+                        name,
+                        date: dateStr,
+                        daysLeft,
+                        isHoliday: entry.isHoliday
+                    });
+                }
+            }
+        }
+        return events;
     }
 };
