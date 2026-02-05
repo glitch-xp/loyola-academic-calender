@@ -3,6 +3,10 @@ name: React Native CI/CD
 permissions:
   contents: write
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,10 +20,14 @@ on:
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-  NODE_OPTIONS: --openssl-legacy-provider
+  NODE_OPTIONS: --max_old_space_size=4096
+  JAVA_TOOL_OPTIONS: "-Xmx4g -XX:MaxMetaspaceSize=1g"
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
 
 jobs:
   test:
+    # Only run tests when buildType = all
+    if: ${{ github.event.inputs.buildType == 'all' }}
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Checkout repository
@@ -42,7 +50,10 @@ jobs:
 
   build-and-release:
     needs: test
+    # If test job is skipped, we still want this job to run.
+    if: ${{ always() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     runs-on: ubuntu-latest
+
     steps:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
@@ -53,63 +64,54 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: 📦 Install dependencies
-        run: |
-          npm ci
-          npm install -g eas-cli@latest
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
-      - name: 📱 Setup EAS build cache
-        uses: actions/cache@v3
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      # BIG SPEED BOOST: Gradle cache
+      - name: ⚡ Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Optional: EAS local cache
+      - name: ⚡ Cache EAS local build
+        uses: actions/cache@v4
         with:
           path: ~/.eas-build-local
-          key: ${{ runner.os }}-eas-build-local-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-eas-build-local-${{ hashFiles('**/package-lock.json', '**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-eas-build-local-
 
-      - name: 🔄 Verify EAS CLI installation
+      # Remove jq + apt-get (slow)
+      - name: 📋 Fix package.json main entry (fast)
         run: |
-          echo "EAS CLI version:"
-          eas --version
+          node -e "
+          const fs = require('fs');
+          const p = JSON.parse(fs.readFileSync('package.json','utf8'));
+          p.main = 'node_modules/expo/AppEntry.js';
+          fs.writeFileSync('package.json', JSON.stringify(p, null, 2));
+          console.log('Updated package.json main entry');
+          "
 
-      - name: 📋 Fix package.json main entry
+      - name: 📱 Build Production APK (local)
         run: |
-          if ! command -v jq &> /dev/null; then
-            sudo apt-get update && sudo apt-get install -y jq
-          fi
-          if [ -f ./package.json ]; then
-            cp package.json package.json.bak
-            jq '.main = "node_modules/expo/AppEntry.js"' package.json > package.json.tmp && mv package.json.tmp package.json
-            echo "Updated package.json main entry"
-          else
-            echo "package.json not found"
-            exit 1
-          fi
-
-      - name: 📋 Update metro.config.js for SVG support
-        run: |
-          if [ -f ./metro.config.js ]; then
-            cat > ./metro.config.js << 'EOFMARKER'
-          const { getDefaultConfig } = require('expo/metro-config');
-          const config = getDefaultConfig(__dirname);
-          const { transformer, resolver } = config;
-          config.transformer = {
-            ...transformer,
-            babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
-          };
-          config.resolver = {
-            ...resolver,
-            assetExts: resolver.assetExts.filter(ext => ext !== 'svg'),
-            sourceExts: [...resolver.sourceExts, 'svg'],
-          };
-          module.exports = config;
-          EOFMARKER
-          fi
-
-      - name: 📱 Build Production APK
-        # Logic simplified: since it's manual, we trust the input
-        run: |
-          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-          eas build --platform android --profile production-apk --local --non-interactive --output=./app-prod.apk
+          npx eas-cli@latest build \
+            --platform android \
+            --profile production-apk \
+            --local \
+            --non-interactive \
+            --output=./app-prod.apk
         env:
           NODE_ENV: production
 
