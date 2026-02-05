@@ -2,15 +2,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { Colors } from '../../constants/Colors';
-import { DayOrderHelper } from '../../utils/DayOrderHelper';
-import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper';
-import { StorageService } from '../../services/StorageService';
-import { Card } from '../../components/Card';
-import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '../../types';
-import { ErrorScreen } from '../../components/ErrorScreen';
+import { Colors } from '@/constants/Colors';
+import { DayOrderHelper } from '@/utils/DayOrderHelper';
+import { TimetableHelper, SubjectWithTiming } from '@/utils/TimetableHelper';
+import { StorageService } from '@/services/StorageService';
+import { Card } from '@/components/Card';
+import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '@/types';
+import { ErrorScreen } from '@/components/ErrorScreen';
 import { router } from 'expo-router';
-import { LiquidBackground } from '../../components/LiquidBackground';
+import { LiquidBackground } from '@/components/LiquidBackground';
 
 interface NextClassInfo {
     current: SubjectWithTiming | null;
@@ -27,7 +27,7 @@ export default function HomeScreen() {
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [todayConfig, setTodayConfig] = useState<{ dayOrder: number | null, isHoliday: boolean, event?: string } | null>(null);
     const [subjects, setSubjects] = useState<SubjectWithTiming[]>([]);
-    const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number } | null>(null);
+    const [nextEvent, setNextEvent] = useState<{ name: string, date: string, daysLeft: number, isHoliday: boolean } | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [error, setError] = useState<string | null>(null);
     const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
@@ -220,6 +220,11 @@ export default function HomeScreen() {
                                 <Text style={styles.dayValue}>
                                     {todayConfig?.isHoliday ? (todayConfig?.event || 'No Classes') : todayConfig?.dayOrder || '-'}
                                 </Text>
+                                {!todayConfig?.isHoliday && todayConfig?.event && (
+                                    <Text style={styles.eventSubText}>
+                                        {todayConfig.event}
+                                    </Text>
+                                )}
                             </View>
                             {!todayConfig?.isHoliday && (
                                 <View style={styles.totalClasses}>
@@ -285,9 +290,11 @@ export default function HomeScreen() {
                                 )}
 
                                 {nextClassInfo.status === 'after' && (
-                                    <View style={styles.afterClassesContainer}>
-                                        <Text style={styles.afterClassesText}>All classes for today are complete!</Text>
-                                        <Text style={styles.afterClassesSubtext}>Great work today 🎉</Text>
+                                    <View style={styles.classDetailsContainer}>
+                                        <View style={styles.nextClassMainInfo}>
+                                            <Text style={styles.nextClassName}>All Classes Completed</Text>
+                                            <Text style={styles.nextClassCode}>Great work today! 🎉</Text>
+                                        </View>
                                     </View>
                                 )}
                             </View>
@@ -299,7 +306,7 @@ export default function HomeScreen() {
                         <Card style={styles.eventCard}>
                             <View style={styles.eventRow}>
                                 <View style={styles.eventInfo}>
-                                    <Text style={styles.eventLabel}>UPCOMING EVENT</Text>
+                                    <Text style={styles.eventLabel}>UPCOMING {nextEvent.isHoliday ? 'HOLIDAY' : 'EVENT'}</Text>
                                     <Text style={styles.eventName}>{nextEvent.name}</Text>
                                     <Text style={styles.eventDate}>{new Date(nextEvent.date).toDateString()}</Text>
                                 </View>
@@ -354,19 +361,19 @@ const styles = StyleSheet.create({
         paddingBottom: 100, // Added bottom padding to avoid overlap with floating elements
     },
     header: {
-        marginBottom: 20,
+        marginBottom: 24,
     },
     greeting: {
         fontSize: 28,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
         letterSpacing: -0.5,
     },
     date: {
-        fontSize: 16,
+        fontSize: 15,
         color: Colors.textLight,
         marginTop: 4,
-        fontWeight: '500',
+        fontFamily: 'Poppins_500Medium',
     },
     dayOrderContainer: {
         flexDirection: 'row',
@@ -376,38 +383,39 @@ const styles = StyleSheet.create({
     dayLabel: {
         fontSize: 13,
         color: Colors.textLight,
-        fontWeight: '600',
-        opacity: 0.8,
+        fontFamily: 'Poppins_600SemiBold',
+        opacity: 0.9,
         textTransform: 'uppercase',
         letterSpacing: 1,
     },
     dayValue: {
-        fontSize: 36,
-        fontWeight: '800',
+        fontSize: 34,
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.text,
         marginTop: 4,
     },
     totalClasses: {
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.6)',
+        backgroundColor: 'rgba(255,255,255,0.7)',
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 16,
     },
     classCount: {
         fontSize: 24,
-        fontWeight: '800',
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.text,
     },
     classLabel: {
         fontSize: 12,
         color: Colors.textLight,
-        fontWeight: '500',
+        fontFamily: 'Poppins_500Medium',
     },
     // Event
     eventCard: {
-        backgroundColor: Colors.secondary,
-        marginTop: 10,
+        backgroundColor: Colors.dayOrder[3], // Subtle Amber/Yellow
+        marginTop: 16,
+        borderRadius: 24,
     },
     eventRow: {
         flexDirection: 'row',
@@ -419,53 +427,57 @@ const styles = StyleSheet.create({
     },
     eventLabel: {
         fontSize: 11,
-        fontWeight: '700',
-        color: Colors.textLight,
+        fontFamily: 'Poppins_700Bold',
+        color: Colors.text, // Darker for better contrast on yellow
+        opacity: 0.7,
         letterSpacing: 1.5,
         marginBottom: 4,
     },
     eventName: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
+        lineHeight: 24,
     },
     eventDate: {
         fontSize: 14,
-        color: Colors.textLight,
+        color: Colors.text, // Darker for better contrast on yellow
         marginTop: 4,
-        fontWeight: '500',
+        fontFamily: 'Poppins_500Medium',
+        opacity: 0.8,
     },
     countdown: {
         alignItems: 'center',
-        backgroundColor: Colors.surface,
+        backgroundColor: 'rgba(255,255,255,0.9)',
         padding: 12,
         borderRadius: 16,
         minWidth: 70,
+        marginLeft: 16,
     },
     daysLeft: {
         fontSize: 24,
-        fontWeight: '800',
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.primaryDark,
     },
     daysLabel: {
         fontSize: 11,
         color: Colors.textLight,
-        fontWeight: '600',
+        fontFamily: 'Poppins_600SemiBold',
         textTransform: 'uppercase',
     },
     // Subjects
     section: {
-        marginTop: 24,
+        marginTop: 28,
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: '700',
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
         marginBottom: 16,
         letterSpacing: -0.5,
     },
     subjectCard: {
-        marginBottom: 16,
+        marginBottom: 14,
         width: '100%',
     },
     subjectCardContent: {
@@ -475,21 +487,21 @@ const styles = StyleSheet.create({
     timeContainer: {
         paddingRight: 16,
         borderRightWidth: 2,
-        borderRightColor: 'rgba(0,0,0,0.05)',
+        borderRightColor: Colors.border,
         alignItems: 'center',
         width: 85,
         justifyContent: 'center',
     },
     time: {
-        fontSize: 17,
-        fontWeight: '700',
+        fontSize: 16,
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
     },
     timeEnd: {
-        fontSize: 13,
+        fontSize: 12,
         color: Colors.textLight,
-        marginTop: 4,
-        fontWeight: '500',
+        marginTop: 2,
+        fontFamily: 'Poppins_500Medium',
     },
     subjectInfo: {
         paddingLeft: 16,
@@ -497,15 +509,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     subjectName: {
-        fontSize: 17,
-        fontWeight: '600',
+        fontSize: 16,
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 2,
+        lineHeight: 22,
     },
     subjectCode: {
         fontSize: 13,
         color: Colors.textLight,
-        fontWeight: '500',
+        fontFamily: 'Poppins_500Medium',
     },
     holidayContainer: {
         padding: 40,
@@ -514,6 +527,7 @@ const styles = StyleSheet.create({
     holidayText: {
         fontSize: 18,
         color: Colors.textLight,
+        fontFamily: 'Poppins_500Medium',
         fontStyle: 'italic',
     },
     // Next Class Card
@@ -521,6 +535,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.surface,
         borderLeftWidth: 4,
         borderLeftColor: Colors.primary,
+        marginTop: 16,
     },
     nextClassContainer: {
         gap: 12,
@@ -530,12 +545,13 @@ const styles = StyleSheet.create({
     },
     nextClassLabel: {
         fontSize: 11,
-        fontWeight: 'bold',
+        fontFamily: 'Poppins_700Bold',
         color: Colors.primary,
         letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     classDetailsContainer: {
-        gap: 12,
+        gap: 16,
     },
     currentClassInfo: {
         flex: 1,
@@ -544,20 +560,22 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     nextClassName: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 22,
+        fontFamily: 'Poppins_700Bold',
         color: Colors.text,
         marginBottom: 4,
+        lineHeight: 28,
     },
     nextClassCode: {
         fontSize: 14,
         color: Colors.textLight,
-        marginBottom: 4,
+        marginBottom: 6,
+        fontFamily: 'Poppins_500Medium',
     },
     nextClassTime: {
-        fontSize: 14,
+        fontSize: 15,
         color: Colors.textLight,
-        fontWeight: '600',
+        fontFamily: 'Poppins_600SemiBold',
     },
     upNextContainer: {
         backgroundColor: Colors.background,
@@ -565,36 +583,38 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderLeftWidth: 3,
         borderLeftColor: Colors.secondary,
+        marginTop: 8,
     },
     upNextLabel: {
         fontSize: 10,
-        fontWeight: '600',
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.textLight,
         textTransform: 'uppercase',
         letterSpacing: 0.5,
         marginBottom: 4,
     },
     upNextName: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 15,
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 2,
     },
     upNextTime: {
         fontSize: 13,
         color: Colors.textLight,
+        fontFamily: 'Poppins_500Medium',
     },
     countdownBox: {
         backgroundColor: Colors.primary,
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 80,
+        minWidth: 90,
     },
     countdownTime: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        fontSize: 26,
+        fontFamily: 'Poppins_700Bold',
         color: '#FFFFFF',
     },
     countdownLabel: {
@@ -603,19 +623,28 @@ const styles = StyleSheet.create({
         opacity: 0.9,
         marginTop: 2,
         textTransform: 'uppercase',
+        fontFamily: 'Poppins_600SemiBold',
     },
     afterClassesContainer: {
-        paddingVertical: 12,
+        paddingVertical: 16,
         alignItems: 'center',
     },
     afterClassesText: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 18,
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 4,
     },
     afterClassesSubtext: {
         fontSize: 14,
         color: Colors.textLight,
+        fontFamily: 'Poppins_400Regular',
+    },
+    eventSubText: {
+        fontSize: 14,
+        color: Colors.text,
+        fontFamily: 'Poppins_600SemiBold',
+        marginTop: 4,
+        opacity: 0.8
     },
 });

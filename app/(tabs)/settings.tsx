@@ -39,7 +39,7 @@ export default function SettingsScreen() {
         }
     };
 
-    const appVersion = Constants.expoConfig?.version || '1.0.0';
+    const appVersion = Constants.expoConfig?.version || '1.0.1';
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -78,6 +78,7 @@ export default function SettingsScreen() {
                 <View style={styles.footer}>
                     <Text style={styles.version}>Version {appVersion}</Text>
                     <Text style={styles.branding}>Loyola Time Table App</Text>
+                    <Text style={styles.developer}>Developed with ❤️ by Yuvaraja</Text>
                 </View>
             </View>
         </SafeAreaView>
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     footer: {
         alignItems: 'center',
         marginTop: 'auto',
-        marginBottom: 20,
+        marginBottom: 100,
     },
     version: {
         color: Colors.textLight,
@@ -135,6 +136,12 @@ const styles = StyleSheet.create({
         color: Colors.primaryDark,
         fontWeight: '600',
         marginTop: 4,
+    },
+    developer: {
+        color: Colors.textLight,
+        fontSize: 14,
+        marginTop: 4,
+        fontWeight: '600',
+        opacity: 0.8
     }
-
 });

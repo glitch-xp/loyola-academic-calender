@@ -1,24 +1,24 @@
 export const Colors = {
-    primary: '#003DA5', // Vibrant Loyola Blue
-    primaryDark: '#0052D9', // Bright Blue for accents
-    secondary: '#F59E0B', // Vibrant Gold
-    background: '#FAFAFA', // Soft Off-White
+    primary: '#0F52BA', // Sapphire Blue - More premium looking than standard blue
+    primaryDark: '#0A3B8C', // Deep Royal Blue
+    secondary: '#FFB800', // Rich Marigold - Better interaction with dark text
+    background: '#F8F9FA', // Crisp Off-White
     surface: '#FFFFFF', // Pure White
-    text: '#1F2937', // Dark Gray for readability
-    textLight: '#6B7280', // Medium Gray
-    error: '#DC2626', // Strong Red for better readability (red-600)
-    success: '#16A34A', // Strong Green for better readability (green-600)
-    highlight: '#E0E7FF', // Very light indigo for active states
-    border: '#E5E7EB', // Light border color
+    text: '#0F172A', // Slate 900 - Almost black for maximum readability
+    textLight: '#475569', // Slate 600 - Readable gray with blue undertone
+    error: '#EF4444', // Red 500
+    success: '#10B981', // Emerald 500
+    highlight: '#EEF2FF', // Indigo 50
+    border: '#E2E8F0', // Slate 200
 
-    // Specific Day Order Colors (Pastel but with better readability on text)
+    // Specific Day Order Colors (Refined Pastels)
     dayOrder: {
-        1: '#FFD1DC', // Pastel Pink
-        2: '#FFDAC1', // Pastel Peach
-        3: '#FFFAC8', // Pastel Lemon
-        4: '#D4F0F0', // Pastel Aqua
-        5: '#E2F0CB', // Pastel Lime
-        6: '#E0BBE4', // Pastel Lavender
-        holiday: '#FFB7B2', // Pastel Coral
+        1: '#FFE4E1', // Misty Rose
+        2: '#FFEDD5', // Orange 100
+        3: '#FEF3C7', // Amber 100
+        4: '#D1FAE5', // Emerald 100
+        5: '#E0F2FE', // Sky 100
+        6: '#E8EAED', // Gray 200 (Neutral for day 6)
+        holiday: '#FEE2E2', // Red 100
     }
 };
