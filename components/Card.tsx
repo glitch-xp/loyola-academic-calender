@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Colors } from '../constants/Colors';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 interface Props {
     children: React.ReactNode;
@@ -20,28 +19,9 @@ export function Card({ children, style }: Props) {
                 tint="light"
                 style={[styles.blurContainer, backgroundColor ? { backgroundColor: 'transparent' } : undefined]}
             >
-                {/* Radial Gradient Background for Whiter Center */}
+                {/* Consistent White Background */}
                 {!backgroundColor && (
-                    <View style={StyleSheet.absoluteFill}>
-                        <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
-                            <Defs>
-                                <RadialGradient
-                                    id="grad"
-                                    cx="50%"
-                                    cy="50%"
-                                    rx="80%"
-                                    ry="80%"
-                                    fx="50%"
-                                    fy="50%"
-                                    gradientUnits="userSpaceOnUse"
-                                >
-                                    <Stop offset="0" stopColor="white" stopOpacity="0.9" />
-                                    <Stop offset="1" stopColor="white" stopOpacity="0.4" />
-                                </RadialGradient>
-                            </Defs>
-                            <Rect x="0" y="0" width="100%" height="100%" fill="url(#grad)" />
-                        </Svg>
-                    </View>
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.8)' }]} />
                 )}
 
                 {/* Optional overlay for extra tint if needed */}
