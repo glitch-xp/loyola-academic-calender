@@ -27,6 +27,7 @@
     "web": {
       "bundler": "metro",
       "output": "single",
+      "baseUrl": "/loyola-academic-calender",
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
