@@ -2,6 +2,8 @@
 
 [![Open Web (iOS)](https://img.shields.io/badge/Open%20Web-iOS-blue?style=for-the-badge&logo=safari)](https://glitch-xp.github.io/loyola-academic-calender/)
 [![Download APK (Android)](https://img.shields.io/badge/Download%20APK-Android-green?style=for-the-badge&logo=android)](https://github.com/glitch-xp/loyola-academic-calender/releases/latest)
+[![Contact Support](https://img.shields.io/badge/Contact-Support-orange?style=for-the-badge&logo=mail.ru)](https://yuvaraja.com/#contact)
+[![Report Issue](https://img.shields.io/badge/Report-Issue-red?style=for-the-badge&logo=github)](https://github.com/glitch-xp/loyola-academic-calender/issues/new)
 
 Your personal assistant for managing classes, schedules, and academic life at Loyola College.
 
@@ -111,7 +113,41 @@ This app is designed with:
 - **Have a suggestion?** - We'd love to hear it!
 - **Want to contribute?** - Check the Contributing section below
 
-## 🤝 How to Contribute
+## 🤝 How to Contribute Data
+
+We need your help to add more departments and years! If you have a timetable, you can easily convert it to our format using AI.
+
+### Protocol to Convert Timetable
+1. Take a clear photo or screenshot of your timetable.
+2. Use ChatGPT, Claude, or Gemini.
+3. **Copy and paste the following prompt along with your image:**
+
+```text
+Extract the timetable from this image/PDF into the following JSON format.
+The JSON keys should be '1' through '6' representing the Day Orders (Day 1 to Day 6).
+Each Day Order key should contain an array of objects representing the periods in order (usually 5 periods per day).
+
+Each object should have:
+- `name`: The name of the subject (string)
+- `code`: The subject code (string). If the code is not visible, use "NA".
+
+Example JSON Structure:
+{
+  "1": [
+    { "name": "SUBJECT NAME", "code": "SUBCODE" },
+    { "name": "ANOTHER SUBJECT", "code": "SUBCODE" },
+    ...
+  ],
+  "2": [ ... ],
+  ...
+  "6": [ ... ]
+}
+
+Output ONLY the raw JSON.
+```
+4. Copy the JSON output and submit it via a Pull Request or create an Issue with the JSON attached.
+
+## 🤝 How to Contribute Code
 
 Want to make this app better? Here's how:
 
