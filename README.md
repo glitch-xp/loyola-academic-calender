@@ -1,5 +1,8 @@
 # 📚 Loyola Time Table App
 
+[![Open Web (iOS)](https://img.shields.io/badge/Open%20Web-iOS-blue?style=for-the-badge&logo=safari)](https://glitch-xp.github.io/loyola-academic-calender/)
+[![Download APK (Android)](https://img.shields.io/badge/Download%20APK-Android-green?style=for-the-badge&logo=android)](https://github.com/glitch-xp/loyola-academic-calender/releases/latest)
+
 Your personal assistant for managing classes, schedules, and academic life at Loyola College.
 
 ## 🌟 What Does This App Do?
