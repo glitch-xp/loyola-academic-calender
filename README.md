@@ -5,7 +5,9 @@
 [![Contact Support](https://img.shields.io/badge/Contact-Support-orange?style=for-the-badge&logo=mail.ru)](https://yuvaraja.com/#contact)
 [![Report Issue](https://img.shields.io/badge/Report-Issue-red?style=for-the-badge&logo=github)](https://github.com/glitch-xp/loyola-academic-calender/issues/new)
 
-Your personal assistant for managing classes, schedules, and academic life at Loyola College.
+Your personal app for seeing classes, schedules in Loyola College
+
+**[✨ Contribute Your Timetable Here ✨](#-how-to-contribute-data)**
 
 ## 🌟 What Does This App Do?
 
