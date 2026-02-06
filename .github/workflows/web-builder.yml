@@ -1,9 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main # Or your default branch name
+  workflow_dispatch: # Allows manual triggering only
 
 permissions:
   contents: read
@@ -25,12 +23,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          token: ${{ secrets.EXPO_TOKEN }} # Only needed if using private Expo services
 
       - name: Export web build
         run: npx expo export --platform web
