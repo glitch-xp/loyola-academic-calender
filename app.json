@@ -25,7 +25,7 @@
       "bundleIdentifier": "com.loyola.timetableapp"
     },
     "web": {
-      "bundler": "webpack",
+      "bundler": "metro",
       "output": "single",
       "favicon": "./assets/images/icon.png"
     },
