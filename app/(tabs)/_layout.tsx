@@ -32,7 +32,18 @@ export default function TabLayout() {
                     elevation: 10,
                     height: 70,
                     bottom: 30,
-                    marginHorizontal: 20,
+                    ...Platform.select({
+                        web: {
+                            left: 0,
+                            right: 0,
+                            marginHorizontal: 'auto',
+                            width: '90%',
+                            maxWidth: 400,
+                        },
+                        default: {
+                            marginHorizontal: 20,
+                        }
+                    }),
                     borderRadius: 35, // Slightly more rounded to match height/2
                     paddingBottom: 0,
                     paddingTop: 0,
@@ -41,12 +52,12 @@ export default function TabLayout() {
                     shadowOffset: { width: 0, height: 10 },
                     shadowOpacity: 0.25, // Increased from 0.15
                     shadowRadius: 25, // Increased from 20
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    justifyContent: 'space-around',
                 },
                 tabBarItemStyle: {
                     height: 70, // Match bar height
                     paddingVertical: 10,
+                    flex: 1,
                 },
                 tabBarActiveTintColor: Colors.primary,
                 tabBarInactiveTintColor: Colors.textLight,
