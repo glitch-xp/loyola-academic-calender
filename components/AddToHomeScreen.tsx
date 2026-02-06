@@ -19,8 +19,8 @@ export default function AddToHomeScreen() {
             if (dismissed) {
                 const dismissedTime = parseInt(dismissed, 10);
                 const now = Date.now();
-                // If dismissed less than 3 days ago, don't show
-                if (now - dismissedTime < 3 * 24 * 60 * 60 * 1000) {
+                // If dismissed less than 1 hour ago, don't show (reduced from 3 days for testing)
+                if (now - dismissedTime < 1 * 60 * 60 * 1000) {
                     return true;
                 }
             }
