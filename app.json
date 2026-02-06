@@ -2,7 +2,7 @@
   "expo": {
     "name": "Loyola Time Table App",
     "slug": "loyola-timetable-app",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {
@@ -26,7 +26,8 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
+      "baseUrl": "/loyola-academic-calender",
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
