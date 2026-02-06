@@ -14,6 +14,21 @@ export default function AddToHomeScreen() {
         // Check if we are running in a browser environment
         if (typeof window === 'undefined') return;
 
+        const checkDismissal = () => {
+            const dismissed = localStorage.getItem('pwaPromptDismissed');
+            if (dismissed) {
+                const dismissedTime = parseInt(dismissed, 10);
+                const now = Date.now();
+                // If dismissed less than 3 days ago, don't show
+                if (now - dismissedTime < 3 * 24 * 60 * 60 * 1000) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        if (checkDismissal()) return;
+
         const userAgent = window.navigator.userAgent.toLowerCase();
         const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
         setIsIOS(isIosDevice);
@@ -48,6 +63,7 @@ export default function AddToHomeScreen() {
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
                 setIsVisible(false);
+                localStorage.setItem('pwaPromptDismissed', Date.now().toString());
             }
             setDeferredPrompt(null);
         }
@@ -74,7 +90,10 @@ export default function AddToHomeScreen() {
                             </TouchableOpacity>
                         )}
                     </View>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => setIsVisible(false)}>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => {
+                        setIsVisible(false);
+                        localStorage.setItem('pwaPromptDismissed', Date.now().toString());
+                    }}>
                         <X size={20} color="#fff" />
                     </TouchableOpacity>
 

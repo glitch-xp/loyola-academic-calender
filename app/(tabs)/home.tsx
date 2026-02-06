@@ -11,6 +11,7 @@ import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '@
 import { ErrorScreen } from '@/components/ErrorScreen';
 import { router } from 'expo-router';
 import { LiquidBackground } from '@/components/LiquidBackground';
+import { DataService } from '@/services/DataService';
 
 interface NextClassInfo {
     current: SubjectWithTiming | null;
@@ -32,31 +33,72 @@ export default function HomeScreen() {
     const [error, setError] = useState<string | null>(null);
     const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
 
-    const loadData = async () => {
-        setLoading(true);
+    const loadData = async (shouldSync = true) => {
+        if (loading) setLoading(true); // show loading only for initial load or manual refresh
         setError(null);
+
+        let currentTimetable: TimeTable | null = null;
+        let currentCalendar: DayOrderConfig | null = null;
+        let currentMasterConfig: MasterConfig | null = null;
+        let currentUserProfile: UserProfile | null = null;
+
         try {
-            const storedTimetable = await StorageService.getData<TimeTable>('timetable');
-            const storedCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
-            const storedMasterConfig = await StorageService.getData<MasterConfig>('master_config');
-            const storedUserProfile = await StorageService.getUserProfile();
+            // 1. Load from local storage (Fast)
+            currentTimetable = await StorageService.getData<TimeTable>('timetable');
+            currentCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
+            currentMasterConfig = await StorageService.getData<MasterConfig>('master_config');
+            currentUserProfile = await StorageService.getUserProfile();
 
             // Check if critical data is missing
-            if (!storedTimetable || !storedCalendar || !storedUserProfile) {
-                setError('Data is missing. Please reconfigure your settings.');
-                setLoading(false);
-                return;
+            if (!currentTimetable || !currentCalendar || !currentUserProfile) {
+                // If missing locally, force sync
+                if (!shouldSync) {
+                    setError('Data is missing. Please reconfigure your settings.');
+                    setLoading(false);
+                    return;
+                }
+            } else {
+                // Render immediately with cached data
+                setTimetable(currentTimetable);
+                setCalendar(currentCalendar);
+                setMasterConfig(currentMasterConfig);
+                setUserProfile(currentUserProfile);
+                calculateDay(currentTimetable, currentCalendar, currentMasterConfig, currentUserProfile);
             }
 
-            if (storedTimetable) setTimetable(storedTimetable);
-            if (storedCalendar) setCalendar(storedCalendar);
-            if (storedMasterConfig) setMasterConfig(storedMasterConfig);
-            if (storedUserProfile) setUserProfile(storedUserProfile);
+            // 2. Sync with Server (Background)
+            if (shouldSync && currentUserProfile) {
+                try {
+                    console.log('Syncing data...');
+                    const courseData = await DataService.fetchCourseData(
+                        currentUserProfile.department,
+                        currentUserProfile.year,
+                        currentUserProfile.shift
+                    );
 
-            calculateDay(storedTimetable, storedCalendar, storedMasterConfig, storedUserProfile);
+                    // Update State
+                    setTimetable(courseData.timetable);
+                    setCalendar(courseData.calendar);
+
+                    // Update Cache
+                    await StorageService.saveData('timetable', courseData.timetable);
+                    await StorageService.saveData('day_order_config', courseData.calendar);
+
+                    // Re-calculate with fresh data
+                    calculateDay(courseData.timetable, courseData.calendar, currentMasterConfig, currentUserProfile);
+                    console.log('Data synced successfully');
+                } catch (e) {
+                    console.log('Sync failed (offline or error), using cached data');
+                    // We don't block the UI if sync fails, we just keep using cached data
+                    // But if we had NO data to begin with, then we show error
+                    if (!currentTimetable) {
+                        throw e;
+                    }
+                }
+            }
         } catch (e) {
             console.error(e);
-            setError('Failed to load data. Please try again.');
+            setError('Failed to load data. Please check your connection.');
         } finally {
             setLoading(false);
         }
