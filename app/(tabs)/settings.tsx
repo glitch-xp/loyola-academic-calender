@@ -39,7 +39,7 @@ export default function SettingsScreen() {
         }
     };
 
-    const appVersion = Constants.expoConfig?.version || '1.0.2';
+    const appVersion = Constants.expoConfig?.version || '1.0.3';
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
