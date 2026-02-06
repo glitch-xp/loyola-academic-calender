@@ -14,7 +14,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   useFrameworkReady();
-  useUpdateChecker();
+  useUpdateChecker({ autoCheck: true });
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,

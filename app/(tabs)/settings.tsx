@@ -5,8 +5,10 @@ import { Button } from '../../components/Button';
 import { StorageService } from '../../services/StorageService';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
+import { useUpdateChecker } from '../../hooks/useUpdateChecker';
 
 export default function SettingsScreen() {
+    const { checkUpdates } = useUpdateChecker({ autoCheck: false });
 
     const handleReset = () => {
         Alert.alert(
@@ -48,6 +50,20 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.content}>
+                {/* App Updates Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>App Updates</Text>
+                    <Text style={styles.infoText}>
+                        Check for the latest version of the app and new features.
+                    </Text>
+                    <Button
+                        title="Check for Updates"
+                        variant="primary"
+                        onPress={() => checkUpdates(true)}
+                        style={{ marginTop: 12 }}
+                    />
+                </View>
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Course Management</Text>
                     <Text style={styles.infoText}>
@@ -78,7 +94,7 @@ export default function SettingsScreen() {
                 <View style={styles.footer}>
                     <Text style={styles.version}>Version {appVersion}</Text>
                     <Text style={styles.branding}>Loyola Time Table App</Text>
-                    <Text style={styles.developer}>Developed with ❤️ by Yuvaraja</Text>
+                    <Text style={styles.developer}>Developed with ❤️ by Yuvaraja.com</Text>
                 </View>
             </View>
         </SafeAreaView>
