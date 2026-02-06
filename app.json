@@ -26,9 +26,15 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "single",
+      "output": "static",
+      "favicon": "./assets/images/icon.png",
+      "name": "Loyola Time Table",
       "baseUrl": "/loyola-academic-calender",
-      "favicon": "./assets/images/icon.png"
+      "shortName": "Loyola",
+      "display": "standalone",
+      "backgroundColor": "#003366",
+      "themeColor": "#003366",
+      "description": "Loyola College Academic Calendar and Time Table App"
     },
     "plugins": [
       "expo-router",
