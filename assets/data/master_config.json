@@ -23,6 +23,25 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "BA Economics",
+            "years": [
+                {
+                    "year": "2",
+                    "timetableId": "eco_shift_2_2",
+                    "shifts": [
+                        "2"
+                    ]
+                }
+                {
+                    "year": "3",
+                    "timetableId": "eco_shift_2_3",
+                    "shifts": [
+                        "2"
+                    ]
+                }
+            ]
         }
     ],
     "shifts": [
