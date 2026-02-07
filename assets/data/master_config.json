@@ -6,9 +6,7 @@
                 {
                     "year": "I",
                     "timetableId": "bcom_ca_1",
-                    "shifts": [
-                        "1"
-                    ]
+                    "shifts": ["1"]
                 }
             ]
         },
@@ -18,9 +16,7 @@
                 {
                     "year": "I",
                     "timetableId": "bcom_hons_1",
-                    "shifts": [
-                        "1"
-                    ]
+                    "shifts": ["1"]
                 }
             ]
         },
@@ -30,16 +26,12 @@
                 {
                     "year": "2",
                     "timetableId": "eco_shift_2_2",
-                    "shifts": [
-                        "2"
-                    ]
+                    "shifts": ["2"]
                 },
                 {
                     "year": "3",
                     "timetableId": "eco_shift_2_3",
-                    "shifts": [
-                        "2"
-                    ]
+                    "shifts": ["2"]
                 }
             ]
         }
