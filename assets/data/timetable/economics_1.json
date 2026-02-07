@@ -1,0 +1,46 @@
+```json
+{
+  "1": [
+    { "name": "Statistics", "code": "NA" },
+    { "name": "AR", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "GL", "code": "NA" },
+    { "name": "FC", "code": "NA" }
+  ],
+  "2": [
+    { "name": "Statistics", "code": "NA" },
+    { "name": "AR", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "Micro Eco", "code": "NA" },
+    { "name": "Micro Eco", "code": "NA" }
+  ],
+  "3": [
+    { "name": "Statistics", "code": "NA" },
+    { "name": "AR", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "Micro Eco", "code": "NA" },
+    { "name": "Statistics", "code": "NA" }
+  ],
+  "4": [
+    { "name": "Gender Eco", "code": "NA" },
+    { "name": "AR", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "GL", "code": "NA" },
+    { "name": "FC", "code": "NA" }
+  ],
+  "5": [
+    { "name": "Statistics", "code": "NA" },
+    { "name": "GL", "code": "NA" },
+    { "name": "AR", "code": "NA" },
+    { "name": "FC", "code": "NA" },
+    { "name": "GE", "code": "NA" }
+  ],
+  "6": [
+    { "name": "Gender Eco", "code": "NA" },
+    { "name": "AR", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "Micro Eco", "code": "NA" },
+    { "name": "Gender Eco", "code": "NA" }
+  ]
+}
+```
