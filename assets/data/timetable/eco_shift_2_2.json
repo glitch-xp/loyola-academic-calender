@@ -1,0 +1,44 @@
+{
+  "1": [
+    { "name": "Major Elective", "code": "NA" },
+    { "name": "Econometrics", "code": "NA" },
+    { "name": "GL", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "AO", "code": "NA" }
+  ],
+  "2": [
+    { "name": "Major Elective", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "CD", "code": "NA" },
+    { "name": "AO", "code": "NA" },
+    { "name": "AO", "code": "NA" }
+  ],
+  "3": [
+    { "name": "Major Elective", "code": "NA" },
+    { "name": "Econometrics", "code": "NA" },
+    { "name": "Major Elective", "code": "NA" },
+    { "name": "CD", "code": "NA" },
+    { "name": "GE", "code": "NA" }
+  ],
+  "4": [
+    { "name": "Econometrics", "code": "NA" },
+    { "name": "GL", "code": "NA" },
+    { "name": "Major Elective", "code": "NA" },
+    { "name": "Econometrics", "code": "NA" },
+    { "name": "CD", "code": "NA" }
+  ],
+  "5": [
+    { "name": "FC", "code": "NA" },
+    { "name": "AO", "code": "NA" },
+    { "name": "Major Elective", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "GL", "code": "NA" }
+  ],
+  "6": [
+    { "name": "Econometrics", "code": "NA" },
+    { "name": "Econometrics", "code": "NA" },
+    { "name": "FC", "code": "NA" },
+    { "name": "GE", "code": "NA" },
+    { "name": "AO", "code": "NA" }
+  ]
+}
