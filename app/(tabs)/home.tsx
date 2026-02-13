@@ -72,7 +72,6 @@ export default function HomeScreen() {
             // 2. Sync with Server (Background)
             if (shouldSync && currentUserProfile) {
                 try {
-                    console.log('Syncing data...');
                     const courseData = await DataService.fetchCourseData(
                         currentUserProfile.department,
                         currentUserProfile.year,
@@ -96,7 +95,6 @@ export default function HomeScreen() {
 
                     // Re-calculate with fresh data
                     calculateDay(courseData.timetable, courseData.calendar, currentMasterConfig, currentUserProfile);
-                    console.log('Data synced successfully');
                 } catch (e) {
                     console.log('Sync failed (offline or error), using cached data');
                     // We don't block the UI if sync fails, we just keep using cached data
@@ -251,7 +249,7 @@ export default function HomeScreen() {
 
     return (
         <LiquidBackground>
-            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
                 <StatusBar barStyle="dark-content" />
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}

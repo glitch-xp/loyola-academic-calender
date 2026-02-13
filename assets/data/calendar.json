@@ -1282,17 +1282,17 @@
     "2026-02-12": {
         "dayOrder": "Day-6",
         "isHoliday": false,
-        "event": ""
+        "event": "Research Methodology Workshop for Research Scholars"
     },
     "2026-02-13": {
         "dayOrder": "Day-1",
         "isHoliday": false,
-        "event": "Last date for Online Registration of Semester Exams without fine"
+        "event": "Research Methodology Workshop for Research Scholars"
     },
     "2026-02-14": {
         "dayOrder": "Day-2",
         "isHoliday": false,
-        "event": ""
+        "event": "Research Methodology Workshop for Research Scholars"
     },
     "2026-02-15": {
         "dayOrder": null,
@@ -1327,7 +1327,7 @@
     "2026-02-21": {
         "dayOrder": null,
         "isHoliday": true,
-        "event": "Men's Hostel Day / Weekend"
+        "event": "Loyola Hostels Day (Men & Women) / Weekend"
     },
     "2026-02-22": {
         "dayOrder": null,
@@ -1337,27 +1337,27 @@
     "2026-02-23": {
         "dayOrder": "Day-2",
         "isHoliday": false,
-        "event": "Mentoring for III UG"
+        "event": "Mentoring - III UG"
     },
     "2026-02-24": {
         "dayOrder": "Day-3",
         "isHoliday": false,
-        "event": "Mentoring for II UG/ Last date for Online Registration of Semester Exams with fine"
+        "event": "Photo Session for all Final Year Students / Last date for Online Registration of Semester Exam with fine"
     },
     "2026-02-25": {
         "dayOrder": "Day-4",
         "isHoliday": false,
-        "event": "Mentoring for I UG"
+        "event": "Mentoring - I UG"
     },
     "2026-02-26": {
         "dayOrder": "Day-5",
         "isHoliday": false,
-        "event": "Mentoring for I & II PG"
+        "event": "Mentoring - I & II PG"
     },
     "2026-02-27": {
         "dayOrder": "Day-6",
         "isHoliday": false,
-        "event": "Farewell Day for III UG and II PG"
+        "event": "Sports Day"
     },
     "2026-02-28": {
         "dayOrder": "Day-1",
@@ -1377,12 +1377,12 @@
     "2026-03-03": {
         "dayOrder": "Day-3",
         "isHoliday": false,
-        "event": "Loyola Students' Council (LSC) Valedictory"
+        "event": "Loyola Students Council (LSC) - Valedictory"
     },
     "2026-03-04": {
         "dayOrder": "Day-4",
         "isHoliday": false,
-        "event": ""
+        "event": "Outreach Day with Elders"
     },
     "2026-03-05": {
         "dayOrder": "Day-5",
@@ -1442,32 +1442,32 @@
     "2026-03-16": {
         "dayOrder": "Day-2",
         "isHoliday": false,
-        "event": "Release of Retest & One Test List"
+        "event": "Second CIA"
     },
     "2026-03-17": {
         "dayOrder": "Day-3",
         "isHoliday": false,
-        "event": "Retest / IQAC Meeting - External Members / Practical Examinations UG-Allied/PG"
+        "event": "Second CIA"
     },
     "2026-03-18": {
         "dayOrder": "Day-4",
         "isHoliday": false,
-        "event": "Retest / College Council Meeting / Practical Examinations UG - Allied / PG"
+        "event": "Graduation Day"
     },
     "2026-03-19": {
         "dayOrder": "Day-5",
         "isHoliday": false,
-        "event": "Retest / Practical Examinations UG-Allied/PG / Stock Verification"
+        "event": "Telugu New Year's Day"
     },
     "2026-03-20": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Telugu New Year"
+        "dayOrder": "Day-5",
+        "isHoliday": false,
+        "event": "Stock Verification / Release of Retest and One Test List"
     },
     "2026-03-21": {
         "dayOrder": null,
         "isHoliday": true,
-        "event": "Penitential Walk to St. Thomas Mount / Ramzan (Eid-ul-Fitr) / Weekend"
+        "event": "Penitential Walk / Weekend"
     },
     "2026-03-22": {
         "dayOrder": null,
@@ -1477,32 +1477,32 @@
     "2026-03-23": {
         "dayOrder": "Day-6",
         "isHoliday": false,
-        "event": "Hall Ticket Release / Practical Examinations UG-Major/PG"
+        "event": "Retest / Practical Examinations UG-Allied/PG"
     },
     "2026-03-24": {
         "dayOrder": "Day-1",
         "isHoliday": false,
-        "event": "Practical Examinations UG-Major/PG / General Staff Meeting & Last Signing Day"
+        "event": "Retest / Practical Examinations UG-Allied/PG"
     },
     "2026-03-25": {
         "dayOrder": "Day-2",
         "isHoliday": false,
-        "event": "Practical Examinations UG- Major/PG"
+        "event": "Retest / Practical Examinations UG-Allied/PG / Academic Council Meeting"
     },
     "2026-03-26": {
-        "dayOrder": null,
+        "dayOrder": "Day-3",
         "isHoliday": false,
-        "event": "Semester Examinations Begin"
+        "event": "General Staff Meeting & Last Signing Day / Practical Examinations UG-Major/PG"
     },
     "2026-03-27": {
         "dayOrder": null,
         "isHoliday": false,
-        "event": "Semester Examinations"
+        "event": "Practical Examinations UG-Major/PG"
     },
     "2026-03-28": {
         "dayOrder": null,
         "isHoliday": false,
-        "event": "Semester Examinations"
+        "event": "College Council Meeting / Practical Examinations UG-Major/PG / Hall Ticket Release"
     },
     "2026-03-29": {
         "dayOrder": null,
@@ -1518,156 +1518,6 @@
         "dayOrder": null,
         "isHoliday": true,
         "event": "Mahavir Jayanthi"
-    },
-    "2026-04-01": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-02": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Maundy Thursday"
-    },
-    "2026-04-03": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Good Friday"
-    },
-    "2026-04-04": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Holy Saturday / Weekend"
-    },
-    "2026-04-05": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Easter Sunday / Weekend"
-    },
-    "2026-04-06": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-07": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-08": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-09": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-10": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-11": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-12": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Weekend"
-    },
-    "2026-04-13": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-14": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Tamil New Year's Day / Dr. Ambedkar Jayanthi"
-    },
-    "2026-04-15": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": "Semester Examinations"
-    },
-    "2026-04-16": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-17": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-18": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Weekend"
-    },
-    "2026-04-19": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Weekend"
-    },
-    "2026-04-20": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-21": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-22": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-23": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-24": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-25": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Weekend"
-    },
-    "2026-04-26": {
-        "dayOrder": null,
-        "isHoliday": true,
-        "event": "Weekend"
-    },
-    "2026-04-27": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-28": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-29": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
-    },
-    "2026-04-30": {
-        "dayOrder": null,
-        "isHoliday": false,
-        "event": ""
     },
     "2026-05-01": {
         "dayOrder": null,

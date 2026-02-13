@@ -2,7 +2,7 @@
   "expo": {
     "name": "Loyola Time Table App",
     "slug": "loyola-timetable-app",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "splash": {

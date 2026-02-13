@@ -1,21 +1,13 @@
 
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, LayoutChangeEvent } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, LayoutChangeEvent, Animated, PanResponder } from 'react-native';
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
 import { BlurView } from 'expo-blur';
-import Animated, {
-    useAnimatedStyle,
-    withSpring,
-    useSharedValue,
-    withTiming
-} from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { Home, Calendar, Menu } from 'lucide-react-native';
 
-export function TabBar({ state, descriptors, navigation }: MaterialTopTabBarProps) {
+export function TabBar({ state, descriptors, navigation, position }: MaterialTopTabBarProps) {
     const [layout, setLayout] = React.useState<{ width: number; x: number }[]>([]);
-    const translateX = useSharedValue(0);
-    const tabWidth = useSharedValue(0);
 
     // Initialize layout array
     useEffect(() => {
@@ -32,33 +24,66 @@ export function TabBar({ state, descriptors, navigation }: MaterialTopTabBarProp
         });
     };
 
-    useEffect(() => {
-        if (layout.length > 0 && layout[state.index] && layout[state.index].width > 0) {
-            translateX.value = withSpring(layout[state.index].x, {
-                damping: 15,
-                stiffness: 150,
-            });
-            tabWidth.value = withSpring(layout[state.index].width, {
-                damping: 15,
-                stiffness: 150,
-            });
-        }
-    }, [state.index, layout]);
+    // Prepare ranges for interpolation
+    // Ensure we have layout data for all tabs before interpolating effectively
+    const isLayoutReady = layout.length === state.routes.length && layout.every(l => l.width > 0);
 
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateX: translateX.value }],
-            width: tabWidth.value,
-        };
-    });
+    // Default ranges if layout isn't ready yet
+    const inputRange = state.routes.map((_, i) => i);
+    const outputRangeTranslateX = isLayoutReady
+        ? layout.map(l => l.x + 10) // 10px offset
+        : state.routes.map(() => 0);
+
+    const animatedStyle = {
+        transform: [{
+            translateX: position.interpolate({
+                inputRange,
+                outputRange: outputRangeTranslateX,
+            })
+        }]
+    };
+
+    // Calculate width (assuming equal width tabs due to flex: 1)
+    // If layout is not ready, default to 0
+    const indicatorWidth = isLayoutReady ? (layout[0].width - 20) : 0;
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (evt, gestureState) => {
+                // Only capture horizontal swipes
+                return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 20;
+            },
+            onPanResponderRelease: (evt, gestureState) => {
+                if (gestureState.dx < -50) {
+                    // Swipe Left -> Next Tab
+                    const nextIndex = state.index + 1;
+                    if (nextIndex < state.routes.length) {
+                        const route = state.routes[nextIndex];
+                        navigation.navigate(route.name, route.params);
+                    }
+                } else if (gestureState.dx > 50) {
+                    // Swipe Right -> Previous Tab
+                    const prevIndex = state.index - 1;
+                    if (prevIndex >= 0) {
+                        const route = state.routes[prevIndex];
+                        navigation.navigate(route.name, route.params);
+                    }
+                }
+            },
+        })
+    ).current;
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} {...panResponder.panHandlers}>
             <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
 
             <View style={styles.tabsContainer}>
                 {/* Active Tab Indicator (Slider) */}
-                <Animated.View style={[styles.activeTab, animatedStyle]} />
+                <Animated.View style={[
+                    styles.activeTab,
+                    { width: indicatorWidth },
+                    animatedStyle
+                ]} />
 
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
@@ -84,13 +109,20 @@ export function TabBar({ state, descriptors, navigation }: MaterialTopTabBarProp
                     };
 
                     const Icon = () => {
-                        const color = isFocused ? Colors.primary : Colors.textLight;
+                        const color = isFocused ? Colors.surface : Colors.textLight;
                         const size = 24;
 
                         if (route.name === 'index' || route.name === 'home') return <Home size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
                         if (route.name === 'calendar') return <Calendar size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
                         if (route.name === 'settings' || route.name === 'more') return <Menu size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
                         return null;
+                    };
+
+                    const label = () => {
+                        if (route.name === 'index' || route.name === 'home') return "Home";
+                        if (route.name === 'calendar') return "Calendar";
+                        if (route.name === 'settings' || route.name === 'more') return "More";
+                        return "";
                     };
 
                     return (
@@ -107,6 +139,12 @@ export function TabBar({ state, descriptors, navigation }: MaterialTopTabBarProp
                         >
                             <View style={styles.iconContainer}>
                                 <Icon />
+                                <Text style={[
+                                    styles.label,
+                                    { color: isFocused ? Colors.surface : Colors.textLight }
+                                ]}>
+                                    {label()}
+                                </Text>
                             </View>
                         </TouchableOpacity>
                     );
@@ -159,16 +197,20 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     iconContainer: {
-        width: 50,
-        height: 50,
         justifyContent: 'center',
         alignItems: 'center',
+        // Removed fixed width/height to allow auto-sizing
+    },
+    label: {
+        fontSize: 10,
+        fontFamily: 'Poppins_500Medium',
+        marginTop: 2,
     },
     activeTab: {
         position: 'absolute',
         height: '80%',
         top: '10%',
-        backgroundColor: 'rgba(255, 255, 255, 1)',
+        backgroundColor: Colors.primary,
         borderRadius: 30,
         shadowColor: '#000',
         shadowOffset: {

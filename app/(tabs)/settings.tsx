@@ -41,10 +41,10 @@ export default function SettingsScreen() {
         }
     };
 
-    const appVersion = Constants.expoConfig?.version || '1.0.3';
+    const appVersion = Constants.expoConfig?.version || '1.0.4';
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
             <View style={styles.header}>
                 <Text style={styles.title}>More</Text>
             </View>

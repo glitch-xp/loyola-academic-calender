@@ -139,7 +139,7 @@ export default function CalendarScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}>
                     <ChevronLeft color={Colors.text} size={24} />
