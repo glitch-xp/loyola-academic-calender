@@ -32,6 +32,7 @@ export default function HomeScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [error, setError] = useState<string | null>(null);
     const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
+    const [contributor, setContributor] = useState<string | null>(null);
 
     const loadData = async (shouldSync = true) => {
         if (loading) setLoading(true); // show loading only for initial load or manual refresh
@@ -48,6 +49,7 @@ export default function HomeScreen() {
             currentCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
             currentMasterConfig = await StorageService.getData<MasterConfig>('master_config');
             currentUserProfile = await StorageService.getUserProfile();
+            const storedContributor = await StorageService.getData<string>('contributor');
 
             // Check if critical data is missing
             if (!currentTimetable || !currentCalendar || !currentUserProfile) {
@@ -63,6 +65,7 @@ export default function HomeScreen() {
                 setCalendar(currentCalendar);
                 setMasterConfig(currentMasterConfig);
                 setUserProfile(currentUserProfile);
+                setContributor(storedContributor);
                 calculateDay(currentTimetable, currentCalendar, currentMasterConfig, currentUserProfile);
             }
 
@@ -73,16 +76,23 @@ export default function HomeScreen() {
                     const courseData = await DataService.fetchCourseData(
                         currentUserProfile.department,
                         currentUserProfile.year,
-                        currentUserProfile.shift
+                        currentUserProfile.shift,
+                        currentUserProfile.section
                     );
 
                     // Update State
                     setTimetable(courseData.timetable);
                     setCalendar(courseData.calendar);
+                    setContributor(courseData.contributor || null);
 
                     // Update Cache
                     await StorageService.saveData('timetable', courseData.timetable);
                     await StorageService.saveData('day_order_config', courseData.calendar);
+                    if (courseData.contributor) {
+                        await StorageService.saveData('contributor', courseData.contributor);
+                    } else {
+                        await StorageService.removeData('contributor');
+                    }
 
                     // Re-calculate with fresh data
                     calculateDay(courseData.timetable, courseData.calendar, currentMasterConfig, currentUserProfile);
@@ -255,7 +265,7 @@ export default function HomeScreen() {
                     {/* Day Order Card */}
                     <Card style={{ backgroundColor: getDayOrderColor(todayConfig?.dayOrder || null) }}>
                         <View style={styles.dayOrderContainer}>
-                            <View>
+                            <View style={styles.dayOrderTextContainer}>
                                 <Text style={styles.dayLabel}>
                                     {todayConfig?.isHoliday ? 'Holiday' : 'Day Order'}
                                 </Text>
@@ -343,6 +353,13 @@ export default function HomeScreen() {
                         </Card>
                     )}
 
+                    {/* Contributor for Current Class */}
+                    {contributor && !todayConfig?.isHoliday && nextClassInfo && (
+                        <View style={styles.contributorContainerSmall}>
+                            <Text style={styles.contributorTextSmall}>Contributed by: {contributor}</Text>
+                        </View>
+                    )}
+
                     {/* Next Event Countdown */}
                     {nextEvent && (
                         <Card style={styles.eventCard}>
@@ -381,11 +398,20 @@ export default function HomeScreen() {
                         </View>
                     )}
 
+                    {/* Contributor for Today's Schedule */}
+                    {contributor && !todayConfig?.isHoliday && subjects.length > 0 && (
+                        <View style={styles.contributorContainerSmall}>
+                            <Text style={styles.contributorTextSmall}>Contributed by: {contributor}</Text>
+                        </View>
+                    )}
+
                     {todayConfig?.isHoliday && (
                         <View style={styles.holidayContainer}>
                             <Text style={styles.holidayText}>Enjoy your day off!</Text>
                         </View>
                     )}
+
+                    {/* Removed bottom contributor footer as it's now inline */}
 
                 </ScrollView>
             </SafeAreaView>
@@ -421,6 +447,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+    },
+    dayOrderTextContainer: {
+        flex: 1,
+        paddingRight: 8,
     },
     dayLabel: {
         fontSize: 13,
@@ -688,5 +718,18 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins_600SemiBold',
         marginTop: 4,
         opacity: 0.8
+    },
+    contributorContainerSmall: {
+        marginTop: 4,
+        marginBottom: 12,
+        alignItems: 'flex-end',
+        paddingRight: 4,
+    },
+    contributorTextSmall: {
+        fontSize: 10,
+        color: Colors.textLight,
+        fontFamily: 'Poppins_400Regular',
+        fontStyle: 'italic',
+        opacity: 0.7,
     },
 });

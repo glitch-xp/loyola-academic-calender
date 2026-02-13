@@ -36,5 +36,9 @@ export const StorageService = {
         return data ? JSON.parse(data) : null;
     },
 
+    async removeData(key: string): Promise<void> {
+        await AsyncStorage.removeItem(key);
+    },
+
     KEYS // Export keys for direct access if needed
 };

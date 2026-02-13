@@ -39,9 +39,10 @@ export const DataService = {
         }
     },
 
-    async fetchCourseData(dept: string, year: string, shift?: string): Promise<{
+    async fetchCourseData(dept: string, year: string, shift?: string, section?: string): Promise<{
         timetable: TimeTable;
         calendar: DayOrderConfig;
+        contributor?: string;
     }> {
         try {
             // First, fetch the master config to get the timetable ID and calendar URL
@@ -50,10 +51,41 @@ export const DataService = {
             // 1. Find the timetable ID from the Master Config
             const deptConfig = masterConfig.departments.find(d => d.name === dept);
             const yearConfig = deptConfig?.years.find(y => y.year === year);
-            const timetableId = yearConfig?.timetableId;
+
+            let timetableId: string | undefined;
+            let contributor: string | undefined;
+
+            if (yearConfig?.shiftDetails) {
+                // New logic: Check shiftDetails
+                const shiftDetail = yearConfig.shiftDetails.find(s => s.shiftId === shift);
+                if (shiftDetail) {
+                    if (section && shiftDetail.sections) {
+                        const sectionConfig = shiftDetail.sections.find(s => s.name === section);
+                        timetableId = sectionConfig?.timetableId;
+                        contributor = sectionConfig?.contributor || shiftDetail.contributor;
+                    } else {
+                        timetableId = shiftDetail.timetableId;
+                        contributor = shiftDetail.contributor;
+                    }
+                }
+            } else {
+                // Legacy logic
+                timetableId = yearConfig?.timetableId;
+                contributor = yearConfig?.contributor;
+            }
 
             if (!timetableId) {
-                throw new DataFetchError(`No timetable found for department: ${dept}, year: ${year}`);
+                // Fallback / Error handling
+                // If legacy mode with shifts array, and we have a timetableId at year level, use it
+                // This covers existing simple cases where one timetable covers all (or logic was different)
+                // But if we strictly need distinct timetables, we might need better error here.
+                // For now, if we found a yearConfig but no specific timetable logic matched, check year-level fallback
+                if (yearConfig?.timetableId) {
+                    timetableId = yearConfig.timetableId;
+                    contributor = yearConfig.contributor;
+                } else {
+                    throw new DataFetchError(`No timetable found for department: ${dept}, year: ${year}, shift: ${shift}, section: ${section}`);
+                }
             }
 
             // 2. Fetch the timetable using the timetableId
@@ -92,7 +124,8 @@ export const DataService = {
 
             return {
                 timetable,
-                calendar
+                calendar,
+                contributor
             };
         } catch (error) {
             // Re-throw if it's already our custom error

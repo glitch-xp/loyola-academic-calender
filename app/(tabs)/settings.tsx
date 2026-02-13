@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, Share } from 'react-native';
+import { View, Text, StyleSheet, Alert, Share, ScrollView } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
@@ -49,7 +49,11 @@ export default function SettingsScreen() {
                 <Text style={styles.title}>More</Text>
             </View>
 
-            <View style={styles.content}>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
                 {/* App Updates Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>App Updates</Text>
@@ -96,7 +100,7 @@ export default function SettingsScreen() {
                     <Text style={styles.branding}>Loyola Time Table App</Text>
                     <Text style={styles.developer}>Developed with ❤️ by Yuvaraja.com</Text>
                 </View>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -114,9 +118,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: Colors.text,
     },
-    content: {
-        padding: 20,
+    scrollView: {
         flex: 1,
+    },
+    scrollContent: {
+        padding: 20,
+        paddingBottom: 120, // Add extra padding for the tab bar
     },
     section: {
         backgroundColor: Colors.surface,
@@ -141,8 +148,8 @@ const styles = StyleSheet.create({
     },
     footer: {
         alignItems: 'center',
-        marginTop: 'auto',
-        marginBottom: 100,
+        marginTop: 20,
+        marginBottom: 20,
     },
     version: {
         color: Colors.textLight,

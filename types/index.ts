@@ -17,10 +17,29 @@ export interface Shift {
     timings: ShiftTiming[];
 }
 
+export interface SectionConfig {
+    name: string; // "A", "B", "Default"
+    timetableId: string;
+    contributor?: string;
+}
+
+export interface ShiftDetailConfig {
+    shiftId: string;
+    timetableId?: string; // Used if no sections
+    contributor?: string;
+    sections?: SectionConfig[];
+}
+
 export interface CourseYearConfig {
     year: 'I' | 'II' | 'III';
-    timetableId: string; // e.g., "cs_1"
-    shifts?: string[]; // Optional: IDs of available shifts for this year (e.g., ["1", "2"] or ["1"])
+
+    // Legacy/Simple mode
+    timetableId?: string;
+    contributor?: string;
+    shifts?: string[]; // IDs of available shifts
+
+    // New granular mode
+    shiftDetails?: ShiftDetailConfig[];
 }
 
 export interface DepartmentConfig {
@@ -52,7 +71,8 @@ export interface DayOrderConfig {
 export interface UserProfile {
     department: string;
     year: 'I' | 'II' | 'III';
-    shift?: string; // Optional: "1" or "2", auto-selected for single-shift courses
+    shift?: string; // Optional: "1" or "2"
+    section?: string; // Optional: "A", "B"
 }
 
 export interface MasterConfig {

@@ -22,6 +22,9 @@ export default function WelcomeScreen() {
     const [year, setYear] = useState('');
     const [shift, setShift] = useState('');
 
+    // Section State
+    const [section, setSection] = useState('');
+
     useEffect(() => {
         loadConfig();
     }, []);
@@ -62,9 +65,14 @@ export default function WelcomeScreen() {
         const selectedYear = selectedDept.years.find(y => y.year === year);
         if (!selectedYear) return [];
 
-        // If year specifies shifts, use those; otherwise fall back to all global shifts
-        const shiftIds = selectedYear.shifts || config.shifts.map(s => s.id);
+        // Check if using the new shiftDetails structure
+        if (selectedYear.shiftDetails) {
+            const shiftIds = selectedYear.shiftDetails.map(s => s.shiftId);
+            return config.shifts.filter(s => shiftIds.includes(s.id));
+        }
 
+        // Legacy behavior
+        const shiftIds = selectedYear.shifts || config.shifts.map(s => s.id);
         return config.shifts.filter(s => shiftIds.includes(s.id));
     }, [config, dept, year]);
 
@@ -78,10 +86,41 @@ export default function WelcomeScreen() {
         }
     }, [availableShifts]);
 
+    // Compute available sections based on selected department, year, and shift
+    const availableSections = React.useMemo(() => {
+        if (!config || !dept || !year || !shift) return [];
+
+        const selectedDept = config.departments.find(d => d.name === dept);
+        const selectedYear = selectedDept?.years.find(y => y.year === year);
+
+        if (selectedYear?.shiftDetails) {
+            const shiftDetail = selectedYear.shiftDetails.find(s => s.shiftId === shift);
+            if (shiftDetail?.sections) {
+                return shiftDetail.sections;
+            }
+        }
+        return [];
+    }, [config, dept, year, shift]);
+
+    // Auto-select section when only one is available
+    React.useEffect(() => {
+        if (availableSections.length === 1) {
+            setSection(availableSections[0].name);
+        } else if (availableSections.length > 1 && !availableSections.find(s => s.name === section)) {
+            setSection('');
+        }
+    }, [availableSections]);
+
+
     const handleComplete = async () => {
-        // For single-shift courses, shift is auto-selected; for multi-shift, user must select
+        // Validation
         if (!dept || !year || (availableShifts.length > 1 && !shift)) {
             Alert.alert('Incomplete', 'Please select all required fields');
+            return;
+        }
+
+        if (availableSections.length > 0 && !section) {
+            Alert.alert('Incomplete', 'Please select a section');
             return;
         }
 
@@ -89,13 +128,20 @@ export default function WelcomeScreen() {
         setError(null);
         try {
             // Fetch and cache the initial data for this course
-            const courseData = await DataService.fetchCourseData(dept, year, shift);
+            const courseData = await DataService.fetchCourseData(dept, year, shift, section);
 
             // Save Config & Data
-            await StorageService.saveUserProfile({ department: dept, year: year as any, shift });
+            await StorageService.saveUserProfile({ department: dept, year: year as any, shift, section });
             await StorageService.saveData('master_config', config);
             await StorageService.saveData('timetable', courseData.timetable);
             await StorageService.saveData('day_order_config', courseData.calendar);
+
+            // Save contributor info if available
+            if (courseData.contributor) {
+                await StorageService.saveData('contributor', courseData.contributor);
+            } else {
+                await StorageService.removeData('contributor');
+            }
 
             // @ts-ignore
             router.replace('/(tabs)/home');
@@ -166,6 +212,18 @@ export default function WelcomeScreen() {
                             <View style={styles.pillsContainer}>
                                 {availableShifts.map((s) => (
                                     <OptionPill key={s.id} label={s.name} selected={shift === s.id} onPress={() => setShift(s.id)} />
+                                ))}
+                            </View>
+                        </>
+                    )}
+
+                    {/* Only show section selector if sections are available */}
+                    {availableSections.length > 0 && (
+                        <>
+                            <Text style={styles.label}>Section</Text>
+                            <View style={styles.pillsContainer}>
+                                {availableSections.map((s) => (
+                                    <OptionPill key={s.name} label={s.name} selected={section === s.name} onPress={() => setSection(s.name)} />
                                 ))}
                             </View>
                         </>
