@@ -1,0 +1,44 @@
+{
+"1": [
+{ "name": "PTERIDOPHYTES, GYMNOSPERMS AND PALEOBOTANY", "code": "UPB2MC02" },
+{ "name": "Language", "code": "UTL2GL01" },
+{ "name": "INTERMEDIARY ENGLISH II", "code": "UEL2GE02" },
+{ "name": "CHEMISTRY FOR BIOLOGY", "code": "UCH2AR01" },
+{ "name": "CHEMISTRY FOR BIOLOGY", "code": "UCH2AR01" }
+],
+"2": [
+{ "name": "ALGAE AND BRYOPHYTES", "code": "UPB2MC01" },
+{ "name": "LIFE ISSUES AND COPING STRATEGIES", "code": "UHE2FC01" },
+{ "name": "INTERMEDIARY ENGLISH II", "code": "UEL2GE02" },
+{ "name": "CHEMISTRY FOR BIOLOGY", "code": "UCH2AR01" },
+{ "name": "PTERIDOPHYTES, GYMNOSPERMS AND PALEOBOTANY", "code": "UPB2MC02" }
+],
+"3": [
+{ "name": "LIFE ISSUES AND COPING STRATEGIES", "code": "UHE2FC01" },
+{ "name": "CHEMISTRY FOR BIOLOGY", "code": "UCH2AR01" },
+{ "name": "INTERMEDIARY ENGLISH II", "code": "UEL2GE02" },
+{ "name": "ALGAE AND BRYOPHYTES", "code": "UPB2MC01" },
+{ "name": "Language", "code": "UTL2GL01" }
+],
+"4": [
+{ "name": "LAB - II ALGAE AND BRYOPHYTES AND PTERIDO. GYMNO. AND PALEO BOT.", "code": "UPB2MC03" },
+{ "name": "LAB - II ALGAE AND BRYOPHYTES AND PTERIDO. GYMNO. AND PALEO BOT.", "code": "UPB2MC03" },
+{ "name": "INTERMEDIARY ENGLISH II", "code": "UEL2GE02" },
+{ "name": "CHEMISTRY FOR BIOLOGY", "code": "UCH2AR01" },
+{ "name": "PTERIDOPHYTES, GYMNOSPERMS AND PALEOBOTANY", "code": "UPB2MC02" }
+],
+"5": [
+{ "name": "ALGAE AND BRYOPHYTES", "code": "UPB2MC01" },
+{ "name": "LAB - II ALGAE AND BRYOPHYTES AND PTERIDO. GYMNO. AND PALEO BOT.", "code": "UPB2MC03" },
+{ "name": "LAB - II ALGAE AND BRYOPHYTES AND PTERIDO. GYMNO. AND PALEO BOT.", "code": "UPB2MC03" },
+{ "name": "CHEMISTRY FOR BIOLOGY", "code": "UCH2AR01" },
+{ "name": "INTERMEDIARY ENGLISH II", "code": "UEL2GE02" }
+],
+"6": [
+{ "name": "PTERIDOPHYTES, GYMNOSPERMS AND PALEOBOTANY", "code": "UPB2MC02" },
+{ "name": "Language", "code": "UTL2GL01" },
+{ "name": "INTERMEDIARY ENGLISH II", "code": "UEL2GE02" },
+{ "name": "LIFE ISSUES AND COPING STRATEGIES", "code": "UHE2FC01" },
+{ "name": "ALGAE AND BRYOPHYTES", "code": "UPB2MC01" }
+]
+}
