@@ -11,11 +11,27 @@ import { scrapeCalendar } from './scraper';
 
 const app = new Hono<{ Bindings: Env }>();
 
-// CORS — allow frontend + admin panel origins
+// CORS — allow frontend + admin panel origins securely
 app.use(
     '*',
     cors({
-        origin: '*', // In production, restrict to your Cloudflare Pages domains
+        origin: (origin) => {
+            if (!origin) return '*'; // Allow non-browser clients (like mobile app)
+            
+            const allowedOrigins = [
+                'http://localhost:8081', // Expo web local
+                'http://localhost:5173', // Admin Vite local
+                'https://loyola-timetable.pages.dev',
+                'https://loyola-admin.pages.dev'
+            ];
+            
+            // Allow exact matches or Cloudflare preview deployments
+            if (allowedOrigins.includes(origin) || origin.endsWith('.pages.dev')) {
+                return origin;
+            }
+            
+            return null; // Deny other origins
+        },
         allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
         maxAge: 86400,
