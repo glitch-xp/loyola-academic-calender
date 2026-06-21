@@ -161,6 +161,7 @@ export default function MyTimetableScreen() {
             updated[day][period] = { ...updated[day][period], [field]: value };
             return updated;
         });
+        setIsCustom(true);
     };
 
     const handleSaveLocally = async () => {
