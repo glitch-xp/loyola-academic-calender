@@ -1,7 +1,6 @@
 export interface Subject {
     name: string;
-    code: string;
-    room?: string;
+    code?: string;
     teacher?: string;
 }
 

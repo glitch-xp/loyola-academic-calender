@@ -10,7 +10,8 @@ import { Card } from '../../components/Card';
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
 import { ErrorScreen } from '../../components/ErrorScreen';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { DataService } from '../../services/DataService';
 
 export default function CalendarScreen() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -26,18 +27,41 @@ export default function CalendarScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [upcomingEvents, setUpcomingEvents] = useState<Array<{ name: string, date: string, daysLeft: number, isHoliday: boolean }>>([]);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            loadData();
+        }, [])
+    );
 
     const loadData = async () => {
         setLoading(true);
         setError(null);
         try {
-            const cal = await StorageService.getData<DayOrderConfig>('day_order_config');
-            const tt = await StorageService.getData<TimeTable>('timetable');
-            const mc = await StorageService.getData<MasterConfig>('master_config');
-            const profile = await StorageService.getUserProfile();
+            let cal = await StorageService.getData<DayOrderConfig>('day_order_config');
+            let tt = await StorageService.getData<TimeTable>('timetable');
+            let mc = await StorageService.getData<MasterConfig>('master_config');
+            let profile = await StorageService.getUserProfile();
+
+            // Background Sync
+            if (profile) {
+                try {
+                    const courseData = await DataService.fetchCourseData(
+                        profile.department,
+                        profile.year,
+                        profile.shift,
+                        profile.section
+                    );
+                    
+                    cal = courseData.calendar;
+                    tt = courseData.timetable;
+
+                    // Update Cache
+                    await StorageService.saveData('timetable', courseData.timetable);
+                    await StorageService.saveData('day_order_config', courseData.calendar);
+                } catch (e) {
+                    console.log('Sync failed (offline or error), using cached data');
+                }
+            }
 
             // Check if critical data is missing
             if (!cal || !profile) {

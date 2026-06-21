@@ -42,7 +42,6 @@ timetable.get('/:id', async (c) => {
             timetableData[dayKey].push({
                 name: entry.subject_name,
                 code: entry.subject_code || '',
-                ...(entry.room && { room: entry.room }),
                 ...(entry.teacher && { teacher: entry.teacher }),
             });
         }

@@ -43,7 +43,6 @@ export interface TimetableEntryRow {
     period: number;
     subject_name: string;
     subject_code: string;
-    room: string;
     teacher: string;
 }
 

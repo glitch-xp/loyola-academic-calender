@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput,
-    TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView
+    TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -19,7 +19,6 @@ const LOCAL_TT_KEY = 'custom_timetable';
 interface EditableEntry {
     name: string;
     code: string;
-    room: string;
     teacher: string;
 }
 
@@ -28,7 +27,7 @@ type EditableGrid = Record<number, EditableEntry[]>;
 function createEmptyGrid(): EditableGrid {
     const grid: EditableGrid = {};
     for (const d of DAYS) {
-        grid[d] = PERIODS.map(() => ({ name: '', code: '', room: '', teacher: '' }));
+        grid[d] = PERIODS.map(() => ({ name: '', code: '', teacher: '' }));
     }
     return grid;
 }
@@ -41,7 +40,6 @@ function timetableToGrid(tt: TimeTable): EditableGrid {
             grid[d][p] = {
                 name: subjects[p].name || '',
                 code: subjects[p].code || '',
-                room: subjects[p].room || '',
                 teacher: subjects[p].teacher || '',
             };
         }
@@ -55,7 +53,6 @@ function gridToTimetable(grid: EditableGrid): TimeTable {
         tt[d] = grid[d].map(e => ({
             name: e.name.trim(),
             code: e.code.trim(),
-            ...(e.room.trim() ? { room: e.room.trim() } : {}),
             ...(e.teacher.trim() ? { teacher: e.teacher.trim() } : {}),
         }));
     }
@@ -81,7 +78,9 @@ export default function MyTimetableScreen() {
     const [showContributeForm, setShowContributeForm] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [masterConfig, setMasterConfig] = useState<MasterConfig | null>(null);
+    const [selectedDay, setSelectedDay] = useState<number>(1);
     const [editingCell, setEditingCell] = useState<{ day: number; period: number } | null>(null);
+    const [editFormData, setEditFormData] = useState<EditableEntry>({ name: '', code: '', teacher: '' });
     const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
     const loadData = useCallback(async () => {
@@ -93,6 +92,27 @@ export default function MyTimetableScreen() {
             const config = await StorageService.getData<MasterConfig>('master_config');
             setMasterConfig(config);
 
+            // Background Sync
+            let serverTT = await StorageService.getData<TimeTable>('timetable');
+            if (profile) {
+                try {
+                    const courseData = await DataService.fetchCourseData(
+                        profile.department,
+                        profile.year,
+                        profile.shift,
+                        profile.section
+                    );
+                    
+                    serverTT = courseData.timetable;
+
+                    // Update Cache
+                    await StorageService.saveData('timetable', courseData.timetable);
+                    await StorageService.saveData('day_order_config', courseData.calendar);
+                } catch (e) {
+                    console.log('Sync failed (offline or error), using cached data');
+                }
+            }
+
             // Check for local custom timetable first
             const customTT = await StorageService.getData<TimeTable>(LOCAL_TT_KEY);
             if (customTT) {
@@ -100,7 +120,6 @@ export default function MyTimetableScreen() {
                 setIsCustom(true);
             } else {
                 // Fall back to server timetable
-                const serverTT = await StorageService.getData<TimeTable>('timetable');
                 if (serverTT) {
                     setGrid(timetableToGrid(serverTT));
                     setIsCustom(false);
@@ -242,7 +261,11 @@ export default function MyTimetableScreen() {
                     <View style={styles.header}>
                         <Text style={styles.title}>My Timetable</Text>
                         <Text style={styles.subtitle}>
-                            {isCustom ? 'Using your custom timetable' : 'Using server timetable'}
+                            {isCustom
+                                ? 'Your Custom Timetable'
+                                : (userProfile
+                                    ? `${userProfile.department} - Year ${userProfile.year}${userProfile.section ? ` (Sec ${userProfile.section})` : ''}`
+                                    : 'Official Timetable')}
                         </Text>
                     </View>
 
@@ -262,7 +285,7 @@ export default function MyTimetableScreen() {
                     <View style={styles.statusRow}>
                         <View style={[styles.statusBadge, isCustom ? styles.statusCustom : styles.statusServer]}>
                             <Text style={[styles.statusText, isCustom ? styles.statusTextCustom : styles.statusTextServer]}>
-                                {isCustom ? '✏️ Custom' : '☁️ Server'}
+                                {isCustom ? 'Local' : 'Cloud'}
                             </Text>
                         </View>
                         {isCustom && (
@@ -272,101 +295,67 @@ export default function MyTimetableScreen() {
                         )}
                     </View>
 
-                    {/* Timetable Grid */}
-                    <Card style={styles.gridCard}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <View>
-                                {/* Header row */}
-                                <View style={styles.gridRow}>
-                                    <View style={[styles.gridCell, styles.cornerCell]}>
-                                        <Text style={styles.headerText}>Day</Text>
-                                    </View>
-                                    {PERIODS.map(p => (
-                                        <View key={p} style={[styles.gridCell, styles.headerCell]}>
-                                            <Text style={styles.headerText}>P{p}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-
-                                {/* Day rows */}
-                                {DAYS.map(day => (
-                                    <View key={day} style={styles.gridRow}>
-                                        <View style={[styles.gridCell, styles.dayLabelCell]}>
-                                            <Text style={styles.dayLabelText}>Day {day}</Text>
-                                        </View>
-                                        {PERIODS.map((_, pIdx) => {
-                                            const entry = grid[day][pIdx];
-                                            const isEditing = editingCell?.day === day && editingCell?.period === pIdx;
-                                            return (
-                                                <TouchableOpacity
-                                                    key={pIdx}
-                                                    style={[styles.gridCell, styles.dataCell, isEditing && styles.dataCellEditing]}
-                                                    onPress={() => setEditingCell(isEditing ? null : { day, period: pIdx })}
-                                                    activeOpacity={0.7}
-                                                >
-                                                    {isEditing ? (
-                                                        <View style={styles.editFields}>
-                                                            <TextInput
-                                                                style={styles.cellInput}
-                                                                placeholder="Subject"
-                                                                placeholderTextColor={Colors.textLight}
-                                                                value={entry.name}
-                                                                onChangeText={v => updateCell(day, pIdx, 'name', v)}
-                                                                maxLength={100}
-                                                                autoFocus
-                                                            />
-                                                            <TextInput
-                                                                style={[styles.cellInput, styles.cellInputSmall]}
-                                                                placeholder="Code"
-                                                                placeholderTextColor={Colors.textLight}
-                                                                value={entry.code}
-                                                                onChangeText={v => updateCell(day, pIdx, 'code', v)}
-                                                                maxLength={20}
-                                                            />
-                                                            <View style={styles.cellInputRow}>
-                                                                <TextInput
-                                                                    style={[styles.cellInput, styles.cellInputSmall, { flex: 1 }]}
-                                                                    placeholder="Room"
-                                                                    placeholderTextColor={Colors.textLight}
-                                                                    value={entry.room}
-                                                                    onChangeText={v => updateCell(day, pIdx, 'room', v)}
-                                                                    maxLength={20}
-                                                                />
-                                                                <TextInput
-                                                                    style={[styles.cellInput, styles.cellInputSmall, { flex: 1 }]}
-                                                                    placeholder="Teacher"
-                                                                    placeholderTextColor={Colors.textLight}
-                                                                    value={entry.teacher}
-                                                                    onChangeText={v => updateCell(day, pIdx, 'teacher', v)}
-                                                                    maxLength={50}
-                                                                />
-                                                            </View>
-                                                        </View>
-                                                    ) : (
-                                                        <View>
-                                                            {entry.name ? (
-                                                                <>
-                                                                    <Text style={styles.cellSubjectName} numberOfLines={2}>{entry.name}</Text>
-                                                                    {entry.code ? <Text style={styles.cellSubjectCode}>{entry.code}</Text> : null}
-                                                                    {entry.room || entry.teacher ? (
-                                                                        <Text style={styles.cellMeta} numberOfLines={1}>
-                                                                            {entry.room}{entry.room && entry.teacher ? ' · ' : ''}{entry.teacher}
-                                                                        </Text>
-                                                                    ) : null}
-                                                                </>
-                                                            ) : (
-                                                                <Text style={styles.cellPlaceholder}>+</Text>
-                                                            )}
-                                                        </View>
-                                                    )}
-                                                </TouchableOpacity>
-                                            );
-                                        })}
-                                    </View>
-                                ))}
-                            </View>
+                    {/* Day Selector */}
+                    <View style={styles.daySelectorContainer}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daySelector}>
+                            {DAYS.map(day => (
+                                <TouchableOpacity
+                                    key={`day-${day}`}
+                                    style={[styles.dayTab, selectedDay === day && styles.dayTabSelected]}
+                                    onPress={() => setSelectedDay(day)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={[styles.dayTabText, selectedDay === day && styles.dayTabTextSelected]}>
+                                        Day {day}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
                         </ScrollView>
-                    </Card>
+                    </View>
+
+                    {/* Periods List */}
+                    <View style={styles.periodList}>
+                        {PERIODS.map((_, pIdx) => {
+                            const entry = grid[selectedDay][pIdx];
+                            const isEmpty = !entry.name;
+                            
+                            return (
+                                <TouchableOpacity
+                                    key={`period-${pIdx}`}
+                                    style={styles.periodCard}
+                                    activeOpacity={0.7}
+                                    onPress={() => {
+                                        setEditFormData(entry);
+                                        setEditingCell({ day: selectedDay, period: pIdx });
+                                    }}
+                                >
+                                    <View style={styles.periodHeader}>
+                                        <Text style={styles.periodLabel}>Period {pIdx + 1}</Text>
+                                        {!isEmpty && entry.code ? (
+                                            <View style={styles.periodBadge}>
+                                                <Text style={styles.periodBadgeText}>{entry.code}</Text>
+                                            </View>
+                                        ) : null}
+                                    </View>
+                                    
+                                    {isEmpty ? (
+                                        <View style={styles.periodEmpty}>
+                                            <Text style={styles.periodEmptyText}>+ Tap to add subject</Text>
+                                        </View>
+                                    ) : (
+                                        <View style={styles.periodContent}>
+                                            <Text style={styles.periodSubject}>{entry.name}</Text>
+                                            {entry.teacher ? (
+                                                <Text style={styles.periodMeta}>
+                                                    {entry.teacher}
+                                                </Text>
+                                            ) : null}
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
 
                     {/* Action Buttons */}
                     <View style={styles.actions}>
@@ -378,54 +367,56 @@ export default function MyTimetableScreen() {
                             style={{ marginBottom: 12 }}
                         />
 
-                        {!showContributeForm ? (
-                            <Button
-                                title="Contribute This Timetable"
-                                onPress={() => {
-                                    if (!hasAnySubject(grid)) {
-                                        showMsg('error', 'Please add at least one subject first');
-                                        return;
-                                    }
-                                    setShowContributeForm(true);
-                                }}
-                                variant="secondary"
-                            />
-                        ) : (
-                            <Card style={styles.contributeCard}>
-                                <Text style={styles.contributeTitle}>Share with fellow students</Text>
-                                <Text style={styles.contributeDesc}>
-                                    Your timetable will be reviewed by an admin before being published. It helps students in your department!
-                                </Text>
-
-                                <TextInput
-                                    style={styles.contributorInput}
-                                    placeholder="Your name (optional)"
-                                    placeholderTextColor={Colors.textLight}
-                                    value={contributorName}
-                                    onChangeText={setContributorName}
-                                    maxLength={50}
+                        {isCustom && (
+                            !showContributeForm ? (
+                                <Button
+                                    title="Contribute This Timetable"
+                                    onPress={() => {
+                                        if (!hasAnySubject(grid)) {
+                                            showMsg('error', 'Please add at least one subject first');
+                                            return;
+                                        }
+                                        setShowContributeForm(true);
+                                    }}
+                                    variant="secondary"
                                 />
+                            ) : (
+                                <Card style={styles.contributeCard}>
+                                    <Text style={styles.contributeTitle}>Share with fellow students</Text>
+                                    <Text style={styles.contributeDesc}>
+                                        Your timetable will be reviewed by an admin before being published. It helps students in your department!
+                                    </Text>
 
-                                <View style={styles.contributeButtons}>
-                                    <TouchableOpacity
-                                        style={styles.cancelBtn}
-                                        onPress={() => {
-                                            setShowContributeForm(false);
-                                            setContributorName('');
-                                        }}
-                                    >
-                                        <Text style={styles.cancelBtnText}>Cancel</Text>
-                                    </TouchableOpacity>
-
-                                    <Button
-                                        title={contributing ? 'Submitting...' : 'Submit for Review'}
-                                        onPress={handleContribute}
-                                        variant="primary"
-                                        loading={contributing}
-                                        style={{ flex: 1 }}
+                                    <TextInput
+                                        style={styles.contributorInput}
+                                        placeholder="Your name (optional)"
+                                        placeholderTextColor={Colors.textLight}
+                                        value={contributorName}
+                                        onChangeText={setContributorName}
+                                        maxLength={50}
                                     />
-                                </View>
-                            </Card>
+
+                                    <View style={styles.contributeButtons}>
+                                        <TouchableOpacity
+                                            style={styles.cancelBtn}
+                                            onPress={() => {
+                                                setShowContributeForm(false);
+                                                setContributorName('');
+                                            }}
+                                        >
+                                            <Text style={styles.cancelBtnText}>Cancel</Text>
+                                        </TouchableOpacity>
+
+                                        <Button
+                                            title={contributing ? 'Submitting...' : 'Submit for Review'}
+                                            onPress={handleContribute}
+                                            variant="primary"
+                                            loading={contributing}
+                                            style={{ flex: 1 }}
+                                        />
+                                    </View>
+                                </Card>
+                            )
                         )}
                     </View>
 
@@ -438,6 +429,84 @@ export default function MyTimetableScreen() {
 
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            {/* Edit Modal */}
+            <Modal
+                visible={!!editingCell}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setEditingCell(null)}
+            >
+                <KeyboardAvoidingView
+                    style={styles.modalOverlay}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                >
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>
+                            Edit Day {editingCell?.day} - Period {editingCell && editingCell.period + 1}
+                        </Text>
+
+                        <View style={styles.modalInputGroup}>
+                            <Text style={styles.modalLabel}>Subject Name</Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder="e.g. Mathematics"
+                                placeholderTextColor={Colors.textLight}
+                                value={editFormData.name}
+                                onChangeText={v => setEditFormData(prev => ({ ...prev, name: v }))}
+                                maxLength={100}
+                                autoFocus
+                            />
+                        </View>
+
+                        <View style={styles.modalInputGroup}>
+                            <Text style={styles.modalLabel}>Subject Code</Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder="e.g. MAT101"
+                                placeholderTextColor={Colors.textLight}
+                                value={editFormData.code}
+                                onChangeText={v => setEditFormData(prev => ({ ...prev, code: v }))}
+                                maxLength={20}
+                            />
+                        </View>
+
+                        <View style={styles.modalInputGroup}>
+                            <Text style={styles.modalLabel}>Teacher</Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                placeholder="Teacher Name"
+                                placeholderTextColor={Colors.textLight}
+                                value={editFormData.teacher}
+                                onChangeText={v => setEditFormData(prev => ({ ...prev, teacher: v }))}
+                                maxLength={50}
+                            />
+                        </View>
+
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalBtn, styles.modalBtnCancel]}
+                                onPress={() => setEditingCell(null)}
+                            >
+                                <Text style={styles.modalBtnCancelText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalBtn, styles.modalBtnSave]}
+                                onPress={() => {
+                                    if (editingCell) {
+                                        updateCell(editingCell.day, editingCell.period, 'name', editFormData.name);
+                                        updateCell(editingCell.day, editingCell.period, 'code', editFormData.code);
+                                        updateCell(editingCell.day, editingCell.period, 'teacher', editFormData.teacher);
+                                    }
+                                    setEditingCell(null);
+                                }}
+                            >
+                                <Text style={styles.modalBtnSaveText}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </KeyboardAvoidingView>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -523,103 +592,87 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '500',
     },
-    gridCard: {
-        padding: 0,
-        overflow: 'hidden',
+    daySelectorContainer: {
+        marginBottom: 16,
     },
-    gridRow: {
-        flexDirection: 'row',
+    daySelector: {
+        gap: 8,
+        paddingBottom: 4,
     },
-    gridCell: {
-        borderWidth: 0.5,
-        borderColor: Colors.border,
-    },
-    cornerCell: {
-        width: 56,
-        padding: 10,
-        backgroundColor: Colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    headerCell: {
-        width: 110,
-        padding: 10,
-        backgroundColor: Colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    headerText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    },
-    dayLabelCell: {
-        width: 56,
-        padding: 10,
-        backgroundColor: Colors.highlight,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    dayLabelText: {
-        fontSize: 11,
-        fontWeight: '700',
-        color: Colors.primary,
-    },
-    dataCell: {
-        width: 110,
-        minHeight: 70,
-        padding: 8,
+    dayTab: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
         backgroundColor: Colors.surface,
-        justifyContent: 'center',
-    },
-    dataCellEditing: {
-        backgroundColor: '#EEF2FF',
-        borderColor: Colors.primary,
-        borderWidth: 2,
-    },
-    editFields: {
-        gap: 4,
-    },
-    cellInput: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 6,
-        paddingHorizontal: 6,
-        paddingVertical: 4,
-        fontSize: 12,
-        color: Colors.text,
         borderWidth: 1,
         borderColor: Colors.border,
     },
-    cellInputSmall: {
-        fontSize: 11,
-        paddingVertical: 3,
+    dayTabSelected: {
+        backgroundColor: Colors.primary,
+        borderColor: Colors.primary,
     },
-    cellInputRow: {
+    dayTabText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: Colors.textLight,
+    },
+    dayTabTextSelected: {
+        color: '#FFFFFF',
+    },
+    periodList: {
+        gap: 12,
+    },
+    periodCard: {
+        backgroundColor: Colors.surface,
+        borderRadius: 12,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    periodHeader: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    periodLabel: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: Colors.primary,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    periodBadge: {
+        backgroundColor: Colors.highlight,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+    },
+    periodBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: Colors.primaryDark,
+    },
+    periodEmpty: {
+        paddingVertical: 8,
+    },
+    periodEmptyText: {
+        fontSize: 15,
+        color: Colors.textLight,
+        fontStyle: 'italic',
+    },
+    periodContent: {
         gap: 4,
     },
-    cellSubjectName: {
-        fontSize: 12,
+    periodSubject: {
+        fontSize: 16,
         fontWeight: '600',
         color: Colors.text,
-        lineHeight: 16,
     },
-    cellSubjectCode: {
-        fontSize: 10,
-        color: Colors.primary,
-        marginTop: 2,
-    },
-    cellMeta: {
-        fontSize: 9,
+    periodMeta: {
+        fontSize: 13,
         color: Colors.textLight,
         marginTop: 2,
-    },
-    cellPlaceholder: {
-        fontSize: 18,
-        color: Colors.border,
-        textAlign: 'center',
     },
     actions: {
         marginTop: 20,
@@ -677,5 +730,79 @@ const styles = StyleSheet.create({
         color: Colors.textLight,
         lineHeight: 20,
         textAlign: 'center',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: Colors.surface,
+        borderRadius: 16,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: Colors.text,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    modalInputGroup: {
+        marginBottom: 16,
+    },
+    modalLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: Colors.textLight,
+        marginBottom: 6,
+    },
+    modalInput: {
+        backgroundColor: Colors.background,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        fontSize: 15,
+        color: Colors.text,
+    },
+    modalRow: {
+        flexDirection: 'row',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        marginTop: 8,
+        gap: 12,
+    },
+    modalBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalBtnCancel: {
+        backgroundColor: Colors.background,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    modalBtnSave: {
+        backgroundColor: Colors.primary,
+    },
+    modalBtnCancelText: {
+        color: Colors.text,
+        fontWeight: '600',
+        fontSize: 15,
+    },
+    modalBtnSaveText: {
+        color: '#FFFFFF',
+        fontWeight: '600',
+        fontSize: 15,
     },
 });

@@ -31,7 +31,6 @@ function isSafeAlphanumeric(str: string, maxLen: number): boolean {
 interface TimetableEntry {
     name: string;
     code: string;
-    room?: string;
     teacher?: string;
 }
 
@@ -82,10 +81,9 @@ function validateAndSanitizeTimetable(data: unknown): { valid: boolean; sanitize
 
             const name = sanitizeString(entry.name, 100);
             const code = sanitizeString(entry.code, 20);
-            const room = sanitizeString(entry.room, 20);
             const teacher = sanitizeString(entry.teacher, 50);
 
-            if (name === null || code === null || room === null || teacher === null) {
+            if (name === null || code === null || teacher === null) {
                 return { valid: false, error: `Day ${dayOrder}, period ${i + 1}: contains invalid field types` };
             }
 
@@ -94,7 +92,6 @@ function validateAndSanitizeTimetable(data: unknown): { valid: boolean; sanitize
             sanitizedDay.push({
                 name,
                 code,
-                ...(room ? { room } : {}),
                 ...(teacher ? { teacher } : {}),
             });
 

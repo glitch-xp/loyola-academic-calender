@@ -15,7 +15,6 @@ interface TimetableEntry {
   period: number;
   subject_name: string;
   subject_code: string;
-  room: string;
   teacher: string;
 }
 
@@ -66,7 +65,6 @@ export default function TimetableEditor() {
               period: p,
               subject_name: existing?.subject_name || '',
               subject_code: existing?.subject_code || '',
-              room: existing?.room || '',
               teacher: existing?.teacher || ''
             });
           }
@@ -181,13 +179,6 @@ export default function TimetableEditor() {
                         onChange={(e) => handleCellChange(day, period, 'subject_code', e.target.value)}
                       />
                       <div className="cell-bottom-row">
-                         <input 
-                          type="text" 
-                          placeholder="Room" 
-                          className="cell-input room"
-                          value={entry?.room || ''}
-                          onChange={(e) => handleCellChange(day, period, 'room', e.target.value)}
-                        />
                         <input 
                           type="text" 
                           placeholder="Teacher" 

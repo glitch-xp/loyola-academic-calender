@@ -226,7 +226,7 @@ admin.get('/timetable-entries/:timetableId', async (c) => {
 });
 
 admin.post('/timetable-entries', async (c) => {
-    const { timetable_id, day_order, period, subject_name, subject_code, room, teacher } = await c.req.json();
+    const { timetable_id, day_order, period, subject_name, subject_code, teacher } = await c.req.json();
 
     if (!timetable_id || !day_order || !period) {
         return c.json({ error: 'timetable_id, day_order, and period are required' }, 400);
@@ -234,9 +234,9 @@ admin.post('/timetable-entries', async (c) => {
 
     const result = await c.env.DB
         .prepare(
-            'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, room, teacher) VALUES (?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, teacher) VALUES (?, ?, ?, ?, ?, ?)'
         )
-        .bind(timetable_id, day_order, period, subject_name || '', subject_code || '', room || '', teacher || '')
+        .bind(timetable_id, day_order, period, subject_name || '', subject_code || '', teacher || '')
         .run();
 
     return c.json({ success: true, id: result.meta.last_row_id });
@@ -244,13 +244,13 @@ admin.post('/timetable-entries', async (c) => {
 
 admin.put('/timetable-entries/:id', async (c) => {
     const id = c.req.param('id');
-    const { subject_name, subject_code, room, teacher } = await c.req.json();
+    const { subject_name, subject_code, teacher } = await c.req.json();
 
     await c.env.DB
         .prepare(
-            'UPDATE timetable_entries SET subject_name = ?, subject_code = ?, room = ?, teacher = ? WHERE id = ?'
+            'UPDATE timetable_entries SET subject_name = ?, subject_code = ?, teacher = ? WHERE id = ?'
         )
-        .bind(subject_name || '', subject_code || '', room || '', teacher || '', id)
+        .bind(subject_name || '', subject_code || '', teacher || '', id)
         .run();
 
     return c.json({ success: true });
@@ -281,7 +281,7 @@ admin.post('/timetable-entries/bulk/:timetableId', async (c) => {
     for (const entry of entries) {
         await c.env.DB
             .prepare(
-                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, room, teacher) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, teacher) VALUES (?, ?, ?, ?, ?, ?)'
             )
             .bind(
                 timetableId,
@@ -289,7 +289,6 @@ admin.post('/timetable-entries/bulk/:timetableId', async (c) => {
                 entry.period,
                 entry.subject_name || '',
                 entry.subject_code || '',
-                entry.room || '',
                 entry.teacher || ''
             )
             .run();
@@ -536,7 +535,6 @@ admin.get('/contributions/:id', async (c) => {
             timetableData[dayKey].push({
                 name: (entry as any).subject_name,
                 code: (entry as any).subject_code || '',
-                ...((entry as any).room ? { room: (entry as any).room } : {}),
                 ...((entry as any).teacher ? { teacher: (entry as any).teacher } : {}),
             });
         }
@@ -627,14 +625,13 @@ admin.post('/contributions/:id/approve', async (c) => {
             if (!sub.name && !sub.code) continue; // skip empty entries
 
             await db.prepare(
-                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, room, teacher) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, teacher) VALUES (?, ?, ?, ?, ?, ?)'
             ).bind(
                 finalTtId,
                 dayNum,
                 period + 1,
                 sub.name || '',
                 sub.code || '',
-                sub.room || '',
                 sub.teacher || ''
             ).run();
             entryCount++;
@@ -789,9 +786,9 @@ admin.post('/seed', async (c) => {
                         const sub = subjects[period];
                         await db
                             .prepare(
-                                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, room, teacher) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, teacher) VALUES (?, ?, ?, ?, ?, ?)'
                             )
-                            .bind(ttId, dayNum, period + 1, sub.name || '', sub.code || '', sub.room || '', sub.teacher || '')
+                            .bind(ttId, dayNum, period + 1, sub.name || '', sub.code || '', sub.teacher || '')
                             .run();
                         imported.entries++;
                     }

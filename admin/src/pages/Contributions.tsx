@@ -22,7 +22,6 @@ interface Contribution {
 interface TimetableEntry {
   name: string;
   code: string;
-  room?: string;
   teacher?: string;
 }
 
@@ -204,9 +203,9 @@ export default function Contributions() {
                       <>
                         <div className="subject-name">{entry.name}</div>
                         {entry.code && <div className="subject-code">{entry.code}</div>}
-                        {(entry.room || entry.teacher) && (
+                        {entry.teacher && (
                           <div className="cell-meta">
-                            {entry.room}{entry.room && entry.teacher ? ' · ' : ''}{entry.teacher}
+                            {entry.teacher}
                           </div>
                         )}
                       </>

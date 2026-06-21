@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, Alert, ScrollView, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Colors } from '../constants/Colors';
@@ -24,6 +24,8 @@ export default function WelcomeScreen() {
 
     // Section State
     const [section, setSection] = useState('');
+    const [customDept, setCustomDept] = useState('');
+    const [customSection, setCustomSection] = useState('');
 
     useEffect(() => {
         loadConfig();
@@ -59,6 +61,10 @@ export default function WelcomeScreen() {
     const availableShifts = React.useMemo(() => {
         if (!config || !dept || !year) return [];
 
+        if (dept === 'Other') {
+            return config.shifts;
+        }
+
         const selectedDept = config.departments.find(d => d.name === dept);
         if (!selectedDept) return [];
 
@@ -89,6 +95,7 @@ export default function WelcomeScreen() {
     // Compute available sections based on selected department, year, and shift
     const availableSections = React.useMemo(() => {
         if (!config || !dept || !year || !shift) return [];
+        if (dept === 'Other') return [];
 
         const selectedDept = config.departments.find(d => d.name === dept);
         const selectedYear = selectedDept?.years.find(y => y.year === year);
@@ -119,19 +126,27 @@ export default function WelcomeScreen() {
             return;
         }
 
-        if (availableSections.length > 0 && !section) {
+        if (dept === 'Other' && !customDept.trim()) {
+            Alert.alert('Incomplete', 'Please enter your department name');
+            return;
+        }
+
+        if (availableSections.length > 0 && !section && dept !== 'Other') {
             Alert.alert('Incomplete', 'Please select a section');
             return;
         }
+
+        const finalDept = dept === 'Other' ? customDept.trim() : dept;
+        const finalSection = dept === 'Other' ? customSection.trim() : section;
 
         setSubmitting(true);
         setError(null);
         try {
             // Fetch and cache the initial data for this course
-            const courseData = await DataService.fetchCourseData(dept, year, shift, section);
+            const courseData = await DataService.fetchCourseData(finalDept, year, shift, finalSection);
 
             // Save Config & Data
-            await StorageService.saveUserProfile({ department: dept, year: year as any, shift, section });
+            await StorageService.saveUserProfile({ department: finalDept, year: year as any, shift, section: finalSection });
             await StorageService.saveData('master_config', config);
             await StorageService.saveData('timetable', courseData.timetable);
             await StorageService.saveData('day_order_config', courseData.calendar);
@@ -196,13 +211,38 @@ export default function WelcomeScreen() {
                                 }
                             }} />
                         ))}
+                        {config && (
+                            <OptionPill label="Other" selected={dept === 'Other'} onPress={() => {
+                                setDept('Other');
+                                if (!['I', 'II', 'III'].includes(year)) setYear('I');
+                            }} />
+                        )}
                     </View>
+
+                    {dept === 'Other' && (
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Department Name</Text>
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder="e.g. B.Sc Physics"
+                                value={customDept}
+                                onChangeText={setCustomDept}
+                                placeholderTextColor={Colors.textLight}
+                            />
+                        </View>
+                    )}
 
                     <Text style={styles.label}>Year</Text>
                     <View style={styles.pillsContainer}>
-                        {config?.departments.find(d => d.name === dept)?.years.map((y) => (
-                            <OptionPill key={y.year} label={y.year} selected={year === y.year} onPress={() => setYear(y.year)} />
-                        ))}
+                        {dept === 'Other' ? (
+                            ['I', 'II', 'III'].map((y) => (
+                                <OptionPill key={y} label={y} selected={year === y} onPress={() => setYear(y)} />
+                            ))
+                        ) : (
+                            config?.departments.find(d => d.name === dept)?.years.map((y) => (
+                                <OptionPill key={y.year} label={y.year} selected={year === y.year} onPress={() => setYear(y.year)} />
+                            ))
+                        )}
                     </View>
 
                     {/* Only show shift selector if multiple shifts are available */}
@@ -227,6 +267,20 @@ export default function WelcomeScreen() {
                                 ))}
                             </View>
                         </>
+                    )}
+
+                    {dept === 'Other' && (
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Section (Optional)</Text>
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder="e.g. A, B, etc."
+                                value={customSection}
+                                onChangeText={setCustomSection}
+                                placeholderTextColor={Colors.textLight}
+                                autoCapitalize="characters"
+                            />
+                        </View>
                     )}
                 </Card>
 
@@ -317,6 +371,20 @@ const styles = StyleSheet.create({
     pillTextSelected: {
         color: Colors.primaryDark,
         fontWeight: '600',
+    },
+    inputContainer: {
+        marginBottom: 16,
+    },
+    textInput: {
+        backgroundColor: '#F9FAFB',
+        borderWidth: 1,
+        borderColor: Colors.border,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontSize: 16,
+        color: Colors.text,
+        fontFamily: 'Poppins_400Regular',
     },
     footer: {
         marginTop: 20,

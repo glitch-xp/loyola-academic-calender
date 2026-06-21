@@ -7,6 +7,7 @@ import { DayOrderHelper } from '@/utils/DayOrderHelper';
 import { TimetableHelper, SubjectWithTiming } from '@/utils/TimetableHelper';
 import { StorageService } from '@/services/StorageService';
 import { Card } from '@/components/Card';
+import { Button } from '@/components/Button';
 import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '@/types';
 import { ErrorScreen } from '@/components/ErrorScreen';
 import { router } from 'expo-router';

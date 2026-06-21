@@ -45,7 +45,6 @@ CREATE TABLE IF NOT EXISTS timetable_entries (
     period INTEGER NOT NULL CHECK(period >= 1),
     subject_name TEXT NOT NULL DEFAULT '',
     subject_code TEXT DEFAULT '',
-    room TEXT DEFAULT '',
     teacher TEXT DEFAULT ''
 );
 

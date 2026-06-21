@@ -15,7 +15,7 @@ const app = new Hono<{ Bindings: Env }>();
 app.use(
     '*',
     cors({
-        origin: ['*'], // In production, restrict to your Cloudflare Pages domains
+        origin: '*', // In production, restrict to your Cloudflare Pages domains
         allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization'],
         maxAge: 86400,
