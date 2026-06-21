@@ -1,8 +1,9 @@
-import { View, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StorageService } from '../services/StorageService';
 import { Colors } from '../constants/Colors';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export default function Index() {
     const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function Index() {
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background }}>
-                <ActivityIndicator size="large" color={Colors.primary} />
+                <Skeleton width={80} height={80} borderRadius={40} />
             </View>
         );
     }

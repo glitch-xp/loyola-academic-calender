@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
 import { StorageService } from '../../services/StorageService';
@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
 import { ErrorScreen } from '../../components/ErrorScreen';
 import { router, useFocusEffect } from 'expo-router';
 import { DataService } from '../../services/DataService';
+import { Skeleton } from '../../components/ui/Skeleton';
 
 export default function CalendarScreen() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -145,8 +146,24 @@ export default function CalendarScreen() {
     // Show loading state
     if (loading) {
         return (
-            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color={Colors.primary} />
+            <SafeAreaView style={[styles.container, { padding: 20 }]}>
+                <View style={styles.header}>
+                    <Skeleton width={24} height={24} borderRadius={12} />
+                    <Skeleton width={150} height={24} borderRadius={8} />
+                    <Skeleton width={24} height={24} borderRadius={12} />
+                </View>
+                <View style={styles.weekRow}>
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((_, i) => (
+                        <Skeleton key={i} width={20} height={20} borderRadius={10} />
+                    ))}
+                </View>
+                <View style={styles.calendarGrid}>
+                    {Array.from({ length: 35 }).map((_, i) => (
+                        <View key={i} style={styles.dayCell}>
+                            <Skeleton width={36} height={36} borderRadius={18} />
+                        </View>
+                    ))}
+                </View>
             </SafeAreaView>
         );
     }

@@ -75,7 +75,7 @@ export function TabBar({ state, descriptors, navigation, position }: MaterialTop
 
     return (
         <View style={styles.container} {...panResponder.panHandlers}>
-            <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
+            <BlurView intensity={100} tint="light" style={StyleSheet.absoluteFill} />
 
             <View style={styles.tabsContainer}>
                 {/* Active Tab Indicator (Slider) */}
@@ -165,17 +165,17 @@ const styles = StyleSheet.create({
         height: 70,
         borderRadius: 35,
         overflow: 'hidden',
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: 'rgba(255, 255, 255, 0.35)', // More transparent base for liquid glass
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.7)', // Stronger white border for reflection
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 10,
+            height: 15,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        elevation: 10,
+        shadowOpacity: 0.15,
+        shadowRadius: 25,
+        elevation: 15,
         ...Platform.select({
             web: {
                 left: 0,

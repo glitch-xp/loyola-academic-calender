@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput,
-    TouchableOpacity, Alert, ActivityIndicator, Platform, KeyboardAvoidingView, Modal
+    TouchableOpacity, Alert, Platform, KeyboardAvoidingView, Modal
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -11,6 +11,7 @@ import { DataService, DataFetchError, NetworkError } from '@/services/DataServic
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Subject, TimeTable, UserProfile, MasterConfig } from '@/types';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 const DAYS = [1, 2, 3, 4, 5, 6];
 const PERIODS = [1, 2, 3, 4, 5];
@@ -82,6 +83,21 @@ export default function MyTimetableScreen() {
     const [editingCell, setEditingCell] = useState<{ day: number; period: number } | null>(null);
     const [editFormData, setEditFormData] = useState<EditableEntry>({ name: '', code: '', teacher: '' });
     const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+    const uniqueSubjects = React.useMemo(() => {
+        const subjects = new Map<string, EditableEntry>();
+        for (const d of DAYS) {
+            for (const entry of grid[d]) {
+                if (entry.name.trim()) {
+                    const key = `${entry.name.trim().toLowerCase()}-${entry.code.trim().toLowerCase()}`;
+                    if (!subjects.has(key)) {
+                        subjects.set(key, { ...entry });
+                    }
+                }
+            }
+        }
+        return Array.from(subjects.values());
+    }, [grid]);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -242,9 +258,30 @@ export default function MyTimetableScreen() {
 
     if (loading) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
+            <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+                <View style={styles.scrollContent}>
+                    <View style={styles.header}>
+                        <Skeleton width={200} height={32} borderRadius={8} style={{ marginBottom: 8 }} />
+                        <Skeleton width={150} height={16} borderRadius={4} />
+                    </View>
+                    <View style={styles.statusRow}>
+                        <Skeleton width={80} height={28} borderRadius={14} />
+                    </View>
+                    <View style={styles.daySelectorContainer}>
+                        <View style={[styles.daySelector, { flexDirection: 'row', gap: 8 }]}>
+                            {DAYS.map(d => <Skeleton key={d} width={60} height={36} borderRadius={18} />)}
+                        </View>
+                    </View>
+                    <View style={styles.periodList}>
+                        {PERIODS.map(p => (
+                            <View key={p} style={[styles.periodCard, { height: 80, justifyContent: 'center' }]}>
+                                <Skeleton width={100} height={16} borderRadius={4} style={{ marginBottom: 12 }} />
+                                <Skeleton width="100%" height={20} borderRadius={4} />
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </SafeAreaView>
         );
     }
 
@@ -445,6 +482,23 @@ export default function MyTimetableScreen() {
                         <Text style={styles.modalTitle}>
                             Edit Day {editingCell?.day} - Period {editingCell && editingCell.period + 1}
                         </Text>
+
+                        {uniqueSubjects.length > 0 && (
+                            <View style={styles.suggestionsContainer}>
+                                <Text style={styles.suggestionsLabel}>Quick Fill:</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestionsList}>
+                                    {uniqueSubjects.map((sub, idx) => (
+                                        <TouchableOpacity
+                                            key={idx}
+                                            style={styles.suggestionChip}
+                                            onPress={() => setEditFormData({ ...sub })}
+                                        >
+                                            <Text style={styles.suggestionChipText}>{sub.name} {sub.code ? `(${sub.code})` : ''}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        )}
 
                         <View style={styles.modalInputGroup}>
                             <Text style={styles.modalLabel}>Subject Name</Text>
@@ -753,6 +807,32 @@ const styles = StyleSheet.create({
         color: Colors.text,
         marginBottom: 20,
         textAlign: 'center',
+    },
+    suggestionsContainer: {
+        marginBottom: 16,
+    },
+    suggestionsLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: Colors.textLight,
+        marginBottom: 8,
+    },
+    suggestionsList: {
+        gap: 8,
+        paddingBottom: 4,
+    },
+    suggestionChip: {
+        backgroundColor: Colors.highlight,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: Colors.primary + '30',
+    },
+    suggestionChipText: {
+        fontSize: 13,
+        color: Colors.primaryDark,
+        fontWeight: '500',
     },
     modalInputGroup: {
         marginBottom: 16,

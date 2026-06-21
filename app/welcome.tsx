@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, ScrollView, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, Alert, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Colors } from '../constants/Colors';
@@ -10,6 +10,7 @@ import { StorageService } from '../services/StorageService';
 import { MasterConfig } from '../types';
 import { NoNetworkScreen } from '../components/NoNetworkScreen';
 import { ErrorScreen } from '../components/ErrorScreen';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export default function WelcomeScreen() {
     const [config, setConfig] = useState<MasterConfig | null>(null);
@@ -175,9 +176,28 @@ export default function WelcomeScreen() {
 
     if (loading) {
         return (
-            <View style={[styles.container, styles.center]}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
+            <SafeAreaView style={styles.container}>
+                <ScrollView contentContainerStyle={styles.scrollContent}>
+                    <View style={styles.header}>
+                        <Skeleton width={250} height={36} borderRadius={8} style={{ marginBottom: 8, alignSelf: 'center' }} />
+                        <Skeleton width={200} height={20} borderRadius={4} style={{ alignSelf: 'center' }} />
+                    </View>
+                    <Card>
+                        <Skeleton width={100} height={16} borderRadius={4} style={{ marginBottom: 12, marginTop: 8 }} />
+                        <View style={styles.pillsContainer}>
+                            <Skeleton width={80} height={36} borderRadius={18} />
+                            <Skeleton width={120} height={36} borderRadius={18} />
+                            <Skeleton width={90} height={36} borderRadius={18} />
+                        </View>
+                        
+                        <Skeleton width={80} height={16} borderRadius={4} style={{ marginBottom: 12, marginTop: 8 }} />
+                        <View style={styles.pillsContainer}>
+                            <Skeleton width={60} height={36} borderRadius={18} />
+                            <Skeleton width={60} height={36} borderRadius={18} />
+                        </View>
+                    </Card>
+                </ScrollView>
+            </SafeAreaView>
         );
     }
 
