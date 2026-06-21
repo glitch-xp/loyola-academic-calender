@@ -32,7 +32,7 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
+    <div className="login-page">
       <div className="login-card card">
         <div className="login-header">
           <h1>Loyola Admin</h1>
@@ -43,11 +43,11 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label>Username</label>
+            <label className="form-label">Username</label>
             <div className="input-with-icon">
               <User size={18} />
-              <input
-                type="text"
+              <input className="form-input" type="text"
+                
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -57,11 +57,11 @@ export default function Login() {
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label className="form-label">Password</label>
             <div className="input-with-icon">
               <Lock size={18} />
-              <input
-                type="password"
+              <input className="form-input" type="password"
+                
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

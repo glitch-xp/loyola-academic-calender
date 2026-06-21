@@ -142,9 +142,8 @@ export default function CalendarEditor() {
         {editingDay && (
           <form onSubmit={handleSaveDay} className="form-layout">
             <div className="form-group">
-              <label>Day Order (1-6)</label>
-              <select 
-                value={editingDay.day_order || ''} 
+              <label className="form-label">Day Order (1-6)</label>
+              <select className="form-select" value={editingDay.day_order || ''} 
                 onChange={(e) => setEditingDay({...editingDay, day_order: e.target.value ? parseInt(e.target.value) : null})}
               >
                 <option value="">None</option>
@@ -153,9 +152,8 @@ export default function CalendarEditor() {
             </div>
             
             <div className="form-group checkbox-group">
-              <label>
-                <input 
-                  type="checkbox" 
+              <label className="form-label">
+                <input className="form-input" type="checkbox" 
                   checked={editingDay.is_holiday}
                   onChange={(e) => setEditingDay({...editingDay, is_holiday: e.target.checked})}
                 />
@@ -164,9 +162,8 @@ export default function CalendarEditor() {
             </div>
 
             <div className="form-group">
-              <label>Event Title</label>
-              <input 
-                type="text" 
+              <label className="form-label">Event Title</label>
+              <input className="form-input" type="text" 
                 value={editingDay.event_title || ''}
                 onChange={(e) => setEditingDay({...editingDay, event_title: e.target.value})}
                 placeholder="e.g., Semester Exams Begin"

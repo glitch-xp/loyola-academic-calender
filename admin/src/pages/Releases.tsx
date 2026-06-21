@@ -145,18 +145,16 @@ export default function Releases() {
         <form onSubmit={handleSubmit} className="form-layout">
           <div className="form-row">
             <div className="form-group half">
-              <label>Version (e.g. 1.0.5)</label>
-              <input
-                type="text"
+              <label className="form-label">Version (e.g. 1.0.5)</label>
+              <input className="form-input" type="text"
                 value={formData.version}
                 onChange={(e) => setFormData({ ...formData, version: e.target.value })}
                 required
               />
             </div>
             <div className="form-group half">
-              <label>Platform</label>
-              <select
-                value={formData.platform}
+              <label className="form-label">Platform</label>
+              <select className="form-select" value={formData.platform}
                 onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
               >
                 <option value="android">Android (APK)</option>
@@ -166,9 +164,8 @@ export default function Releases() {
           </div>
           
           <div className="form-group">
-            <label>Download URL (for APK)</label>
-            <input
-              type="url"
+            <label className="form-label">Download URL (for APK)</label>
+            <input className="form-input" type="url"
               value={formData.download_url}
               onChange={(e) => setFormData({ ...formData, download_url: e.target.value })}
               placeholder="https://github.com/.../releases/download/v1.0.5/app.apk"
@@ -176,9 +173,8 @@ export default function Releases() {
           </div>
 
           <div className="form-group">
-            <label>Release Notes</label>
-            <textarea
-              value={formData.release_notes}
+            <label className="form-label">Release Notes</label>
+            <textarea className="form-textarea" value={formData.release_notes}
               onChange={(e) => setFormData({ ...formData, release_notes: e.target.value })}
               rows={4}
               placeholder="What's new in this version?"
@@ -186,9 +182,8 @@ export default function Releases() {
           </div>
 
           <div className="form-group checkbox-group">
-            <label>
-              <input 
-                type="checkbox" 
+            <label className="form-label">
+              <input className="form-input" type="checkbox" 
                 checked={formData.is_latest === 1}
                 onChange={(e) => setFormData({ ...formData, is_latest: e.target.checked ? 1 : 0 })}
               />

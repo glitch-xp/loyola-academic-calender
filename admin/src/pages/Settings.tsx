@@ -53,18 +53,16 @@ export default function Settings() {
 
         <form onSubmit={handleChangePassword} className="settings-form">
           <div className="form-group">
-            <label>Current Password</label>
-            <input 
-              type="password" 
+            <label className="form-label">Current Password</label>
+            <input className="form-input" type="password" 
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
             />
           </div>
           <div className="form-group">
-            <label>New Password</label>
-            <input 
-              type="password" 
+            <label className="form-label">New Password</label>
+            <input className="form-input" type="password" 
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
@@ -72,9 +70,8 @@ export default function Settings() {
             />
           </div>
           <div className="form-group">
-            <label>Confirm New Password</label>
-            <input 
-              type="password" 
+            <label className="form-label">Confirm New Password</label>
+            <input className="form-input" type="password" 
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

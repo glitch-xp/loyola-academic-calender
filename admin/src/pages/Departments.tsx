@@ -124,9 +124,8 @@ export default function Departments() {
       >
         <form onSubmit={handleSubmit} className="form-layout">
           <div className="form-group">
-            <label>ID (Unique Identifier)</label>
-            <input
-              type="text"
+            <label className="form-label">ID (Unique Identifier)</label>
+            <input className="form-input" type="text"
               value={formData.id}
               onChange={(e) => setFormData({ ...formData, id: e.target.value })}
               disabled={!!editingDept}
@@ -136,9 +135,8 @@ export default function Departments() {
             {!editingDept && <small>Must be unique and alphanumeric (no spaces).</small>}
           </div>
           <div className="form-group">
-            <label>Display Name</label>
-            <input
-              type="text"
+            <label className="form-label">Display Name</label>
+            <input className="form-input" type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -146,9 +144,8 @@ export default function Departments() {
             />
           </div>
           <div className="form-group">
-            <label>Sort Order</label>
-            <input
-              type="number"
+            <label className="form-label">Sort Order</label>
+            <input className="form-input" type="number"
               value={formData.sort_order}
               onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) })}
               required

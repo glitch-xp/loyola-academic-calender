@@ -396,9 +396,8 @@ export default function Contributions() {
             {reviewModal.contribution.status === 'pending' && (
               <div className="review-actions">
                 <div className="reject-section">
-                  <input
-                    type="text"
-                    className="form-input"
+                  <input className="form-input" type="text"
+                    
                     placeholder="Rejection reason (optional)"
                     value={rejectNotes}
                     onChange={e => setRejectNotes(e.target.value)}

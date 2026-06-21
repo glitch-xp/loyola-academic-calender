@@ -120,8 +120,7 @@ export default function TimetableEditor() {
           <p>Edit class schedules for each day order.</p>
         </div>
         <div className="header-actions">
-          <select 
-            className="input-select" 
+          <select className="form-select input-select" 
             value={selectedId} 
             onChange={(e) => setSelectedId(e.target.value)}
           >
@@ -164,25 +163,22 @@ export default function TimetableEditor() {
                   const entry = getEntry(day, period);
                   return (
                     <div key={`cell-${day}-${period}`} className="tt-cell">
-                      <input 
-                        type="text" 
+                      <input type="text" 
                         placeholder="Subject Name" 
-                        className="cell-input subject-name"
+                        className="form-input cell-input subject-name"
                         value={entry?.subject_name || ''}
                         onChange={(e) => handleCellChange(day, period, 'subject_name', e.target.value)}
                       />
-                      <input 
-                        type="text" 
+                      <input type="text" 
                         placeholder="Code" 
-                        className="cell-input subject-code"
+                        className="form-input cell-input subject-code"
                         value={entry?.subject_code || ''}
                         onChange={(e) => handleCellChange(day, period, 'subject_code', e.target.value)}
                       />
                       <div className="cell-bottom-row">
-                        <input 
-                          type="text" 
+                        <input type="text" 
                           placeholder="Teacher" 
-                          className="cell-input teacher"
+                          className="form-input cell-input teacher"
                           value={entry?.teacher || ''}
                           onChange={(e) => handleCellChange(day, period, 'teacher', e.target.value)}
                         />
