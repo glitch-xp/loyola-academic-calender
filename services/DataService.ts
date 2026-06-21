@@ -1,6 +1,7 @@
 import { MasterConfig, DayOrderConfig, TimeTable } from '../types';
 
-const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/glitch-xp/loyola-academic-calender/main';
+// API base URL — update this after deploying the Cloudflare Worker
+const API_BASE_URL = 'https://loyola-api.yuvar4313.workers.dev';
 
 // Custom error classes for better error handling
 export class NetworkError extends Error {
@@ -17,26 +18,27 @@ export class DataFetchError extends Error {
     }
 }
 
+async function fetchJSON<T>(url: string): Promise<T> {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new DataFetchError(`Failed to fetch: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        if (error instanceof TypeError || (error as any).message?.includes('Network request failed')) {
+            throw new NetworkError('No internet connection. Please check your network.');
+        }
+        if (error instanceof NetworkError || error instanceof DataFetchError) {
+            throw error;
+        }
+        throw new DataFetchError(`Failed to fetch: ${(error as Error).message}`);
+    }
+}
+
 export const DataService = {
     async fetchMasterConfig(): Promise<MasterConfig> {
-        try {
-            const response = await fetch(`${GITHUB_BASE_URL}/assets/data/master_config.json`);
-            if (!response.ok) {
-                throw new DataFetchError(`Failed to fetch master config: ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-            // Check if it's a network error (no internet connection)
-            if (error instanceof TypeError || (error as any).message?.includes('Network request failed')) {
-                throw new NetworkError('No internet connection. Please check your network.');
-            }
-            // Re-throw if it's already our custom error
-            if (error instanceof NetworkError || error instanceof DataFetchError) {
-                throw error;
-            }
-            // Otherwise, wrap it as a DataFetchError
-            throw new DataFetchError(`Failed to fetch master config: ${(error as Error).message}`);
-        }
+        return fetchJSON<MasterConfig>(`${API_BASE_URL}/api/config`);
     },
 
     async fetchCourseData(dept: string, year: string, shift?: string, section?: string): Promise<{
@@ -45,7 +47,7 @@ export const DataService = {
         contributor?: string;
     }> {
         try {
-            // First, fetch the master config to get the timetable ID and calendar URL
+            // First, fetch the master config to get the timetable ID
             const masterConfig = await this.fetchMasterConfig();
 
             // 1. Find the timetable ID from the Master Config
@@ -75,11 +77,6 @@ export const DataService = {
             }
 
             if (!timetableId) {
-                // Fallback / Error handling
-                // If legacy mode with shifts array, and we have a timetableId at year level, use it
-                // This covers existing simple cases where one timetable covers all (or logic was different)
-                // But if we strictly need distinct timetables, we might need better error here.
-                // For now, if we found a yearConfig but no specific timetable logic matched, check year-level fallback
                 if (yearConfig?.timetableId) {
                     timetableId = yearConfig.timetableId;
                     contributor = yearConfig.contributor;
@@ -88,39 +85,11 @@ export const DataService = {
                 }
             }
 
-            // 2. Fetch the timetable using the timetableId
-            const timetableUrl = `${GITHUB_BASE_URL}/assets/data/timetable/${timetableId}.json`;
-            let timetableResponse;
-            try {
-                timetableResponse = await fetch(timetableUrl);
-            } catch (error) {
-                if (error instanceof TypeError || (error as any).message?.includes('Network request failed')) {
-                    throw new NetworkError('No internet connection. Please check your network.');
-                }
-                throw error;
-            }
-
-            if (!timetableResponse.ok) {
-                throw new DataFetchError(`Failed to fetch timetable: ${timetableResponse.status}`);
-            }
-            const timetable: TimeTable = await timetableResponse.json();
-
-            // 3. Fetch the calendar data
-            const calendarUrl = `${GITHUB_BASE_URL}/assets/data/calendar.json`;
-            let calendarResponse;
-            try {
-                calendarResponse = await fetch(calendarUrl);
-            } catch (error) {
-                if (error instanceof TypeError || (error as any).message?.includes('Network request failed')) {
-                    throw new NetworkError('No internet connection. Please check your network.');
-                }
-                throw error;
-            }
-
-            if (!calendarResponse.ok) {
-                throw new DataFetchError(`Failed to fetch calendar: ${calendarResponse.status}`);
-            }
-            const calendar: DayOrderConfig = await calendarResponse.json();
+            // 2. Fetch timetable and calendar in parallel
+            const [timetable, calendar] = await Promise.all([
+                fetchJSON<TimeTable>(`${API_BASE_URL}/api/timetable/${timetableId}`),
+                fetchJSON<DayOrderConfig>(`${API_BASE_URL}/api/calendar`),
+            ]);
 
             return {
                 timetable,
@@ -128,13 +97,23 @@ export const DataService = {
                 contributor
             };
         } catch (error) {
-            // Re-throw if it's already our custom error
             if (error instanceof NetworkError || error instanceof DataFetchError) {
                 throw error;
             }
-            // Otherwise, wrap it as a DataFetchError
             throw new DataFetchError(`Failed to fetch course data: ${(error as Error).message}`);
         }
-    }
+    },
 
+    /**
+     * Check for app updates (Android only).
+     * Returns the latest version info for the given platform.
+     */
+    async checkForUpdate(currentVersion: string, platform: string = 'android'): Promise<{
+        version: string | null;
+        isUpdateAvailable: boolean;
+        releaseNotes: string | null;
+        downloadUrl: string | null;
+    }> {
+        return fetchJSON(`${API_BASE_URL}/api/version?platform=${platform}&currentVersion=${currentVersion}`);
+    }
 };

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Alert, Share, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Alert, Share, ScrollView, Platform } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
@@ -54,19 +54,21 @@ export default function SettingsScreen() {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* App Updates Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>App Updates</Text>
-                    <Text style={styles.infoText}>
-                        Check for the latest version of the app and new features.
-                    </Text>
-                    <Button
-                        title="Check for Updates"
-                        variant="primary"
-                        onPress={() => checkUpdates(true)}
-                        style={{ marginTop: 12 }}
-                    />
-                </View>
+                {/* App Updates Section - Hidden on Web */}
+                {Platform.OS !== 'web' && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>App Updates</Text>
+                        <Text style={styles.infoText}>
+                            Check for the latest version of the app and new features.
+                        </Text>
+                        <Button
+                            title="Check for Updates"
+                            variant="primary"
+                            onPress={() => checkUpdates(true)}
+                            style={{ marginTop: 12 }}
+                        />
+                    </View>
+                )}
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Course Management</Text>

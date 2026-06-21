@@ -1,0 +1,8 @@
+name = "loyola-academic-calender"
+compatibility_date = "2024-12-30"
+pages_build_output_dir = "dist"
+
+# Environment variables for the frontend
+[vars]
+# Optional: Set this if you want to override the hardcoded API URL in DataService
+# VITE_API_URL = "https://loyola-api.YOUR_SUBDOMAIN.workers.dev"

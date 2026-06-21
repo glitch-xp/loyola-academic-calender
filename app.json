@@ -29,7 +29,7 @@
       "output": "static",
       "favicon": "./assets/images/icon.png",
       "name": "Loyola Time Table",
-      "baseUrl": "/loyola-academic-calender",
+      "baseUrl": "/",
       "shortName": "Loyola",
       "display": "standalone",
       "backgroundColor": "#003366",
@@ -43,7 +43,7 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "baseUrl": "/loyola-academic-calender"
+      "baseUrl": "/"
     },
     "android": {
       "package": "com.loyola.timetableapp",

@@ -1,0 +1,22 @@
+{
+  "name": "loyola-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute loyola-db --local --file=./src/db/schema.sql",
+    "db:init:remote": "wrangler d1 execute loyola-db --remote --file=./src/db/schema.sql",
+    "seed": "npx tsx src/db/seed.ts",
+    "seed:remote": "REMOTE=true npx tsx src/db/seed.ts"
+  },
+  "dependencies": {
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "tsx": "^4.19.0",
+    "typescript": "~5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

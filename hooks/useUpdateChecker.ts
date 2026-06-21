@@ -1,45 +1,58 @@
-import * as Updates from 'expo-updates';
-import { useEffect } from 'react';
-import { Alert, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Platform, Linking } from 'react-native';
+import Constants from 'expo-constants';
+import { DataService } from '../services/DataService';
+
+interface UpdateInfo {
+    isUpdateAvailable: boolean;
+    version: string | null;
+    releaseNotes: string | null;
+    downloadUrl: string | null;
+}
 
 export function useUpdateChecker({ autoCheck = true }: { autoCheck?: boolean } = {}) {
+    const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+    const [checking, setChecking] = useState(false);
+
     useEffect(() => {
-        if (autoCheck) {
+        if (autoCheck && Platform.OS !== 'web') {
             checkUpdates(false);
         }
     }, [autoCheck]);
 
     const checkUpdates = async (manual: boolean = false) => {
+        // Updates are only relevant on native (Android)
         if (Platform.OS === 'web') {
-            if (manual) Alert.alert('Not Available', 'OTA updates are not supported on web.');
             return;
         }
 
-        try {
-            if (__DEV__) {
-                if (manual) Alert.alert('Development', 'Updates are not supported in development mode.');
-                return;
-            }
+        if (__DEV__) {
+            if (manual) Alert.alert('Development', 'Updates are not supported in development mode.');
+            return;
+        }
 
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
+        setChecking(true);
+
+        try {
+            const currentVersion = Constants.expoConfig?.version || '0.0.0';
+            const result = await DataService.checkForUpdate(currentVersion, Platform.OS);
+
+            setUpdateInfo(result);
+
+            if (result.isUpdateAvailable && result.version) {
                 Alert.alert(
-                    'Update Available',
-                    'A new version of the app is available. Would you like to update now?',
+                    `Update Available (v${result.version})`,
+                    result.releaseNotes || 'A new version of the app is available.',
                     [
                         {
-                            text: 'Cancel',
+                            text: 'Later',
                             style: 'cancel',
                         },
                         {
-                            text: 'Update',
-                            onPress: async () => {
-                                try {
-                                    await Updates.fetchUpdateAsync();
-                                    await Updates.reloadAsync();
-                                } catch (error) {
-                                    Alert.alert('Error', 'Failed to fetch update');
-                                    console.error(error);
+                            text: 'Download',
+                            onPress: () => {
+                                if (result.downloadUrl) {
+                                    Linking.openURL(result.downloadUrl);
                                 }
                             },
                         },
@@ -55,8 +68,10 @@ export function useUpdateChecker({ autoCheck = true }: { autoCheck?: boolean } =
             if (manual) {
                 Alert.alert('Error', 'Failed to check for updates. Please check your internet connection.');
             }
+        } finally {
+            setChecking(false);
         }
     };
 
-    return { checkUpdates };
+    return { checkUpdates, updateInfo, checking };
 }

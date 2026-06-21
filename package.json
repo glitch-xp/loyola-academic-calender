@@ -2,11 +2,10 @@
   "name": "loyola-timetable-app",
   "version": "1.0.4",
   "private": true,
-  "homepage": "https://glitch-xp.github.io/loyola-academic-calender",
   "scripts": {
     "dev": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "build:web": "expo export --platform web",
-    "deploy": "npm run build:web && cp dist/index.html dist/404.html && touch dist/.nojekyll && gh-pages -d dist -t",
+    "deploy": "npm run build:web && wrangler pages deploy dist/",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "android": "expo run:android",
@@ -20,7 +19,6 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/material-top-tabs": "^7.4.13",
     "@react-navigation/native": "^7.0.14",
-    "@supabase/supabase-js": "^2.58.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -64,10 +62,14 @@
     "cross-env": "^10.1.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~10.0.0",
-    "gh-pages": "^6.3.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "wrangler": "^4.103.0"
   },
   "overrides": {
-    "fast-xml-parser": "5.3.4"
+    "fast-xml-parser": "^5.9.3",
+    "brace-expansion": "^2.1.1",
+    "js-yaml": "^4.2.0",
+    "postcss": "^8.5.15",
+    "uuid": "^11.1.1"
   }
 }
