@@ -148,7 +148,7 @@ export default function TimetableEditor() {
       )}
 
       {selectedId && entries.length > 0 && (
-        <div className="timetable-grid-container glass-card">
+        <div className="timetable-grid-container card">
           <div className="timetable-grid">
             {/* Header row */}
             <div className="tt-header-cell empty"></div>

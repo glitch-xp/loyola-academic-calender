@@ -5,64 +5,64 @@
 /* ---------- CSS Variables ---------- */
 :root {
   /* Backgrounds */
-  --bg-deepest: #060609;
-  --bg-deep: #0a0a0f;
-  --bg-base: #0e0e16;
-  --bg-raised: #12121a;
-  --bg-elevated: #1a1a2e;
-  --bg-surface: #22223a;
-  --bg-hover: #2a2a44;
+  --bg-deepest: #0f172a; /* Slate 900 */
+  --bg-deep: #1e293b; /* Slate 800 */
+  --bg-base: #0f172a;
+  --bg-raised: #1e293b;
+  --bg-elevated: #334155; /* Slate 700 */
+  --bg-surface: #334155;
+  --bg-hover: #475569; /* Slate 600 */
 
   /* Accent */
-  --accent: #6366f1;
-  --accent-light: #818cf8;
-  --accent-dark: #4f46e5;
-  --accent-glow: rgba(99, 102, 241, 0.25);
-  --accent-subtle: rgba(99, 102, 241, 0.08);
+  --accent: #2563eb; /* Blue 600 */
+  --accent-light: #3b82f6; /* Blue 500 */
+  --accent-dark: #1d4ed8; /* Blue 700 */
+  --accent-glow: transparent;
+  --accent-subtle: rgba(37, 99, 235, 0.1);
 
-  /* Violet */
-  --violet: #8b5cf6;
-  --violet-light: #a78bfa;
-  --violet-glow: rgba(139, 92, 246, 0.25);
+  /* Secondary (formerly Violet) */
+  --violet: #475569; /* Slate 600 */
+  --violet-light: #64748b; /* Slate 500 */
+  --violet-glow: transparent;
 
   /* Semantic */
-  --success: #22c55e;
-  --success-bg: rgba(34, 197, 94, 0.1);
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.1);
   --warning: #f59e0b;
   --warning-bg: rgba(245, 158, 11, 0.1);
   --danger: #ef4444;
   --danger-bg: rgba(239, 68, 68, 0.1);
-  --info: #06b6d4;
-  --info-bg: rgba(6, 182, 212, 0.1);
+  --info: #0ea5e9;
+  --info-bg: rgba(14, 165, 233, 0.1);
 
   /* Text */
-  --text-primary: #f1f1f6;
-  --text-secondary: #a1a1b5;
-  --text-tertiary: #6b6b80;
-  --text-muted: #4a4a5e;
+  --text-primary: #f8fafc; /* Slate 50 */
+  --text-secondary: #cbd5e1; /* Slate 300 */
+  --text-tertiary: #94a3b8; /* Slate 400 */
+  --text-muted: #64748b; /* Slate 500 */
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.06);
-  --border-light: rgba(255, 255, 255, 0.1);
-  --border-accent: rgba(99, 102, 241, 0.3);
+  --border: #334155;
+  --border-light: #475569;
+  --border-accent: #2563eb;
 
-  /* Glass */
-  --glass-bg: rgba(18, 18, 26, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  /* Glass (Removed blur concept, just transparent borders now) */
+  --glass-bg: #1e293b;
+  --glass-border: #334155;
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   /* Sizing */
   --sidebar-width: 260px;
   --sidebar-collapsed: 72px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
 
   /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 100ms ease-in-out;
+  --transition-base: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
 }
 
 /* ---------- Reset & Base ---------- */
@@ -375,10 +375,8 @@ a {
 
 /* ---------- Cards ---------- */
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: var(--glass-shadow);
@@ -411,10 +409,8 @@ a {
 }
 
 .stat-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: var(--glass-shadow);
@@ -430,7 +426,7 @@ a {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--violet));
+  background: var(--accent);
   opacity: 0;
   transition: opacity var(--transition-base);
 }
@@ -514,13 +510,12 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  background: var(--accent);
   color: white;
-  box-shadow: 0 2px 12px var(--accent-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 20px var(--accent-glow);
+  background: var(--accent-dark);
   transform: translateY(-1px);
 }
 
@@ -711,8 +706,7 @@ a {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.75); /* Slate 900 with opacity */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -723,13 +717,13 @@ a {
 
 .modal {
   background: var(--bg-raised);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 520px;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--glass-shadow);
   animation: slideUp var(--transition-base) ease-out;
 }
 
@@ -833,8 +827,8 @@ a {
   border-radius: var(--radius-md);
   font-size: 0.85rem;
   font-weight: 500;
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
   box-shadow: var(--glass-shadow);
   animation: slideInRight var(--transition-base) ease-out;
   min-width: 280px;
@@ -871,29 +865,19 @@ a {
 }
 
 .login-page::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-              radial-gradient(circle at 70% 60%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
-  animation: auroraFloat 20s ease-in-out infinite;
+  display: none;
 }
 
 .login-card {
   position: relative;
   z-index: 1;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 48px 40px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--glass-shadow);
 }
 
 .login-logo {

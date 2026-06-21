@@ -42,7 +42,7 @@ export default function Settings() {
         <p>Manage your account settings.</p>
       </div>
 
-      <div className="settings-section glass-card">
+      <div className="settings-section card">
         <h3>Change Password</h3>
         
         {message && (

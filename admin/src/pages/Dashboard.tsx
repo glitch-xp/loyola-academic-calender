@@ -50,7 +50,7 @@ export default function Dashboard() {
 
       <div className="stats-grid">
         {statCards.map((card, i) => (
-          <div key={i} className="stat-card glass-card">
+          <div key={i} className="stat-card card">
             <div className="stat-icon" style={{ backgroundColor: `${card.color}20`, color: card.color }}>
               {card.icon}
             </div>
@@ -63,7 +63,7 @@ export default function Dashboard() {
       </div>
       
       <div className="dashboard-content">
-         <div className="dashboard-card glass-card">
+         <div className="dashboard-card card">
             <h3>Getting Started</h3>
             <p>Welcome to the Loyola Admin Panel. From here you can manage all aspects of the academic calendar app.</p>
             <ul className="help-list">

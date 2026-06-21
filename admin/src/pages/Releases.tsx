@@ -95,7 +95,7 @@ export default function Releases() {
         </button>
       </div>
 
-      <div className="data-table-container glass-card">
+      <div className="data-table-container card">
         <table className="data-table">
           <thead>
             <tr>

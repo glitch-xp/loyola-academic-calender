@@ -82,7 +82,7 @@ export default function CalendarEditor() {
     const monthDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     return (
-      <div className="calendar-grid glass-card">
+      <div className="calendar-grid card">
         <div className="cal-header">Sun</div>
         <div className="cal-header">Mon</div>
         <div className="cal-header">Tue</div>
@@ -126,7 +126,7 @@ export default function CalendarEditor() {
         </div>
       </div>
 
-      <div className="calendar-controls glass-card">
+      <div className="calendar-controls card">
         <button className="btn-icon" onClick={handlePrevMonth}><ChevronLeft size={24} /></button>
         <h2>{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
         <button className="btn-icon" onClick={handleNextMonth}><ChevronRight size={24} /></button>
