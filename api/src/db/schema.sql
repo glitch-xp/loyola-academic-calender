@@ -84,3 +84,23 @@ CREATE TABLE IF NOT EXISTS admin_users (
     password_hash TEXT NOT NULL,
     created_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Pending timetable contributions from students (moderation queue)
+CREATE TABLE IF NOT EXISTS pending_contributions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    department_id TEXT NOT NULL,
+    year TEXT NOT NULL CHECK(year IN ('I', 'II', 'III')),
+    shift_id TEXT,
+    section TEXT,
+    contributor_name TEXT,
+    timetable_data TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected')),
+    admin_notes TEXT,
+    submitted_ip TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    reviewed_at TEXT,
+    reviewed_by INTEGER REFERENCES admin_users(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pending_status ON pending_contributions(status);
+CREATE INDEX IF NOT EXISTS idx_pending_ip ON pending_contributions(submitted_ip, created_at);

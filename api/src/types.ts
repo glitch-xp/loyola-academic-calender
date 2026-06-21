@@ -72,6 +72,22 @@ export interface AdminUserRow {
     created_at: string;
 }
 
+export interface PendingContributionRow {
+    id: number;
+    department_id: string;
+    year: string;
+    shift_id: string | null;
+    section: string | null;
+    contributor_name: string | null;
+    timetable_data: string; // JSON string
+    status: 'pending' | 'approved' | 'rejected';
+    admin_notes: string | null;
+    submitted_ip: string | null;
+    created_at: string;
+    reviewed_at: string | null;
+    reviewed_by: number | null;
+}
+
 // API response types matching the frontend's expected format
 export interface MasterConfigResponse {
     departments: DepartmentConfigResponse[];

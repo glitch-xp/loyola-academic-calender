@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, LayoutChangeEvent, 
 import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
 import { BlurView } from 'expo-blur';
 import { Colors } from '../../constants/Colors';
-import { Home, Calendar, Menu } from 'lucide-react-native';
+import { Home, Calendar, Menu, Grid3x3 } from 'lucide-react-native';
 
 export function TabBar({ state, descriptors, navigation, position }: MaterialTopTabBarProps) {
     const [layout, setLayout] = React.useState<{ width: number; x: number }[]>([]);
@@ -113,6 +113,7 @@ export function TabBar({ state, descriptors, navigation, position }: MaterialTop
                         const size = 24;
 
                         if (route.name === 'index' || route.name === 'home') return <Home size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
+                        if (route.name === 'timetable') return <Grid3x3 size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
                         if (route.name === 'calendar') return <Calendar size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
                         if (route.name === 'settings' || route.name === 'more') return <Menu size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
                         return null;
@@ -120,6 +121,7 @@ export function TabBar({ state, descriptors, navigation, position }: MaterialTop
 
                     const label = () => {
                         if (route.name === 'index' || route.name === 'home') return "Home";
+                        if (route.name === 'timetable') return "Timetable";
                         if (route.name === 'calendar') return "Calendar";
                         if (route.name === 'settings' || route.name === 'more') return "More";
                         return "";

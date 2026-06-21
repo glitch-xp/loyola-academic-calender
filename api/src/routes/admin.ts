@@ -44,6 +44,8 @@ admin.use('/timetables/*', authMiddleware);
 admin.use('/timetable-entries/*', authMiddleware);
 admin.use('/calendar/*', authMiddleware);
 admin.use('/releases/*', authMiddleware);
+admin.use('/contributions/*', authMiddleware);
+admin.use('/contributions', authMiddleware);
 admin.use('/change-password', authMiddleware);
 admin.use('/stats', authMiddleware);
 admin.use('/seed', authMiddleware);
@@ -457,14 +459,237 @@ admin.post('/change-password', async (c) => {
     return c.json({ success: true });
 });
 
+// ─── Contributions (Moderation Queue) ────────────────────────────────────────
+
+admin.get('/contributions', async (c) => {
+    const status = c.req.query('status'); // 'pending', 'approved', 'rejected', or omit for all
+    const db = c.env.DB;
+
+    let query = `
+        SELECT pc.*, d.name as department_name 
+        FROM pending_contributions pc
+        LEFT JOIN departments d ON pc.department_id = d.id
+    `;
+    const params: string[] = [];
+
+    if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+        query += ' WHERE pc.status = ?';
+        params.push(status);
+    }
+
+    query += ' ORDER BY pc.created_at DESC';
+
+    const stmt = params.length > 0
+        ? db.prepare(query).bind(...params)
+        : db.prepare(query);
+
+    const result = await stmt.all();
+    return c.json(result.results);
+});
+
+admin.get('/contributions/:id', async (c) => {
+    const id = c.req.param('id');
+    const db = c.env.DB;
+
+    const contribution = await db
+        .prepare(`
+            SELECT pc.*, d.name as department_name 
+            FROM pending_contributions pc
+            LEFT JOIN departments d ON pc.department_id = d.id
+            WHERE pc.id = ?
+        `)
+        .bind(id)
+        .first();
+
+    if (!contribution) {
+        return c.json({ error: 'Contribution not found' }, 404);
+    }
+
+    // Also fetch existing timetable for this slot (for comparison)
+    let existingTimetable = null;
+    const existingTT = await db
+        .prepare(`
+            SELECT id FROM timetables 
+            WHERE department_id = ? AND year = ? 
+            AND (shift_id = ? OR (shift_id IS NULL AND ? IS NULL))
+            AND (section = ? OR (section IS NULL AND ? IS NULL))
+        `)
+        .bind(
+            contribution.department_id,
+            contribution.year,
+            contribution.shift_id, contribution.shift_id,
+            contribution.section, contribution.section
+        )
+        .first();
+
+    if (existingTT) {
+        const entries = await db
+            .prepare('SELECT * FROM timetable_entries WHERE timetable_id = ? ORDER BY day_order, period')
+            .bind((existingTT as any).id)
+            .all();
+
+        // Transform to same format as contribution data
+        const timetableData: Record<string, any[]> = {};
+        for (const entry of entries.results) {
+            const dayKey = String((entry as any).day_order);
+            if (!timetableData[dayKey]) timetableData[dayKey] = [];
+            timetableData[dayKey].push({
+                name: (entry as any).subject_name,
+                code: (entry as any).subject_code || '',
+                ...((entry as any).room ? { room: (entry as any).room } : {}),
+                ...((entry as any).teacher ? { teacher: (entry as any).teacher } : {}),
+            });
+        }
+
+        existingTimetable = {
+            id: (existingTT as any).id,
+            data: timetableData
+        };
+    }
+
+    return c.json({
+        contribution,
+        existingTimetable
+    });
+});
+
+admin.post('/contributions/:id/approve', async (c) => {
+    const id = c.req.param('id');
+    const db = c.env.DB;
+    const adminUser = c.get('adminUser') as any;
+
+    const contribution = await db
+        .prepare('SELECT * FROM pending_contributions WHERE id = ? AND status = ?')
+        .bind(id, 'pending')
+        .first();
+
+    if (!contribution) {
+        return c.json({ error: 'Contribution not found or already reviewed' }, 404);
+    }
+
+    const contrib = contribution as any;
+    let timetableData: Record<string, any[]>;
+    try {
+        timetableData = JSON.parse(contrib.timetable_data);
+    } catch {
+        return c.json({ error: 'Corrupt timetable data in contribution' }, 500);
+    }
+
+    // Generate a timetable ID
+    const ttId = `${contrib.department_id}_${contrib.year}${contrib.shift_id ? '_s' + contrib.shift_id : ''}${contrib.section ? '_' + contrib.section : ''}_contrib`;
+
+    // Check if a timetable already exists for this slot
+    const existingTT = await db
+        .prepare(`
+            SELECT id FROM timetables 
+            WHERE department_id = ? AND year = ? 
+            AND (shift_id = ? OR (shift_id IS NULL AND ? IS NULL))
+            AND (section = ? OR (section IS NULL AND ? IS NULL))
+        `)
+        .bind(
+            contrib.department_id, contrib.year,
+            contrib.shift_id, contrib.shift_id,
+            contrib.section, contrib.section
+        )
+        .first();
+
+    const finalTtId = existingTT ? (existingTT as any).id : ttId;
+
+    if (existingTT) {
+        // Update existing: clear old entries and update contributor
+        await db.prepare('DELETE FROM timetable_entries WHERE timetable_id = ?')
+            .bind(finalTtId).run();
+        await db.prepare(
+            `UPDATE timetables SET contributor = ?, updated_at = datetime('now') WHERE id = ?`
+        ).bind(contrib.contributor_name || null, finalTtId).run();
+    } else {
+        // Create new timetable record
+        await db.prepare(
+            'INSERT INTO timetables (id, department_id, year, shift_id, section, contributor) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(
+            finalTtId,
+            contrib.department_id,
+            contrib.year,
+            contrib.shift_id || null,
+            contrib.section || null,
+            contrib.contributor_name || null
+        ).run();
+    }
+
+    // Insert timetable entries from the contribution data
+    let entryCount = 0;
+    for (const [dayOrder, subjects] of Object.entries(timetableData)) {
+        const dayNum = parseInt(dayOrder);
+        if (isNaN(dayNum) || dayNum < 1 || dayNum > 6) continue;
+
+        for (let period = 0; period < (subjects as any[]).length; period++) {
+            const sub = (subjects as any[])[period];
+            if (!sub.name && !sub.code) continue; // skip empty entries
+
+            await db.prepare(
+                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, room, teacher) VALUES (?, ?, ?, ?, ?, ?, ?)'
+            ).bind(
+                finalTtId,
+                dayNum,
+                period + 1,
+                sub.name || '',
+                sub.code || '',
+                sub.room || '',
+                sub.teacher || ''
+            ).run();
+            entryCount++;
+        }
+    }
+
+    // Mark contribution as approved
+    await db.prepare(
+        `UPDATE pending_contributions SET status = 'approved', reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
+    ).bind(adminUser.sub, id).run();
+
+    return c.json({
+        success: true,
+        timetableId: finalTtId,
+        entriesCreated: entryCount
+    });
+});
+
+admin.post('/contributions/:id/reject', async (c) => {
+    const id = c.req.param('id');
+    const db = c.env.DB;
+    const adminUser = c.get('adminUser') as any;
+    const { notes } = await c.req.json().catch(() => ({ notes: '' }));
+
+    const contribution = await db
+        .prepare('SELECT id FROM pending_contributions WHERE id = ? AND status = ?')
+        .bind(id, 'pending')
+        .first();
+
+    if (!contribution) {
+        return c.json({ error: 'Contribution not found or already reviewed' }, 404);
+    }
+
+    await db.prepare(
+        `UPDATE pending_contributions SET status = 'rejected', admin_notes = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
+    ).bind(notes || null, adminUser.sub, id).run();
+
+    return c.json({ success: true });
+});
+
+admin.delete('/contributions/:id', async (c) => {
+    const id = c.req.param('id');
+    await c.env.DB.prepare('DELETE FROM pending_contributions WHERE id = ?').bind(id).run();
+    return c.json({ success: true });
+});
+
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────
 
 admin.get('/stats', async (c) => {
-    const [departments, timetables, calendarDays, releases] = await Promise.all([
+    const [departments, timetables, calendarDays, releases, pendingContributions] = await Promise.all([
         c.env.DB.prepare('SELECT COUNT(*) as count FROM departments').first<{ count: number }>(),
         c.env.DB.prepare('SELECT COUNT(*) as count FROM timetables').first<{ count: number }>(),
         c.env.DB.prepare('SELECT COUNT(*) as count FROM calendar_days').first<{ count: number }>(),
         c.env.DB.prepare('SELECT COUNT(*) as count FROM app_releases').first<{ count: number }>(),
+        c.env.DB.prepare("SELECT COUNT(*) as count FROM pending_contributions WHERE status = 'pending'").first<{ count: number }>(),
     ]);
 
     return c.json({
@@ -472,6 +697,7 @@ admin.get('/stats', async (c) => {
         timetables: timetables?.count || 0,
         calendarDays: calendarDays?.count || 0,
         releases: releases?.count || 0,
+        pendingContributions: pendingContributions?.count || 0,
     });
 });
 

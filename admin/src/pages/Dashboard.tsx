@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
-import { Building2, Calendar, Clock, DownloadCloud } from 'lucide-react';
+import { Building2, Calendar, Clock, DownloadCloud, UserCheck } from 'lucide-react';
 
 interface Stats {
   departments: number;
   timetables: number;
   calendarDays: number;
   releases: number;
+  pendingContributions: number;
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<Stats>({ departments: 0, timetables: 0, calendarDays: 0, releases: 0 });
+  const [stats, setStats] = useState<Stats>({ departments: 0, timetables: 0, calendarDays: 0, releases: 0, pendingContributions: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +34,7 @@ export default function Dashboard() {
     { title: 'Timetables', value: stats.timetables, icon: <Clock size={24} />, color: 'var(--secondary)' },
     { title: 'Calendar Days', value: stats.calendarDays, icon: <Calendar size={24} />, color: '#10b981' },
     { title: 'Releases', value: stats.releases, icon: <DownloadCloud size={24} />, color: '#f59e0b' },
+    { title: 'Pending Reviews', value: stats.pendingContributions, icon: <UserCheck size={24} />, color: '#8b5cf6' },
   ];
 
   if (loading) {

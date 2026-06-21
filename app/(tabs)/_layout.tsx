@@ -34,6 +34,12 @@ export default function TabLayout() {
                 }}
             />
             <MaterialTopTabs.Screen
+                name="timetable"
+                options={{
+                    title: 'Timetable',
+                }}
+            />
+            <MaterialTopTabs.Screen
                 name="calendar"
                 options={{
                     title: 'Calendar',

@@ -396,6 +396,25 @@ export default function HomeScreen() {
                         </View>
                     )}
 
+                    {/* Empty Schedule State */}
+                    {!todayConfig?.isHoliday && subjects.length === 0 && (
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
+                            <Card style={styles.subjectCard}>
+                                <View style={{ padding: 20, alignItems: 'center' }}>
+                                    <Text style={{ textAlign: 'center', color: Colors.textLight, marginBottom: 12 }}>
+                                        No timetable found for your class.
+                                    </Text>
+                                    <Button 
+                                        title="Create & Contribute" 
+                                        onPress={() => router.navigate('/(tabs)/timetable')} 
+                                        variant="primary" 
+                                    />
+                                </View>
+                            </Card>
+                        </View>
+                    )}
+
                     {/* Contributor for Today's Schedule */}
                     {contributor && !todayConfig?.isHoliday && subjects.length > 0 && (
                         <View style={styles.contributorContainerSmall}>

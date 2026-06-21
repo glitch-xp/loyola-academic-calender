@@ -7,6 +7,7 @@ import Departments from './pages/Departments';
 import TimetableEditor from './pages/TimetableEditor';
 import CalendarEditor from './pages/CalendarEditor';
 import Releases from './pages/Releases';
+import Contributions from './pages/Contributions';
 import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ function App() {
           <Route path="/timetables" element={<ProtectedRoute><TimetableEditor /></ProtectedRoute>} />
           <Route path="/calendar" element={<ProtectedRoute><CalendarEditor /></ProtectedRoute>} />
           <Route path="/releases" element={<ProtectedRoute><Releases /></ProtectedRoute>} />
+          <Route path="/contributions" element={<ProtectedRoute><Contributions /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           
           <Route path="*" element={<Navigate to="/" />} />

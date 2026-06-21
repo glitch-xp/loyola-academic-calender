@@ -9,3 +9,6 @@ JWT_SECRET = "b46a2f7d8e9c13b5a04f762391ce4d25a817b96f30a24d51c78e9f2b84d3c615"
 binding = "DB"
 database_name = "loyola-db"
 database_id = "7938294f-da2b-417d-a2e8-9224c703917b"
+
+[triggers]
+crons = ["30 18 * * *"]

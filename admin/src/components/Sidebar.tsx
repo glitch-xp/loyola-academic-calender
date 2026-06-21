@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LayoutDashboard, Building2, Calendar, Clock, DownloadCloud, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Building2, Calendar, Clock, DownloadCloud, Settings, LogOut, UserCheck } from 'lucide-react';
 
 export default function Sidebar() {
   const { logout, username } = useAuth();
@@ -11,6 +11,7 @@ export default function Sidebar() {
     { to: '/timetables', icon: <Clock size={20} />, label: 'Timetables' },
     { to: '/calendar', icon: <Calendar size={20} />, label: 'Calendar' },
     { to: '/releases', icon: <DownloadCloud size={20} />, label: 'Releases' },
+    { to: '/contributions', icon: <UserCheck size={20} />, label: 'Contributions' },
     { to: '/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 

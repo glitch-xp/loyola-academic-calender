@@ -83,3 +83,12 @@ export interface MasterConfig {
         timetableBase: string;
     }
 }
+
+export interface ContributionSubmission {
+    department_id: string;
+    year: 'I' | 'II' | 'III';
+    shift_id?: string;
+    section?: string;
+    contributor_name?: string;
+    timetable_data: TimeTable;
+}

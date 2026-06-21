@@ -1,0 +1,38 @@
+name: Deploy Web App to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'api/**'
+      - '.github/workflows/cloudflare-api-cicd.yml'
+      - 'README.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Web App
+        run: npx expo export --platform web
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/ --project-name=loyola-timetable-app
