@@ -18792,7 +18792,7 @@ async function scrapeCalendar(env) {
       currentYear++;
     }
     if (i < 11) {
-      await sleep(1e3);
+      await sleep(5e3);
     }
   }
   console.log(`Finished scraping. Parsed ${records.length} dates. Upserting to database...`);

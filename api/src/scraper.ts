@@ -86,9 +86,9 @@ export async function scrapeCalendar(env: Env) {
             currentYear++;
         }
 
-        // Rate limiting: sleep 1 second for local population
+        // Rate limiting: sleep 5 seconds if not the last iteration
         if (i < 11) {
-            await sleep(1000);
+            await sleep(5000);
         }
     }
 
