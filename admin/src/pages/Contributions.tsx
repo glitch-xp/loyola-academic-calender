@@ -51,6 +51,9 @@ export default function Contributions() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [editDeptId, setEditDeptId] = useState('');
   const [editDeptName, setEditDeptName] = useState('');
+  const [editYear, setEditYear] = useState('');
+  const [editShiftId, setEditShiftId] = useState('');
+  const [editSection, setEditSection] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -81,6 +84,9 @@ export default function Contributions() {
       setReviewModal(detail);
       setEditDeptId(detail.contribution.department_id || '');
       setEditDeptName(detail.contribution.department_name || '');
+      setEditYear(detail.contribution.year || '');
+      setEditShiftId(detail.contribution.shift_id || '');
+      setEditSection(detail.contribution.section || '');
     } catch (error) {
       console.error('Failed to load contribution:', error);
       showMessage('error', 'Failed to load contribution details');
@@ -95,13 +101,37 @@ export default function Contributions() {
     try {
       await api.post(`/api/admin/contributions/${reviewModal.contribution.id}/approve`, {
         department_id: editDeptId,
-        department_name: editDeptName
+        department_name: editDeptName,
+        year: editYear,
+        shift_id: editShiftId,
+        section: editSection
       });
       showMessage('success', 'Contribution approved and timetable created!');
       setReviewModal(null);
       fetchContributions();
     } catch (error: any) {
       showMessage('error', error.message || 'Failed to approve');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!reviewModal) return;
+    setActionLoading(true);
+    try {
+      await api.put(`/api/admin/contributions/${reviewModal.contribution.id}`, {
+        department_id: editDeptId,
+        department_name: editDeptName,
+        year: editYear,
+        shift_id: editShiftId,
+        section: editSection
+      });
+      showMessage('success', 'Details updated successfully!');
+      setReviewModal(null);
+      fetchContributions();
+    } catch (error: any) {
+      showMessage('error', error.message || 'Failed to update');
     } finally {
       setActionLoading(false);
     }
@@ -336,42 +366,58 @@ export default function Contributions() {
               <div className="review-info-item">
                 <span className="review-info-label">Department</span>
                 <span className="review-info-value">
-                  {reviewModal.contribution.status === 'pending' ? (
-                    <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', marginTop: '4px' }}>
-                      <input
-                        className="form-input"
-                        value={editDeptName}
-                        onChange={e => setEditDeptName(e.target.value)}
-                        placeholder="Department Name"
-                      />
-                      <input
-                        className="form-input"
-                        value={editDeptId}
-                        onChange={e => setEditDeptId(e.target.value)}
-                        placeholder="Department ID"
-                      />
-                    </div>
-                  ) : (
-                    reviewModal.contribution.department_name || reviewModal.contribution.department_id
-                  )}
+                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', marginTop: '4px' }}>
+                    <input
+                      className="form-input"
+                      value={editDeptName}
+                      onChange={e => setEditDeptName(e.target.value)}
+                      placeholder="Department Name"
+                    />
+                    <input
+                      className="form-input"
+                      value={editDeptId}
+                      onChange={e => setEditDeptId(e.target.value)}
+                      placeholder="Department ID"
+                    />
+                  </div>
                 </span>
               </div>
               <div className="review-info-item">
                 <span className="review-info-label">Year</span>
-                <span className="review-info-value">{reviewModal.contribution.year}</span>
+                <span className="review-info-value">
+                  <input
+                    className="form-input"
+                    value={editYear}
+                    onChange={e => setEditYear(e.target.value)}
+                    placeholder="Year (I, II, III)"
+                    style={{ marginTop: '4px' }}
+                  />
+                </span>
               </div>
-              {reviewModal.contribution.shift_id && (
-                <div className="review-info-item">
-                  <span className="review-info-label">Shift</span>
-                  <span className="review-info-value">{reviewModal.contribution.shift_id}</span>
-                </div>
-              )}
-              {reviewModal.contribution.section && (
-                <div className="review-info-item">
-                  <span className="review-info-label">Section</span>
-                  <span className="review-info-value">{reviewModal.contribution.section}</span>
-                </div>
-              )}
+              <div className="review-info-item">
+                <span className="review-info-label">Shift</span>
+                <span className="review-info-value">
+                  <input
+                    className="form-input"
+                    value={editShiftId}
+                    onChange={e => setEditShiftId(e.target.value)}
+                    placeholder="Shift (optional)"
+                    style={{ marginTop: '4px' }}
+                  />
+                </span>
+              </div>
+              <div className="review-info-item">
+                <span className="review-info-label">Section</span>
+                <span className="review-info-value">
+                  <input
+                    className="form-input"
+                    value={editSection}
+                    onChange={e => setEditSection(e.target.value)}
+                    placeholder="Section (optional)"
+                    style={{ marginTop: '4px' }}
+                  />
+                </span>
+              </div>
               <div className="review-info-item">
                 <span className="review-info-label">Contributor</span>
                 <span className="review-info-value">
@@ -416,37 +462,49 @@ export default function Contributions() {
               )}
             </div>
 
-            {/* Actions (only for pending) */}
-            {reviewModal.contribution.status === 'pending' && (
-              <div className="review-actions">
-                <div className="reject-section">
-                  <input className="form-input" type="text"
-
-                    placeholder="Rejection reason (optional)"
-                    value={rejectNotes}
-                    onChange={e => setRejectNotes(e.target.value)}
-                  />
-                </div>
-                <div className="review-buttons">
-                  <button
-                    className="btn btn-danger"
-                    onClick={handleReject}
-                    disabled={actionLoading}
-                  >
-                    <X size={16} />
-                    {actionLoading ? 'Rejecting...' : 'Reject'}
-                  </button>
+            {/* Actions */}
+            <div className="review-actions">
+              {reviewModal.contribution.status === 'pending' ? (
+                <>
+                  <div className="reject-section">
+                    <input className="form-input" type="text"
+                      placeholder="Rejection reason (optional)"
+                      value={rejectNotes}
+                      onChange={e => setRejectNotes(e.target.value)}
+                    />
+                  </div>
+                  <div className="review-buttons">
+                    <button
+                      className="btn btn-danger"
+                      onClick={handleReject}
+                      disabled={actionLoading}
+                    >
+                      <X size={16} />
+                      {actionLoading ? 'Rejecting...' : 'Reject'}
+                    </button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleApprove}
+                      disabled={actionLoading}
+                    >
+                      <Check size={16} />
+                      {actionLoading ? 'Approving...' : 'Approve & Publish'}
+                    </button>
+                  </div>
+                </>
+              ) : reviewModal.contribution.status === 'approved' ? (
+                <div className="review-buttons" style={{ justifyContent: 'flex-end', width: '100%' }}>
                   <button
                     className="btn btn-primary"
-                    onClick={handleApprove}
+                    onClick={handleUpdate}
                     disabled={actionLoading}
                   >
                     <Check size={16} />
-                    {actionLoading ? 'Approving...' : 'Approve & Publish'}
+                    {actionLoading ? 'Updating...' : 'Update Details'}
                   </button>
                 </div>
-              </div>
-            )}
+              ) : null}
+            </div>
           </div>
         )}
       </Modal>
