@@ -575,7 +575,12 @@ admin.post('/contributions/:id/approve', async (c) => {
 
     const contrib = contribution as any;
     if (overrideDeptId) contrib.department_id = overrideDeptId;
-    if (overrideDeptName) contrib.department_name = overrideDeptName;
+    if (overrideDeptName) {
+        // Upsert the custom department into the departments table
+        await db.prepare('INSERT INTO departments (id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name')
+            .bind(contrib.department_id, overrideDeptName)
+            .run();
+    }
     let timetableData: Record<string, any[]>;
     try {
         timetableData = JSON.parse(contrib.timetable_data);
@@ -650,8 +655,8 @@ admin.post('/contributions/:id/approve', async (c) => {
 
     // Mark contribution as approved
     await db.prepare(
-        `UPDATE pending_contributions SET status = 'approved', department_id = ?, department_name = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
-    ).bind(contrib.department_id, contrib.department_name, adminUser.sub, id).run();
+        `UPDATE pending_contributions SET status = 'approved', department_id = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
+    ).bind(contrib.department_id, adminUser.sub, id).run();
 
     return c.json({
         success: true,

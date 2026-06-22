@@ -163,14 +163,8 @@ contributions.post('/', async (c) => {
     }
 
     const cleanDeptId = stripHtml(department_id).substring(0, 100);
-    const deptExists = await db
-        .prepare('SELECT id FROM departments WHERE id = ?')
-        .bind(cleanDeptId)
-        .first();
-
-    if (!deptExists) {
-        return c.json({ error: 'Invalid department' }, 400);
-    }
+    // We allow any department_id (so users can submit custom departments for admin review).
+    // The admin can then map or rename the department.
 
     // Year: must be I, II, or III
     if (!year || !['I', 'II', 'III'].includes(year)) {
