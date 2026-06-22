@@ -1,4 +1,4 @@
-name = "loyola-academic-calender"
+name = "loyola-timetable"
 compatibility_date = "2024-12-30"
 pages_build_output_dir = "dist"
 
