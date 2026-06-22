@@ -564,105 +564,116 @@ admin.post('/contributions/:id/approve', async (c) => {
     const overrideDeptId = (body as any).department_id;
     const overrideDeptName = (body as any).department_name;
 
-    const contribution = await db
-        .prepare('SELECT * FROM pending_contributions WHERE id = ? AND status = ?')
-        .bind(id, 'pending')
-        .first();
-
-    if (!contribution) {
-        return c.json({ error: 'Contribution not found or already reviewed' }, 404);
-    }
-
-    const contrib = contribution as any;
-    if (overrideDeptId) contrib.department_id = overrideDeptId;
-    if (overrideDeptName) {
-        // Upsert the custom department into the departments table
-        await db.prepare('INSERT INTO departments (id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name')
-            .bind(contrib.department_id, overrideDeptName)
-            .run();
-    }
-    let timetableData: Record<string, any[]>;
     try {
-        timetableData = JSON.parse(contrib.timetable_data);
-    } catch {
-        return c.json({ error: 'Corrupt timetable data in contribution' }, 500);
-    }
+        const contribution = await db
+            .prepare('SELECT * FROM pending_contributions WHERE id = ? AND status = ?')
+            .bind(id, 'pending')
+            .first();
 
-    // Generate a timetable ID
-    const ttId = `${contrib.department_id}_${contrib.year}${contrib.shift_id ? '_s' + contrib.shift_id : ''}${contrib.section ? '_' + contrib.section : ''}_contrib`;
+        if (!contribution) {
+            return c.json({ error: 'Contribution not found or already reviewed' }, 404);
+        }
 
-    // Check if a timetable already exists for this slot
-    const existingTT = await db
-        .prepare(`
-            SELECT id FROM timetables 
-            WHERE department_id = ? AND year = ? 
-            AND (shift_id = ? OR (shift_id IS NULL AND ? IS NULL))
-            AND (section = ? OR (section IS NULL AND ? IS NULL))
-        `)
-        .bind(
-            contrib.department_id, contrib.year,
-            contrib.shift_id, contrib.shift_id,
-            contrib.section, contrib.section
-        )
-        .first();
+        const contrib = contribution as any;
+        if (overrideDeptId) contrib.department_id = overrideDeptId;
+        
+        // Always ensure department exists to prevent Foreign Key constraint errors
+        if (overrideDeptName) {
+            await db.prepare('INSERT INTO departments (id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name')
+                .bind(contrib.department_id, overrideDeptName)
+                .run();
+        } else {
+            await db.prepare('INSERT OR IGNORE INTO departments (id, name) VALUES (?, ?)')
+                .bind(contrib.department_id, contrib.department_id)
+                .run();
+        }
 
-    const finalTtId = existingTT ? (existingTT as any).id : ttId;
+        let timetableData: Record<string, any[]>;
+        try {
+            timetableData = JSON.parse(contrib.timetable_data);
+        } catch {
+            return c.json({ error: 'Corrupt timetable data in contribution' }, 500);
+        }
 
-    if (existingTT) {
-        // Update existing: clear old entries and update contributor
-        await db.prepare('DELETE FROM timetable_entries WHERE timetable_id = ?')
-            .bind(finalTtId).run();
-        await db.prepare(
-            `UPDATE timetables SET contributor = ?, updated_at = datetime('now') WHERE id = ?`
-        ).bind(contrib.contributor_name || null, finalTtId).run();
-    } else {
-        // Create new timetable record
-        await db.prepare(
-            'INSERT INTO timetables (id, department_id, year, shift_id, section, contributor) VALUES (?, ?, ?, ?, ?, ?)'
-        ).bind(
-            finalTtId,
-            contrib.department_id,
-            contrib.year,
-            contrib.shift_id || null,
-            contrib.section || null,
-            contrib.contributor_name || null
-        ).run();
-    }
+        // Generate a timetable ID
+        const ttId = `${contrib.department_id}_${contrib.year}${contrib.shift_id ? '_s' + contrib.shift_id : ''}${contrib.section ? '_' + contrib.section : ''}_contrib`;
 
-    // Insert timetable entries from the contribution data
-    let entryCount = 0;
-    for (const [dayOrder, subjects] of Object.entries(timetableData)) {
-        const dayNum = parseInt(dayOrder);
-        if (isNaN(dayNum) || dayNum < 1 || dayNum > 6) continue;
+        // Check if a timetable already exists for this slot
+        const existingTT = await db
+            .prepare(`
+                SELECT id FROM timetables 
+                WHERE department_id = ? AND year = ? 
+                AND (shift_id = ? OR (shift_id IS NULL AND ? IS NULL))
+                AND (section = ? OR (section IS NULL AND ? IS NULL))
+            `)
+            .bind(
+                contrib.department_id, contrib.year,
+                contrib.shift_id, contrib.shift_id,
+                contrib.section, contrib.section
+            )
+            .first();
 
-        for (let period = 0; period < (subjects as any[]).length; period++) {
-            const sub = (subjects as any[])[period];
-            if (!sub.name && !sub.code) continue; // skip empty entries
+        const finalTtId = existingTT ? (existingTT as any).id : ttId;
 
+        if (existingTT) {
+            // Update existing: clear old entries and update contributor
+            await db.prepare('DELETE FROM timetable_entries WHERE timetable_id = ?')
+                .bind(finalTtId).run();
             await db.prepare(
-                'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, teacher) VALUES (?, ?, ?, ?, ?, ?)'
+                `UPDATE timetables SET contributor = ?, updated_at = datetime('now') WHERE id = ?`
+            ).bind(contrib.contributor_name || null, finalTtId).run();
+        } else {
+            // Create new timetable record
+            await db.prepare(
+                'INSERT INTO timetables (id, department_id, year, shift_id, section, contributor) VALUES (?, ?, ?, ?, ?, ?)'
             ).bind(
                 finalTtId,
-                dayNum,
-                period + 1,
-                sub.name || '',
-                sub.code || '',
-                sub.teacher || ''
+                contrib.department_id,
+                contrib.year,
+                contrib.shift_id || null,
+                contrib.section || null,
+                contrib.contributor_name || null
             ).run();
-            entryCount++;
         }
+
+        // Insert timetable entries from the contribution data
+        let entryCount = 0;
+        for (const [dayOrder, subjects] of Object.entries(timetableData)) {
+            const dayNum = parseInt(dayOrder);
+            if (isNaN(dayNum) || dayNum < 1 || dayNum > 6) continue;
+
+            for (let period = 0; period < (subjects as any[]).length; period++) {
+                const sub = (subjects as any[])[period];
+                if (!sub || (!sub.name && !sub.code)) continue; // skip empty entries
+
+                await db.prepare(
+                    'INSERT INTO timetable_entries (timetable_id, day_order, period, subject_name, subject_code, teacher) VALUES (?, ?, ?, ?, ?, ?)'
+                ).bind(
+                    finalTtId,
+                    dayNum,
+                    period + 1,
+                    sub.name || '',
+                    sub.code || '',
+                    sub.teacher || ''
+                ).run();
+                entryCount++;
+            }
+        }
+
+        // Mark contribution as approved
+        await db.prepare(
+            `UPDATE pending_contributions SET status = 'approved', department_id = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
+        ).bind(contrib.department_id, adminUser.sub, id).run();
+
+        return c.json({
+            success: true,
+            timetableId: finalTtId,
+            entriesCreated: entryCount
+        });
+    } catch (error: any) {
+        console.error('Approve contribution error:', error);
+        return c.json({ error: error.message || 'Internal server error' }, 500);
     }
-
-    // Mark contribution as approved
-    await db.prepare(
-        `UPDATE pending_contributions SET status = 'approved', department_id = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
-    ).bind(contrib.department_id, adminUser.sub, id).run();
-
-    return c.json({
-        success: true,
-        timetableId: finalTtId,
-        entriesCreated: entryCount
-    });
 });
 
 admin.post('/contributions/:id/reject', async (c) => {
