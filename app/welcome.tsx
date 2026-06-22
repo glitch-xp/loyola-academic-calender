@@ -147,6 +147,7 @@ export default function WelcomeScreen() {
             const courseData = await DataService.fetchCourseData(finalDept, year, shift, finalSection);
 
             // Save Config & Data
+            await StorageService.removeData('custom_timetable');
             await StorageService.saveUserProfile({ department: finalDept, year: year as any, shift, section: finalSection });
             await StorageService.saveData('master_config', config);
             await StorageService.saveData('timetable', courseData.timetable);

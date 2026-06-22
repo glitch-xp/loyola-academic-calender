@@ -122,7 +122,10 @@ export default function MyTimetableScreen() {
                     serverTT = courseData.timetable;
 
                     // Update Cache
-                    await StorageService.saveData('timetable', courseData.timetable);
+                    const customTT = await StorageService.getData<TimeTable>('custom_timetable');
+                    if (!customTT) {
+                        await StorageService.saveData('timetable', courseData.timetable);
+                    }
                     await StorageService.saveData('day_order_config', courseData.calendar);
                 } catch (e) {
                     console.log('Sync failed (offline or error), using cached data');

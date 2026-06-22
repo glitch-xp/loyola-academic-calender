@@ -46,11 +46,12 @@ export default function HomeScreen() {
 
         try {
             // 1. Load from local storage (Fast)
-            currentTimetable = await StorageService.getData<TimeTable>('timetable');
+            const customTT = await StorageService.getData<TimeTable>('custom_timetable');
+            currentTimetable = customTT || await StorageService.getData<TimeTable>('timetable');
             currentCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
             currentMasterConfig = await StorageService.getData<MasterConfig>('master_config');
             currentUserProfile = await StorageService.getUserProfile();
-            const storedContributor = await StorageService.getData<string>('contributor');
+            const storedContributor = customTT ? null : await StorageService.getData<string>('contributor');
 
             // Check if critical data is missing
             if (!currentTimetable || !currentCalendar || !currentUserProfile) {
@@ -80,22 +81,30 @@ export default function HomeScreen() {
                         currentUserProfile.section
                     );
 
+                    // Check for custom timetable
+                    const customTT = await StorageService.getData<TimeTable>('custom_timetable');
+
                     // Update State
-                    setTimetable(courseData.timetable);
+                    setTimetable(customTT || courseData.timetable);
                     setCalendar(courseData.calendar);
-                    setContributor(courseData.contributor || null);
+                    setContributor(customTT ? null : (courseData.contributor || null));
 
                     // Update Cache
-                    await StorageService.saveData('timetable', courseData.timetable);
-                    await StorageService.saveData('day_order_config', courseData.calendar);
-                    if (courseData.contributor) {
-                        await StorageService.saveData('contributor', courseData.contributor);
+                    if (!customTT) {
+                        await StorageService.saveData('timetable', courseData.timetable);
+                        if (courseData.contributor) {
+                            await StorageService.saveData('contributor', courseData.contributor);
+                        } else {
+                            await StorageService.removeData('contributor');
+                        }
                     } else {
+                        await StorageService.saveData('timetable', customTT);
                         await StorageService.removeData('contributor');
                     }
+                    await StorageService.saveData('day_order_config', courseData.calendar);
 
                     // Re-calculate with fresh data
-                    calculateDay(courseData.timetable, courseData.calendar, currentMasterConfig, currentUserProfile);
+                    calculateDay(customTT || courseData.timetable, courseData.calendar, currentMasterConfig, currentUserProfile);
                 } catch (e) {
                     console.log('Sync failed (offline or error), using cached data');
                     // We don't block the UI if sync fails, we just keep using cached data
