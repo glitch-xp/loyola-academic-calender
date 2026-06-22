@@ -118,7 +118,7 @@ export default function MyTimetableScreen() {
                         profile.shift,
                         profile.section
                     );
-                    
+
                     serverTT = courseData.timetable;
 
                     // Update Cache
@@ -216,13 +216,11 @@ export default function MyTimetableScreen() {
             return;
         }
 
-        // Find the department ID from master config
+        // Find the department ID from master config or use the custom department name
         const dept = masterConfig?.departments.find(d => d.name === userProfile.department);
-        if (!dept) {
-            showMsg('error', 'Department not found in configuration');
-            return;
-        }
-        const deptId = dept.name.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        const deptId = dept
+            ? dept.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+            : userProfile.department.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 
         setContributing(true);
         try {
@@ -356,7 +354,7 @@ export default function MyTimetableScreen() {
                         {PERIODS.map((_, pIdx) => {
                             const entry = grid[selectedDay][pIdx];
                             const isEmpty = !entry.name;
-                            
+
                             return (
                                 <TouchableOpacity
                                     key={`period-${pIdx}`}
@@ -375,7 +373,7 @@ export default function MyTimetableScreen() {
                                             </View>
                                         ) : null}
                                     </View>
-                                    
+
                                     {isEmpty ? (
                                         <View style={styles.periodEmpty}>
                                             <Text style={styles.periodEmptyText}>+ Tap to add subject</Text>
@@ -422,7 +420,7 @@ export default function MyTimetableScreen() {
                                 <Card style={styles.contributeCard}>
                                     <Text style={styles.contributeTitle}>Share with fellow students</Text>
                                     <Text style={styles.contributeDesc}>
-                                        Your timetable will be reviewed by an admin before being published. It helps students in your department!
+                                        Your timetable will be shared with your department. It helps students in your department!
                                     </Text>
 
                                     <TextInput

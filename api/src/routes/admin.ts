@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { Env } from '../types';
 import { authMiddleware, createJWT, hashPassword, verifyPassword } from '../middleware/auth';
 
-const admin = new Hono<{ Bindings: Env }>();
+const admin = new Hono<{ Bindings: Env; Variables: { adminUser: any } }>();
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -556,6 +556,14 @@ admin.post('/contributions/:id/approve', async (c) => {
     const db = c.env.DB;
     const adminUser = c.get('adminUser') as any;
 
+    let body = {};
+    try {
+        body = await c.req.json();
+    } catch (e) {}
+
+    const overrideDeptId = (body as any).department_id;
+    const overrideDeptName = (body as any).department_name;
+
     const contribution = await db
         .prepare('SELECT * FROM pending_contributions WHERE id = ? AND status = ?')
         .bind(id, 'pending')
@@ -566,6 +574,8 @@ admin.post('/contributions/:id/approve', async (c) => {
     }
 
     const contrib = contribution as any;
+    if (overrideDeptId) contrib.department_id = overrideDeptId;
+    if (overrideDeptName) contrib.department_name = overrideDeptName;
     let timetableData: Record<string, any[]>;
     try {
         timetableData = JSON.parse(contrib.timetable_data);
@@ -640,8 +650,8 @@ admin.post('/contributions/:id/approve', async (c) => {
 
     // Mark contribution as approved
     await db.prepare(
-        `UPDATE pending_contributions SET status = 'approved', reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
-    ).bind(adminUser.sub, id).run();
+        `UPDATE pending_contributions SET status = 'approved', department_id = ?, department_name = ?, reviewed_at = datetime('now'), reviewed_by = ? WHERE id = ?`
+    ).bind(contrib.department_id, contrib.department_name, adminUser.sub, id).run();
 
     return c.json({
         success: true,

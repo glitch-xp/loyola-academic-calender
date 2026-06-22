@@ -49,6 +49,8 @@ export default function Contributions() {
   const [reviewModal, setReviewModal] = useState<ContributionDetail | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [rejectNotes, setRejectNotes] = useState('');
+  const [editDeptId, setEditDeptId] = useState('');
+  const [editDeptName, setEditDeptName] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -77,6 +79,8 @@ export default function Contributions() {
     try {
       const detail = await api.get<ContributionDetail>(`/api/admin/contributions/${id}`);
       setReviewModal(detail);
+      setEditDeptId(detail.contribution.department_id || '');
+      setEditDeptName(detail.contribution.department_name || '');
     } catch (error) {
       console.error('Failed to load contribution:', error);
       showMessage('error', 'Failed to load contribution details');
@@ -89,7 +93,10 @@ export default function Contributions() {
     if (!reviewModal) return;
     setActionLoading(true);
     try {
-      await api.post(`/api/admin/contributions/${reviewModal.contribution.id}/approve`, {});
+      await api.post(`/api/admin/contributions/${reviewModal.contribution.id}/approve`, {
+        department_id: editDeptId,
+        department_name: editDeptName
+      });
       showMessage('success', 'Contribution approved and timetable created!');
       setReviewModal(null);
       fetchContributions();
@@ -329,7 +336,24 @@ export default function Contributions() {
               <div className="review-info-item">
                 <span className="review-info-label">Department</span>
                 <span className="review-info-value">
-                  {reviewModal.contribution.department_name || reviewModal.contribution.department_id}
+                  {reviewModal.contribution.status === 'pending' ? (
+                    <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', marginTop: '4px' }}>
+                      <input
+                        className="form-input"
+                        value={editDeptName}
+                        onChange={e => setEditDeptName(e.target.value)}
+                        placeholder="Department Name"
+                      />
+                      <input
+                        className="form-input"
+                        value={editDeptId}
+                        onChange={e => setEditDeptId(e.target.value)}
+                        placeholder="Department ID"
+                      />
+                    </div>
+                  ) : (
+                    reviewModal.contribution.department_name || reviewModal.contribution.department_id
+                  )}
                 </span>
               </div>
               <div className="review-info-item">
@@ -380,13 +404,13 @@ export default function Contributions() {
             <div className="review-previews">
               {renderTimetableGrid(
                 parseTimetable(reviewModal.contribution.timetable_data),
-                '📝 Submitted Timetable'
+                'Submitted Timetable'
               )}
 
               {reviewModal.existingTimetable && (
                 renderTimetableGrid(
                   reviewModal.existingTimetable.data,
-                  '📋 Current Timetable (will be replaced)',
+                  'Current Timetable (will be replaced)',
                   true
                 )
               )}
@@ -397,7 +421,7 @@ export default function Contributions() {
               <div className="review-actions">
                 <div className="reject-section">
                   <input className="form-input" type="text"
-                    
+
                     placeholder="Rejection reason (optional)"
                     value={rejectNotes}
                     onChange={e => setRejectNotes(e.target.value)}
