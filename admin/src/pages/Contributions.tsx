@@ -116,27 +116,6 @@ export default function Contributions() {
     }
   };
 
-  const handleUpdate = async () => {
-    if (!reviewModal) return;
-    setActionLoading(true);
-    try {
-      await api.put(`/api/admin/contributions/${reviewModal.contribution.id}`, {
-        department_id: editDeptId,
-        department_name: editDeptName,
-        year: editYear,
-        shift_id: editShiftId,
-        section: editSection
-      });
-      showMessage('success', 'Details updated successfully!');
-      setReviewModal(null);
-      fetchContributions();
-    } catch (error: any) {
-      showMessage('error', error.message || 'Failed to update');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleReject = async () => {
     if (!reviewModal) return;
     setActionLoading(true);
@@ -366,56 +345,72 @@ export default function Contributions() {
               <div className="review-info-item">
                 <span className="review-info-label">Department</span>
                 <span className="review-info-value">
-                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', marginTop: '4px' }}>
-                    <input
-                      className="form-input"
-                      value={editDeptName}
-                      onChange={e => setEditDeptName(e.target.value)}
-                      placeholder="Department Name"
-                    />
-                    <input
-                      className="form-input"
-                      value={editDeptId}
-                      onChange={e => setEditDeptId(e.target.value)}
-                      placeholder="Department ID"
-                    />
-                  </div>
+                  {reviewModal.contribution.status === 'pending' ? (
+                    <div style={{ display: 'flex', gap: '8px', flexDirection: 'column', marginTop: '4px' }}>
+                      <input
+                        className="form-input"
+                        value={editDeptName}
+                        onChange={e => setEditDeptName(e.target.value)}
+                        placeholder="Department Name"
+                      />
+                      <input
+                        className="form-input"
+                        value={editDeptId}
+                        onChange={e => setEditDeptId(e.target.value)}
+                        placeholder="Department ID"
+                      />
+                    </div>
+                  ) : (
+                    reviewModal.contribution.department_name || reviewModal.contribution.department_id
+                  )}
                 </span>
               </div>
               <div className="review-info-item">
                 <span className="review-info-label">Year</span>
                 <span className="review-info-value">
-                  <input
-                    className="form-input"
-                    value={editYear}
-                    onChange={e => setEditYear(e.target.value)}
-                    placeholder="Year (I, II, III)"
-                    style={{ marginTop: '4px' }}
-                  />
+                  {reviewModal.contribution.status === 'pending' ? (
+                    <input
+                      className="form-input"
+                      value={editYear}
+                      onChange={e => setEditYear(e.target.value)}
+                      placeholder="Year (I, II, III)"
+                      style={{ marginTop: '4px' }}
+                    />
+                  ) : (
+                    reviewModal.contribution.year
+                  )}
                 </span>
               </div>
               <div className="review-info-item">
                 <span className="review-info-label">Shift</span>
                 <span className="review-info-value">
-                  <input
-                    className="form-input"
-                    value={editShiftId}
-                    onChange={e => setEditShiftId(e.target.value)}
-                    placeholder="Shift (optional)"
-                    style={{ marginTop: '4px' }}
-                  />
+                  {reviewModal.contribution.status === 'pending' ? (
+                    <input
+                      className="form-input"
+                      value={editShiftId}
+                      onChange={e => setEditShiftId(e.target.value)}
+                      placeholder="Shift (optional)"
+                      style={{ marginTop: '4px' }}
+                    />
+                  ) : (
+                    reviewModal.contribution.shift_id || '-'
+                  )}
                 </span>
               </div>
               <div className="review-info-item">
                 <span className="review-info-label">Section</span>
                 <span className="review-info-value">
-                  <input
-                    className="form-input"
-                    value={editSection}
-                    onChange={e => setEditSection(e.target.value)}
-                    placeholder="Section (optional)"
-                    style={{ marginTop: '4px' }}
-                  />
+                  {reviewModal.contribution.status === 'pending' ? (
+                    <input
+                      className="form-input"
+                      value={editSection}
+                      onChange={e => setEditSection(e.target.value)}
+                      placeholder="Section (optional)"
+                      style={{ marginTop: '4px' }}
+                    />
+                  ) : (
+                    reviewModal.contribution.section || '-'
+                  )}
                 </span>
               </div>
               <div className="review-info-item">
@@ -462,49 +457,37 @@ export default function Contributions() {
               )}
             </div>
 
-            {/* Actions */}
-            <div className="review-actions">
-              {reviewModal.contribution.status === 'pending' ? (
-                <>
-                  <div className="reject-section">
-                    <input className="form-input" type="text"
-                      placeholder="Rejection reason (optional)"
-                      value={rejectNotes}
-                      onChange={e => setRejectNotes(e.target.value)}
-                    />
-                  </div>
-                  <div className="review-buttons">
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleReject}
-                      disabled={actionLoading}
-                    >
-                      <X size={16} />
-                      {actionLoading ? 'Rejecting...' : 'Reject'}
-                    </button>
-                    <button
-                      className="btn btn-primary"
-                      onClick={handleApprove}
-                      disabled={actionLoading}
-                    >
-                      <Check size={16} />
-                      {actionLoading ? 'Approving...' : 'Approve & Publish'}
-                    </button>
-                  </div>
-                </>
-              ) : reviewModal.contribution.status === 'approved' ? (
-                <div className="review-buttons" style={{ justifyContent: 'flex-end', width: '100%' }}>
+            {/* Actions (only for pending) */}
+            {reviewModal.contribution.status === 'pending' && (
+              <div className="review-actions">
+                <div className="reject-section">
+                  <input className="form-input" type="text"
+
+                    placeholder="Rejection reason (optional)"
+                    value={rejectNotes}
+                    onChange={e => setRejectNotes(e.target.value)}
+                  />
+                </div>
+                <div className="review-buttons">
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleReject}
+                    disabled={actionLoading}
+                  >
+                    <X size={16} />
+                    {actionLoading ? 'Rejecting...' : 'Reject'}
+                  </button>
                   <button
                     className="btn btn-primary"
-                    onClick={handleUpdate}
+                    onClick={handleApprove}
                     disabled={actionLoading}
                   >
                     <Check size={16} />
-                    {actionLoading ? 'Updating...' : 'Update Details'}
+                    {actionLoading ? 'Approving...' : 'Approve & Publish'}
                   </button>
                 </div>
-              ) : null}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </Modal>

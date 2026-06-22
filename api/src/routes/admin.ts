@@ -681,61 +681,6 @@ admin.post('/contributions/:id/approve', async (c) => {
         return c.json({ error: error.message || 'Internal server error' }, 500);
     }
 });
-admin.put('/contributions/:id', async (c) => {
-    const id = c.req.param('id');
-    const db = c.env.DB;
-    let body = {};
-    try {
-        body = await c.req.json();
-    } catch (e) {}
-
-    const { department_id, department_name, year, shift_id, section } = body as any;
-
-    try {
-        // Fetch the old contribution to calculate the original timetable ID
-        const oldContrib = await db.prepare('SELECT * FROM pending_contributions WHERE id = ?').bind(id).first();
-        if (!oldContrib) {
-            return c.json({ error: 'Contribution not found' }, 404);
-        }
-
-        const oldTtId = `${oldContrib.department_id}_${oldContrib.year}${oldContrib.shift_id ? '_s' + oldContrib.shift_id : ''}${oldContrib.section ? '_' + oldContrib.section : ''}_contrib`;
-        const newTtId = `${department_id}_${year}${shift_id ? '_s' + shift_id : ''}${section ? '_' + section : ''}_contrib`;
-
-        // Update departments table if a new name is provided
-        if (department_name) {
-            await db.prepare('INSERT INTO departments (id, name) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET name = excluded.name')
-                .bind(department_id, department_name)
-                .run();
-        } else {
-            await db.prepare('INSERT OR IGNORE INTO departments (id, name) VALUES (?, ?)')
-                .bind(department_id, department_id)
-                .run();
-        }
-
-        // Update pending_contributions record
-        await db.prepare(
-            `UPDATE pending_contributions SET department_id = ?, year = ?, shift_id = ?, section = ? WHERE id = ?`
-        ).bind(department_id, year, shift_id || null, section || null, id).run();
-
-        // If it was already approved, update the active timetable too
-        if (oldContrib.status === 'approved') {
-            await db.prepare(
-                `UPDATE timetables SET id = ?, department_id = ?, year = ?, shift_id = ?, section = ?, updated_at = datetime('now') WHERE id = ?`
-            ).bind(newTtId, department_id, year, shift_id || null, section || null, oldTtId).run();
-            // Since we're changing the primary key of timetables and SQLite doesn't have ON UPDATE CASCADE enabled by default for foreign keys,
-            // we should also update timetable_entries if the ID actually changed.
-            if (oldTtId !== newTtId) {
-                await db.prepare('UPDATE timetable_entries SET timetable_id = ? WHERE timetable_id = ?')
-                    .bind(newTtId, oldTtId).run();
-            }
-        }
-
-        return c.json({ success: true });
-    } catch (error: any) {
-        console.error('Update contribution error:', error);
-        return c.json({ error: error.message || 'Internal server error' }, 500);
-    }
-});
 
 admin.post('/contributions/:id/reject', async (c) => {
     const id = c.req.param('id');

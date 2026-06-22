@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api/client';
-import { Save, AlertCircle } from 'lucide-react';
+import { Save, AlertCircle, Edit2 } from 'lucide-react';
+import Modal from '../components/Modal';
 
 interface TimetableInfo {
   id: string;
+  department_id: string;
   department_name: string;
   year: string;
   shift_id: string | null;
@@ -25,6 +27,13 @@ export default function TimetableEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{type: 'success'|'error', text: string} | null>(null);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editDeptId, setEditDeptId] = useState('');
+  const [editYear, setEditYear] = useState('');
+  const [editShiftId, setEditShiftId] = useState('');
+  const [editSection, setEditSection] = useState('');
+  const [updatingMeta, setUpdatingMeta] = useState(false);
 
   // 6 day orders x 5 periods
   const days = [1, 2, 3, 4, 5, 6];
@@ -110,6 +119,38 @@ export default function TimetableEditor() {
     }
   };
 
+  const openEditMeta = () => {
+    const tt = timetables.find(t => t.id === selectedId);
+    if (!tt) return;
+    setEditDeptId(tt.department_id || '');
+    setEditYear(tt.year || '');
+    setEditShiftId(tt.shift_id || '');
+    setEditSection(tt.section || '');
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateMeta = async () => {
+    if (!selectedId) return;
+    setUpdatingMeta(true);
+    try {
+      await api.put(`/api/admin/timetables/${selectedId}`, {
+        department_id: editDeptId,
+        year: editYear,
+        shift_id: editShiftId || null,
+        section: editSection || null
+      });
+      setMessage({ type: 'success', text: 'Timetable details updated!' });
+      setIsEditModalOpen(false);
+      // Refresh timetables list
+      const data = await api.get<TimetableInfo[]>('/api/admin/timetables');
+      setTimetables(data);
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.message || 'Failed to update details' });
+    } finally {
+      setUpdatingMeta(false);
+    }
+  };
+
   if (loading) return <div className="page-loading">Loading...</div>;
 
   return (
@@ -126,10 +167,13 @@ export default function TimetableEditor() {
           >
             {timetables.map(tt => (
               <option key={tt.id} value={tt.id}>
-                {tt.department_name} - Year {tt.year} {tt.shift_id ? `(Shift ${tt.shift_id})` : ''} {tt.section ? `[${tt.section}]` : ''}
+                {tt.department_name || tt.department_id} - Year {tt.year} {tt.shift_id ? `(Shift ${tt.shift_id})` : ''} {tt.section ? `[${tt.section}]` : ''}
               </option>
             ))}
           </select>
+          <button className="btn btn-secondary btn-icon" onClick={openEditMeta} disabled={!selectedId} title="Edit Details">
+            <Edit2 size={18} />
+          </button>
           <button 
             className="btn btn-primary" 
             onClick={handleSave} 
@@ -191,6 +235,35 @@ export default function TimetableEditor() {
           </div>
         </div>
       )}
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Edit Timetable Details"
+      >
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px' }}>Department ID</label>
+          <input className="form-input" value={editDeptId} onChange={e => setEditDeptId(e.target.value)} />
+        </div>
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px' }}>Year (I, II, III)</label>
+          <input className="form-input" value={editYear} onChange={e => setEditYear(e.target.value)} />
+        </div>
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px' }}>Shift (optional)</label>
+          <input className="form-input" value={editShiftId} onChange={e => setEditShiftId(e.target.value)} />
+        </div>
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '8px' }}>Section (optional)</label>
+          <input className="form-input" value={editSection} onChange={e => setEditSection(e.target.value)} />
+        </div>
+        <div className="modal-actions" style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <button className="btn btn-ghost" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+          <button className="btn btn-primary" onClick={handleUpdateMeta} disabled={updatingMeta}>
+            {updatingMeta ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
