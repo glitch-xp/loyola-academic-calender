@@ -1,6 +1,6 @@
 # 📚 Loyola Time Table App
 
-[![Open Web (iOS)](https://img.shields.io/badge/Open%20Web-iOS-blue?style=for-the-badge&logo=safari)](https://glitch-xp.github.io/loyola-academic-calender/)
+[![Open Web (iOS)](https://img.shields.io/badge/Open%20Web-iOS-blue?style=for-the-badge&logo=safari)](https://loyola-timetable.pages.dev/)
 [![Download APK (Android)](https://img.shields.io/badge/Download%20APK-Android-green?style=for-the-badge&logo=android)](https://github.com/glitch-xp/loyola-academic-calender/releases/latest)
 [![Contact Support](https://img.shields.io/badge/Contact-Support-orange?style=for-the-badge&logo=mail.ru)](https://yuvaraja.com/#contact)
 [![Report Issue](https://img.shields.io/badge/Report-Issue-red?style=for-the-badge&logo=github)](https://github.com/glitch-xp/loyola-academic-calender/issues/new)
