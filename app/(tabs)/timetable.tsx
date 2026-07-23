@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput,
-    TouchableOpacity, Alert, Platform, KeyboardAvoidingView, Modal
+    TouchableOpacity, Alert, Platform, KeyboardAvoidingView, Modal, ToastAndroid
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
@@ -69,6 +69,14 @@ function hasAnySubject(grid: EditableGrid): boolean {
     return false;
 }
 
+function isCompleteForAllDays(grid: EditableGrid): boolean {
+    for (const d of DAYS) {
+        const hasSubject = grid[d].some(entry => entry.name.trim().length > 0);
+        if (!hasSubject) return false;
+    }
+    return true;
+}
+
 export default function MyTimetableScreen() {
     const [grid, setGrid] = useState<EditableGrid>(createEmptyGrid);
     const [isCustom, setIsCustom] = useState(false);
@@ -82,7 +90,6 @@ export default function MyTimetableScreen() {
     const [selectedDay, setSelectedDay] = useState<number>(1);
     const [editingCell, setEditingCell] = useState<{ day: number; period: number } | null>(null);
     const [editFormData, setEditFormData] = useState<EditableEntry>({ name: '', code: '', teacher: '' });
-    const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
     const uniqueSubjects = React.useMemo(() => {
         const subjects = new Map<string, EditableEntry>();
@@ -214,8 +221,8 @@ export default function MyTimetableScreen() {
             return;
         }
 
-        if (!hasAnySubject(grid)) {
-            showMsg('error', 'Please add at least one subject before contributing');
+        if (!isCompleteForAllDays(grid)) {
+            showMsg('error', 'Please complete the timetable for all day orders before contributing.');
             return;
         }
 
@@ -254,8 +261,14 @@ export default function MyTimetableScreen() {
     };
 
     const showMsg = (type: 'success' | 'error' | 'info', text: string) => {
-        setMessage({ type, text });
-        setTimeout(() => setMessage(null), 4000);
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(text, ToastAndroid.LONG);
+        } else {
+            Alert.alert(
+                type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info',
+                text
+            );
+        }
     };
 
     if (loading) {
@@ -307,18 +320,6 @@ export default function MyTimetableScreen() {
                                     : 'Official Timetable')}
                         </Text>
                     </View>
-
-                    {/* Message */}
-                    {message && (
-                        <View style={[
-                            styles.messageBar,
-                            message.type === 'success' && styles.messageSuccess,
-                            message.type === 'error' && styles.messageError,
-                            message.type === 'info' && styles.messageInfo,
-                        ]}>
-                            <Text style={styles.messageText}>{message.text}</Text>
-                        </View>
-                    )}
 
                     {/* Status badge */}
                     <View style={styles.statusRow}>
@@ -411,8 +412,8 @@ export default function MyTimetableScreen() {
                                 <Button
                                     title="Contribute This Timetable"
                                     onPress={() => {
-                                        if (!hasAnySubject(grid)) {
-                                            showMsg('error', 'Please add at least one subject first');
+                                        if (!isCompleteForAllDays(grid)) {
+                                            showMsg('error', 'Please complete the timetable for all day orders before contributing.');
                                             return;
                                         }
                                         setShowContributeForm(true);
@@ -592,26 +593,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: Colors.textLight,
         marginTop: 4,
-    },
-    messageBar: {
-        padding: 12,
-        borderRadius: 12,
-        marginBottom: 16,
-    },
-    messageSuccess: {
-        backgroundColor: '#D1FAE5',
-    },
-    messageError: {
-        backgroundColor: '#FEE2E2',
-    },
-    messageInfo: {
-        backgroundColor: '#DBEAFE',
-    },
-    messageText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: Colors.text,
-        textAlign: 'center',
     },
     statusRow: {
         flexDirection: 'row',

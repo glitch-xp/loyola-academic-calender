@@ -34,6 +34,7 @@ export default function HomeScreen() {
     const [error, setError] = useState<string | null>(null);
     const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
     const [contributor, setContributor] = useState<string | null>(null);
+    const [isCustom, setIsCustom] = useState(false);
 
     const loadData = async (shouldSync = true) => {
         if (loading) setLoading(true); // show loading only for initial load or manual refresh
@@ -47,6 +48,7 @@ export default function HomeScreen() {
         try {
             // 1. Load from local storage (Fast)
             const customTT = await StorageService.getData<TimeTable>('custom_timetable');
+            setIsCustom(!!customTT);
             currentTimetable = customTT || await StorageService.getData<TimeTable>('timetable');
             currentCalendar = await StorageService.getData<DayOrderConfig>('day_order_config');
             currentMasterConfig = await StorageService.getData<MasterConfig>('master_config');
@@ -83,6 +85,7 @@ export default function HomeScreen() {
 
                     // Check for custom timetable
                     const customTT = await StorageService.getData<TimeTable>('custom_timetable');
+                    setIsCustom(!!customTT);
 
                     // Update State
                     setTimetable(customTT || courseData.timetable);
@@ -145,10 +148,14 @@ export default function HomeScreen() {
                     profile.shift,
                     mc
                 );
-                setSubjects(enrichedSubjects);
+                
+                // Filter out empty subjects (where name is missing or whitespace)
+                const validSubjects = enrichedSubjects.filter(sub => sub.name && sub.name.trim().length > 0);
+                
+                setSubjects(validSubjects);
 
-                // Calculate next class info
-                const nextInfo = calculateNextClass(enrichedSubjects, today);
+                // Calculate next class info based on valid subjects
+                const nextInfo = calculateNextClass(validSubjects, today);
                 setNextClassInfo(nextInfo);
             } else {
                 setSubjects([]);
@@ -275,18 +282,23 @@ export default function HomeScreen() {
                         <View style={styles.dayOrderContainer}>
                             <View style={styles.dayOrderTextContainer}>
                                 <Text style={styles.dayLabel}>
-                                    {todayConfig?.isHoliday ? 'Holiday' : 'Day Order'}
+                                    {todayConfig === null ? 'Today' : todayConfig.isHoliday ? 'Holiday' : 'Day Order'}
                                 </Text>
                                 <Text style={styles.dayValue}>
-                                    {todayConfig?.isHoliday ? (todayConfig?.event || 'No Classes') : todayConfig?.dayOrder || '-'}
+                                    {todayConfig === null ? 'No Info' : todayConfig.isHoliday ? (todayConfig.event || 'No Classes') : todayConfig.dayOrder || '-'}
                                 </Text>
-                                {!todayConfig?.isHoliday && todayConfig?.event && (
+                                {todayConfig === null && (
+                                    <Text style={styles.eventSubText}>
+                                        Calendar not updated yet
+                                    </Text>
+                                )}
+                                {todayConfig !== null && !todayConfig.isHoliday && todayConfig.event && (
                                     <Text style={styles.eventSubText}>
                                         {todayConfig.event}
                                     </Text>
                                 )}
                             </View>
-                            {!todayConfig?.isHoliday && (
+                            {todayConfig !== null && !todayConfig.isHoliday && todayConfig.dayOrder && (
                                 <View style={styles.totalClasses}>
                                     <Text style={styles.classCount}>{subjects.length}</Text>
                                     <Text style={styles.classLabel}>Classes</Text>
@@ -296,7 +308,7 @@ export default function HomeScreen() {
                     </Card>
 
                     {/* Next Class Card */}
-                    {!todayConfig?.isHoliday && nextClassInfo && (
+                    {todayConfig !== null && !todayConfig.isHoliday && nextClassInfo && (
                         <Card style={styles.nextClassCard}>
                             <View style={styles.nextClassContainer}>
                                 <View style={styles.nextClassHeader}>
@@ -312,7 +324,11 @@ export default function HomeScreen() {
                                     <View style={styles.classDetailsContainer}>
                                         <View style={styles.currentClassInfo}>
                                             <Text style={styles.nextClassName}>{nextClassInfo.current.name}</Text>
-                                            <Text style={styles.nextClassCode}>{nextClassInfo.current.code}</Text>
+                                            {(nextClassInfo.current.code || nextClassInfo.current.teacher) && (
+                                                <Text style={styles.nextClassCode}>
+                                                    {[nextClassInfo.current.code, nextClassInfo.current.teacher].filter(Boolean).join(' • ')}
+                                                </Text>
+                                            )}
                                             <Text style={styles.nextClassTime}>
                                                 {nextClassInfo.current.startTime} - {nextClassInfo.current.endTime}
                                             </Text>
@@ -333,7 +349,11 @@ export default function HomeScreen() {
                                     <View style={styles.classDetailsContainer}>
                                         <View style={styles.nextClassMainInfo}>
                                             <Text style={styles.nextClassName}>{nextClassInfo.next.name}</Text>
-                                            <Text style={styles.nextClassCode}>{nextClassInfo.next.code}</Text>
+                                            {(nextClassInfo.next.code || nextClassInfo.next.teacher) && (
+                                                <Text style={styles.nextClassCode}>
+                                                    {[nextClassInfo.next.code, nextClassInfo.next.teacher].filter(Boolean).join(' • ')}
+                                                </Text>
+                                            )}
                                             <Text style={styles.nextClassTime}>
                                                 {nextClassInfo.next.startTime} - {nextClassInfo.next.endTime}
                                             </Text>
@@ -362,7 +382,7 @@ export default function HomeScreen() {
                     )}
 
                     {/* Contributor for Current Class */}
-                    {contributor && !todayConfig?.isHoliday && nextClassInfo && (
+                    {contributor && todayConfig !== null && !todayConfig.isHoliday && nextClassInfo && (
                         <View style={styles.contributorContainerSmall}>
                             <Text style={styles.contributorTextSmall}>Contributed by: {contributor}</Text>
                         </View>
@@ -386,7 +406,7 @@ export default function HomeScreen() {
                     )}
 
                     {/* Timetable List */}
-                    {!todayConfig?.isHoliday && subjects.length > 0 && (
+                    {todayConfig !== null && !todayConfig.isHoliday && subjects.length > 0 && (
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
                             {subjects.map((sub, index) => (
@@ -398,7 +418,11 @@ export default function HomeScreen() {
                                         </View>
                                         <View style={styles.subjectInfo}>
                                             <Text style={styles.subjectName}>{sub.name}</Text>
-                                            <Text style={styles.subjectCode}>{sub.code}</Text>
+                                            {(sub.code || sub.teacher) && (
+                                                <Text style={styles.subjectCode}>
+                                                    {[sub.code, sub.teacher].filter(Boolean).join(' • ')}
+                                                </Text>
+                                            )}
                                         </View>
                                     </View>
                                 </Card>
@@ -406,19 +430,19 @@ export default function HomeScreen() {
                         </View>
                     )}
 
-                    {/* Empty Schedule State */}
-                    {!todayConfig?.isHoliday && subjects.length === 0 && (
+                    {/* Empty Schedule State - only when day order exists but no timetable */}
+                    {todayConfig !== null && !todayConfig.isHoliday && todayConfig.dayOrder && subjects.length === 0 && (
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
                             <Card style={styles.subjectCard}>
                                 <View style={{ padding: 20, alignItems: 'center' }}>
                                     <Text style={{ textAlign: 'center', color: Colors.textLight, marginBottom: 12 }}>
-                                        No timetable found for your class.
+                                        {isCustom ? 'No classes scheduled for today.' : 'No timetable found for your class.'}
                                     </Text>
                                     <Button 
-                                        title="Create & Contribute" 
+                                        title={isCustom ? "Edit Timetable" : "Create & Contribute"} 
                                         onPress={() => router.navigate('/(tabs)/timetable')} 
-                                        variant="primary" 
+                                        variant={isCustom ? "secondary" : "primary"} 
                                     />
                                 </View>
                             </Card>
@@ -426,7 +450,7 @@ export default function HomeScreen() {
                     )}
 
                     {/* Contributor for Today's Schedule */}
-                    {contributor && !todayConfig?.isHoliday && subjects.length > 0 && (
+                    {contributor && todayConfig !== null && !todayConfig.isHoliday && subjects.length > 0 && (
                         <View style={styles.contributorContainerSmall}>
                             <Text style={styles.contributorTextSmall}>Contributed by: {contributor}</Text>
                         </View>

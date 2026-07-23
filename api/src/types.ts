@@ -1,6 +1,16 @@
 export interface Env {
     DB: D1Database;
     JWT_SECRET: string;
+    TELEGRAM_BOT_TOKEN?: string;
+    TELEGRAM_CHAT_ID?: string;
+    TELEGRAM_WEBHOOK_URL?: string;
+}
+
+export interface TelegramSubscriptionRow {
+    chat_id: string;
+    username: string | null;
+    first_name: string | null;
+    created_at: string;
 }
 
 // Database row types

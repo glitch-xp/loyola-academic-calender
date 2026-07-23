@@ -1,5 +1,5 @@
 import { DayOrderConfig } from '../types';
-import { differenceInDays, startOfDay } from 'date-fns';
+import { differenceInDays, startOfDay, startOfMonth, endOfMonth } from 'date-fns';
 
 export const DayOrderHelper = {
     /**
@@ -34,7 +34,8 @@ export const DayOrderHelper = {
 
         return {
             ...config,
-            dayOrder: dayOrderValue
+            dayOrder: dayOrderValue,
+            isHoliday: config.isHoliday || false
         };
     },
 
@@ -114,5 +115,43 @@ export const DayOrderHelper = {
             }
         }
         return events;
+    },
+
+    /**
+     * Get a list of events and holidays for a specific month
+     */
+    getEventsForMonth(calendar: DayOrderConfig, month: Date): Array<{ name: string, date: string, daysLeft: number, isHoliday: boolean }> {
+        const today = startOfDay(new Date());
+        const start = startOfMonth(month);
+        const end = endOfMonth(month);
+        const sortedDates = Object.keys(calendar).sort();
+        const upcomingEvents = [];
+        const pastEvents = [];
+
+        for (const dateStr of sortedDates) {
+            const entry = calendar[dateStr];
+            const eventDate = startOfDay(new Date(dateStr));
+
+            if (eventDate >= start && eventDate <= end) {
+                if (entry.isHoliday || entry.event) {
+                    const daysLeft = differenceInDays(eventDate, today);
+                    const name = entry.event || (entry.isHoliday ? 'Holiday' : 'Event');
+
+                    const eventObj = {
+                        name,
+                        date: dateStr,
+                        daysLeft,
+                        isHoliday: entry.isHoliday
+                    };
+
+                    if (daysLeft < 0) {
+                        pastEvents.push(eventObj);
+                    } else {
+                        upcomingEvents.push(eventObj);
+                    }
+                }
+            }
+        }
+        return [...upcomingEvents, ...pastEvents];
     }
 };

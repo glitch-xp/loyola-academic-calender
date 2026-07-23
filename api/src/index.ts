@@ -7,6 +7,7 @@ import timetableRoutes from './routes/timetable';
 import versionRoutes from './routes/version';
 import adminRoutes from './routes/admin';
 import contributionRoutes from './routes/contributions';
+import telegramRoutes from './routes/telegram';
 import { scrapeCalendar } from './scraper';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -53,6 +54,7 @@ app.route('/api/calendar', calendarRoutes);
 app.route('/api/timetable', timetableRoutes);
 app.route('/api/version', versionRoutes);
 app.route('/api/contributions', contributionRoutes);
+app.route('/api/telegram', telegramRoutes);
 
 // Admin API routes
 app.route('/api/admin', adminRoutes);

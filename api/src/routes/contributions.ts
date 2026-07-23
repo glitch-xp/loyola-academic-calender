@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { Env } from '../types';
+import { sendTelegramContributionNotification } from '../services/telegram';
 
 const contributions = new Hono<{ Bindings: Env }>();
 
@@ -259,9 +260,31 @@ contributions.post('/', async (c) => {
         )
         .run();
 
+    const newId = result.meta.last_row_id;
+
+    // ── Dispatch Telegram notification ──────────────────────────────────
+    const notificationPayload = {
+        id: Number(newId),
+        department_id: cleanDeptId,
+        year,
+        shift_id: cleanShiftId,
+        section: cleanSection,
+        contributor_name: cleanContributor,
+        timetable_data: ttValidation.sanitized,
+        clientIp,
+    };
+
+    if (c.executionCtx) {
+        c.executionCtx.waitUntil(sendTelegramContributionNotification(c.env, notificationPayload));
+    } else {
+        sendTelegramContributionNotification(c.env, notificationPayload).catch((err) =>
+            console.error('Telegram notification error:', err)
+        );
+    }
+
     return c.json({
         success: true,
-        id: result.meta.last_row_id,
+        id: newId,
         message: 'Your timetable has been submitted for review. Thank you!'
     }, 201);
 });

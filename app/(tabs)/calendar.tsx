@@ -34,6 +34,13 @@ export default function CalendarScreen() {
         }, [])
     );
 
+    useEffect(() => {
+        if (calendarConfig) {
+            const events = DayOrderHelper.getEventsForMonth(calendarConfig, currentMonth);
+            setUpcomingEvents(events);
+        }
+    }, [currentMonth, calendarConfig]);
+
     const loadData = async () => {
         setLoading(true);
         setError(null);
@@ -78,9 +85,7 @@ export default function CalendarScreen() {
             setMasterConfig(mc);
             setUserProfile(profile);
 
-            // Load upcoming events
-            const events = DayOrderHelper.getUpcomingEvents(cal, 10);
-            setUpcomingEvents(events);
+            // Events will be loaded by the useEffect hook watching calendarConfig and currentMonth
         } catch (e) {
             console.error(e);
             setError('Failed to load calendar data. Please try again.');
@@ -207,12 +212,12 @@ export default function CalendarScreen() {
 
                 {/* Upcoming Events List */}
                 <View style={styles.eventsSection}>
-                    <Text style={styles.sectionTitle}>Upcoming Events & Holidays</Text>
+                    <Text style={styles.sectionTitle}>Events & Holidays in {format(currentMonth, 'MMMM')}</Text>
                     {upcomingEvents.length === 0 ? (
                         <Text style={styles.emptyText}>No upcoming events found.</Text>
                     ) : (
                         upcomingEvents.map((event, index) => (
-                            <Card key={index} style={styles.eventCard}>
+                            <Card key={index} style={[styles.eventCard, event.daysLeft < 0 && { opacity: 0.6 }]}>
                                 <View style={styles.eventRow}>
                                     <View style={styles.dateBox}>
                                         <Text style={styles.dateMonth}>{format(new Date(event.date), 'MMM')}</Text>
@@ -226,7 +231,9 @@ export default function CalendarScreen() {
                                         <Text style={styles.eventTime}>
                                             {event.daysLeft === 0 ? 'Today' :
                                                 event.daysLeft === 1 ? 'Tomorrow' :
-                                                    `in ${event.daysLeft} days`}
+                                                    event.daysLeft < 0 ? (
+                                                        event.daysLeft === -1 ? 'Yesterday' : `${Math.abs(event.daysLeft)} days ago`
+                                                    ) : `in ${event.daysLeft} days`}
                                         </Text>
                                     </View>
                                 </View>
@@ -253,7 +260,11 @@ export default function CalendarScreen() {
                         <ScrollView>
                             {selectedDate && (() => {
                                 const info = getDayInfo(selectedDate);
-                                if (!info) return <Text style={{ padding: 20 }}>No data available</Text>;
+                                if (!info) return (
+                                    <View style={styles.modalBody}>
+                                        <Text style={styles.relaxText}>Calendar not updated for this date yet.</Text>
+                                    </View>
+                                );
 
                                 if (info.isHoliday) {
                                     return (
@@ -273,13 +284,20 @@ export default function CalendarScreen() {
                                     );
                                     return (
                                         <View style={styles.modalBody}>
+                                            {info.event && (
+                                                <View style={styles.modalEventContainer}>
+                                                    <Text style={styles.modalEventTitle}>{info.event}</Text>
+                                                </View>
+                                            )}
                                             <Text style={styles.orderTitle}>Day Order {info.dayOrder}</Text>
                                             {classes.map((cls, idx) => (
                                                 <View key={idx} style={styles.classRow}>
                                                     <Text style={styles.classTime}>{cls.startTime}</Text>
                                                     <View style={styles.classDetails}>
                                                         <Text style={styles.className}>{cls.name}</Text>
-                                                        <Text style={styles.classCode}>{cls.code}</Text>
+                                                        <Text style={styles.classCode}>
+                                                            {[cls.code, cls.teacher].filter(Boolean).join(' • ')}
+                                                        </Text>
                                                     </View>
                                                 </View>
                                             ))}
@@ -394,6 +412,17 @@ const styles = StyleSheet.create({
     },
     modalBody: {
         paddingBottom: 40,
+    },
+    modalEventContainer: {
+        backgroundColor: Colors.dayOrder[3], // Amber/Yellow
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 16,
+    },
+    modalEventTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: Colors.text,
     },
     holidayTitle: {
         fontSize: 24,

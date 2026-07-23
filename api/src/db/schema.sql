@@ -103,3 +103,11 @@ CREATE TABLE IF NOT EXISTS pending_contributions (
 
 CREATE INDEX IF NOT EXISTS idx_pending_status ON pending_contributions(status);
 CREATE INDEX IF NOT EXISTS idx_pending_ip ON pending_contributions(submitted_ip, created_at);
+
+-- Telegram subscribers for contribution notifications
+CREATE TABLE IF NOT EXISTS telegram_subscriptions (
+    chat_id TEXT PRIMARY KEY,
+    username TEXT,
+    first_name TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);

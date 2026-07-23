@@ -26,9 +26,9 @@ export async function scrapeCalendar(env: Env) {
     let currentYear = now.getFullYear();
     let currentMonth = now.getMonth() + 1; // 1-12
 
-    const records = [];
+    const records: any[] = [];
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 3; i++) {
         const fetchUrl = `https://www.loyolacollege.edu/acnew.php?year=${currentYear}&month=${currentMonth}`;
         console.log(`Fetching ${fetchUrl}...`);
 
@@ -87,7 +87,7 @@ export async function scrapeCalendar(env: Env) {
         }
 
         // Rate limiting: sleep 5 seconds if not the last iteration
-        if (i < 11) {
+        if (i < 2) {
             await sleep(5000);
         }
     }

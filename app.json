@@ -16,9 +16,7 @@
     "updates": {
       "url": "https://u.expo.dev/50c8e57e-5092-45df-b5b2-075dd98f4511"
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "2.0.2",
     "entryPoint": "expo-router/entry",
     "ios": {
       "supportsTablet": true,

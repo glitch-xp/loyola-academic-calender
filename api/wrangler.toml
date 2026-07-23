@@ -4,6 +4,8 @@ compatibility_date = "2024-12-30"
 
 [vars]
 JWT_SECRET = "b46a2f7d8e9c13b5a04f762391ce4d25a817b96f30a24d51c78e9f2b84d3c615"
+TELEGRAM_BOT_TOKEN = "8603958753:AAFiXxlGs5WB-KaU0M9fZTwq1ZjfhaDQr_M"
+TELEGRAM_CHAT_ID = "5391995999"
 
 [[d1_databases]]
 binding = "DB"
