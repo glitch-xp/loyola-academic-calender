@@ -11,11 +11,10 @@ export interface ContributionNotificationData {
     clientIp?: string | null;
 }
 
-const DEFAULT_BOT_TOKEN = '8603958753:AAFiXxlGs5WB-KaU0M9fZTwq1ZjfhaDQr_M';
-const DEFAULT_CHAT_ID = '5391995999';
-
+const DEFAULT_BOT_TOKEN = '';
+const DEFAULT_CHAT_ID = '';
 /**
- * Get active Telegram chat ID (direct user ID 5391995999, without fallbacks).
+ * Get active Telegram chat ID without fallbacks.
  */
 function getTargetChatIds(env: Env): string[] {
     const chatId = (env.TELEGRAM_CHAT_ID || DEFAULT_CHAT_ID).trim();

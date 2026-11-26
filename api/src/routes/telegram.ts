@@ -4,7 +4,7 @@ import { sendTelegramContributionNotification } from '../services/telegram';
 
 const telegram = new Hono<{ Bindings: Env }>();
 
-const DEFAULT_BOT_TOKEN = '8603958753:AAFiXxlGs5WB-KaU0M9fZTwq1ZjfhaDQr_M';
+const DEFAULT_BOT_TOKEN = '';
 
 /**
  * GET /api/telegram/info
