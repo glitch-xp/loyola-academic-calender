@@ -8,11 +8,19 @@ import { DayOrderHelper } from '../../utils/DayOrderHelper';
 import { TimetableHelper, SubjectWithTiming } from '../../utils/TimetableHelper';
 import { Card } from '../../components/Card';
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react-native';
+import { AltArrowLeftIcon, AltArrowRightIcon, CloseCircleIcon } from '../../components/ui/GlassIcons';
+import { LiquidBackground } from '../../components/LiquidBackground';
+import { LiquidGlassSurface } from '../../components/ui/LiquidGlassSurface';
 import { ErrorScreen } from '../../components/ErrorScreen';
 import { router, useFocusEffect } from 'expo-router';
 import { DataService } from '../../services/DataService';
 import { Skeleton } from '../../components/ui/Skeleton';
+
+function parseEventDate(dateStr: string): Date | null {
+    if (!dateStr) return null;
+    const d = new Date(dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+}
 
 export default function CalendarScreen() {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -26,19 +34,10 @@ export default function CalendarScreen() {
     // Modal State
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const [upcomingEvents, setUpcomingEvents] = useState<Array<{ name: string, date: string, daysLeft: number, isHoliday: boolean }>>([]);
 
-    useFocusEffect(
-        React.useCallback(() => {
-            loadData();
-        }, [])
-    );
-
-    useEffect(() => {
-        if (calendarConfig) {
-            const events = DayOrderHelper.getEventsForMonth(calendarConfig, currentMonth);
-            setUpcomingEvents(events);
-        }
+    const upcomingEvents = React.useMemo(() => {
+        if (!calendarConfig) return [];
+        return DayOrderHelper.getEventsForMonth(calendarConfig, currentMonth);
     }, [currentMonth, calendarConfig]);
 
     const loadData = async () => {
@@ -85,7 +84,7 @@ export default function CalendarScreen() {
             setMasterConfig(mc);
             setUserProfile(profile);
 
-            // Events will be loaded by the useEffect hook watching calendarConfig and currentMonth
+            // Events will be computed by useMemo watching calendarConfig and currentMonth
         } catch (e) {
             console.error(e);
             setError('Failed to load calendar data. Please try again.');
@@ -93,6 +92,12 @@ export default function CalendarScreen() {
             setLoading(false);
         }
     };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadData();
+        }, [])
+    );
 
     const days = eachDayOfInterval({
         start: startOfMonth(currentMonth),
@@ -120,7 +125,6 @@ export default function CalendarScreen() {
         const isToday = isSameDay(date, new Date());
 
         let bgColor = 'transparent';
-        let textColor = Colors.text;
 
         if (dayInfo) {
             if (dayInfo.isHoliday) {
@@ -134,17 +138,23 @@ export default function CalendarScreen() {
         return (
             <TouchableOpacity
                 key={date.toISOString()}
-                style={[styles.dayCell, isToday && styles.todayBorder]}
+                style={styles.dayCell}
                 onPress={() => handleDayPress(date)}
+                activeOpacity={0.7}
             >
-                <View style={[styles.dayCircle, { backgroundColor: bgColor }]}>
-                    <Text style={[styles.dayText, { color: textColor }]}>{date.getDate()}</Text>
+                <View style={[styles.dayCircle, isToday && styles.todayCircle]}>
+                    <Text style={[styles.dayText, isToday && styles.todayText]}>{date.getDate()}</Text>
                 </View>
-                {dayInfo?.dayOrder && (
-                    <Text style={styles.tinyLabel}>D - {dayInfo.dayOrder}</Text>
-                )}
-                {dayInfo?.isHoliday && (
-                    <View style={styles.dot} />
+                {dayInfo?.dayOrder ? (
+                    <View style={[styles.dayOrderChip, { backgroundColor: bgColor }]}>
+                        <Text style={styles.dayOrderChipText}>D{dayInfo.dayOrder}</Text>
+                    </View>
+                ) : dayInfo?.isHoliday ? (
+                    <View style={[styles.dayOrderChip, styles.holidayChip]}>
+                        <Text style={styles.holidayChipText}>HOL</Text>
+                    </View>
+                ) : (
+                    <View style={styles.dayOrderChipSpacer} />
                 )}
             </TouchableOpacity>
         );
@@ -153,25 +163,27 @@ export default function CalendarScreen() {
     // Show loading state
     if (loading) {
         return (
-            <SafeAreaView style={[styles.container, { padding: 20 }]}>
-                <View style={styles.header}>
-                    <Skeleton width={24} height={24} borderRadius={12} />
-                    <Skeleton width={150} height={24} borderRadius={8} />
-                    <Skeleton width={24} height={24} borderRadius={12} />
-                </View>
-                <View style={styles.weekRow}>
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((_, i) => (
-                        <Skeleton key={i} width={20} height={20} borderRadius={10} />
-                    ))}
-                </View>
-                <View style={styles.calendarGrid}>
-                    {Array.from({ length: 35 }).map((_, i) => (
-                        <View key={i} style={styles.dayCell}>
-                            <Skeleton width={36} height={36} borderRadius={18} />
-                        </View>
-                    ))}
-                </View>
-            </SafeAreaView>
+            <LiquidBackground>
+                <SafeAreaView style={[styles.container, { padding: 20 }]} edges={['top', 'bottom', 'left', 'right']}>
+                    <View style={styles.header}>
+                        <Skeleton width={44} height={44} borderRadius={22} />
+                        <Skeleton width={160} height={44} borderRadius={22} />
+                        <Skeleton width={44} height={44} borderRadius={22} />
+                    </View>
+                    <View style={styles.weekRow}>
+                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((_, i) => (
+                            <Skeleton key={i} width={20} height={20} borderRadius={10} />
+                        ))}
+                    </View>
+                    <View style={styles.calendarGrid}>
+                        {Array.from({ length: 35 }).map((_, i) => (
+                            <View key={i} style={styles.dayCell}>
+                                <Skeleton width={36} height={36} borderRadius={18} />
+                            </View>
+                        ))}
+                    </View>
+                </SafeAreaView>
+            </LiquidBackground>
         );
     }
 
@@ -187,62 +199,115 @@ export default function CalendarScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-                    <ChevronLeft color={Colors.text} size={24} />
-                </TouchableOpacity>
-                <Text style={styles.monthTitle}>{format(currentMonth, 'MMMM yyyy')}</Text>
-                <TouchableOpacity onPress={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-                    <ChevronRight color={Colors.text} size={24} />
-                </TouchableOpacity>
-            </View>
+        <LiquidBackground>
+            <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+                {/* Floating Liquid Glass Month Navigation Bar */}
+                <View style={styles.header}>
+                    <TouchableOpacity
+                        onPress={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                        accessibilityLabel="Previous month"
+                        activeOpacity={0.75}
+                    >
+                        <LiquidGlassSurface
+                            interactive
+                            borderRadius={22}
+                            style={styles.navGlassCircle}
+                        >
+                            <AltArrowLeftIcon color={Colors.text} size={20} />
+                        </LiquidGlassSurface>
+                    </TouchableOpacity>
 
-            <View style={styles.weekRow}>
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                    <Text key={i} style={styles.weekText}>{d}</Text>
-                ))}
-            </View>
+                    <LiquidGlassSurface
+                        borderRadius={22}
+                        style={styles.monthGlassPill}
+                    >
+                        <Text style={styles.monthTitle}>{format(currentMonth, 'MMMM yyyy')}</Text>
+                    </LiquidGlassSurface>
 
-            <ScrollView contentContainerStyle={styles.grid}>
-                <View style={styles.calendarGrid}>
-                    {padding.map((_, i) => renderDay(null, i))}
-                    {days.map((d, i) => renderDay(d, i))}
+                    <TouchableOpacity
+                        onPress={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                        accessibilityLabel="Next month"
+                        activeOpacity={0.75}
+                    >
+                        <LiquidGlassSurface
+                            interactive
+                            borderRadius={22}
+                            style={styles.navGlassCircle}
+                        >
+                            <AltArrowRightIcon color={Colors.text} size={20} />
+                        </LiquidGlassSurface>
+                    </TouchableOpacity>
                 </View>
 
-                {/* Upcoming Events List */}
-                <View style={styles.eventsSection}>
-                    <Text style={styles.sectionTitle}>Events & Holidays in {format(currentMonth, 'MMMM')}</Text>
-                    {upcomingEvents.length === 0 ? (
-                        <Text style={styles.emptyText}>No upcoming events found.</Text>
-                    ) : (
-                        upcomingEvents.map((event, index) => (
-                            <Card key={index} style={[styles.eventCard, event.daysLeft < 0 && { opacity: 0.6 }]}>
-                                <View style={styles.eventRow}>
-                                    <View style={styles.dateBox}>
-                                        <Text style={styles.dateMonth}>{format(new Date(event.date), 'MMM')}</Text>
-                                        <Text style={styles.dateDay}>{format(new Date(event.date), 'dd')}</Text>
-                                    </View>
-                                    <View style={styles.eventInfo}>
-                                        <View style={styles.eventHeader}>
-                                            <Text style={styles.eventName}>{event.name}</Text>
-                                            {event.isHoliday && <View style={styles.holidayBadge}><Text style={styles.holidayBadgeText}>Holiday</Text></View>}
-                                        </View>
-                                        <Text style={styles.eventTime}>
-                                            {event.daysLeft === 0 ? 'Today' :
-                                                event.daysLeft === 1 ? 'Tomorrow' :
-                                                    event.daysLeft < 0 ? (
-                                                        event.daysLeft === -1 ? 'Yesterday' : `${Math.abs(event.daysLeft)} days ago`
-                                                    ) : `in ${event.daysLeft} days`}
-                                        </Text>
-                                    </View>
+                <ScrollView contentContainerStyle={styles.grid}>
+                    <Card style={styles.calendarCard}>
+                        <View style={styles.weekRow}>
+                            {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d, i) => (
+                                <Text key={i} style={styles.weekText}>{d}</Text>
+                            ))}
+                        </View>
+
+                        <View style={styles.calendarGrid}>
+                            {padding.map((_, i) => renderDay(null, i))}
+                            {days.map((d, i) => renderDay(d, i))}
+                        </View>
+
+                        {/* Compact Day Order Legend Strip */}
+                        <View style={styles.legendRow}>
+                            {[1, 2, 3, 4, 5, 6].map((order) => (
+                                <View
+                                    key={order}
+                                    style={[
+                                        styles.legendPill,
+                                        // @ts-ignore
+                                        { backgroundColor: Colors.dayOrder[order] },
+                                    ]}
+                                >
+                                    <Text style={styles.legendText}>Day {order}</Text>
                                 </View>
-                            </Card>
-                        ))
-                    )}
-                </View>
-                <View style={{ height: 100 }} />
-            </ScrollView>
+                            ))}
+                            <View style={[styles.legendPill, styles.holidayChip]}>
+                                <Text style={styles.holidayChipText}>Holiday</Text>
+                            </View>
+                        </View>
+                    </Card>
+
+                    {/* Upcoming Events List */}
+                    <View style={styles.eventsSection}>
+                        <Text style={styles.sectionTitle}>Upcoming in {format(currentMonth, 'MMMM')}</Text>
+                        {upcomingEvents.length === 0 ? (
+                            <Text style={styles.emptyText}>No upcoming events found.</Text>
+                        ) : (
+                            upcomingEvents.map((event, index) => {
+                                const parsedDate = parseEventDate(event.date);
+                                return (
+                                    <Card key={index} style={event.daysLeft < 0 ? { ...styles.eventCard, opacity: 0.65 } : styles.eventCard}>
+                                        <View style={styles.eventRow}>
+                                            <View style={styles.dateBox}>
+                                                <Text style={styles.dateMonth}>{parsedDate ? format(parsedDate, 'MMM') : '--'}</Text>
+                                                <Text style={styles.dateDay}>{parsedDate ? format(parsedDate, 'dd') : '--'}</Text>
+                                            </View>
+                                        <View style={styles.eventInfo}>
+                                            <View style={styles.eventHeader}>
+                                                <Text style={styles.eventName}>{event.name}</Text>
+                                                {event.isHoliday && <View style={styles.holidayBadge}><Text style={styles.holidayBadgeText}>Holiday</Text></View>}
+                                            </View>
+                                            <Text style={styles.eventTime}>
+                                                {event.daysLeft === 0 ? 'Today' :
+                                                    event.daysLeft === 1 ? 'Tomorrow' :
+                                                        event.daysLeft < 0 ? (
+                                                            event.daysLeft === -1 ? 'Yesterday' : `${Math.abs(event.daysLeft)} days ago`
+                                                        ) : `in ${event.daysLeft} days`}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </Card>
+                                );
+                            })
+                        )}
+                    </View>
+                    <View style={{ height: 112 }} />
+                </ScrollView>
 
             {/* Details Modal */}
             <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
@@ -253,7 +318,7 @@ export default function CalendarScreen() {
                                 {selectedDate ? format(selectedDate, 'EEEE, MMM d') : ''}
                             </Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <X color={Colors.textLight} size={24} />
+                                <CloseCircleIcon color={Colors.textLight} size={24} />
                             </TouchableOpacity>
                         </View>
 
@@ -311,79 +376,148 @@ export default function CalendarScreen() {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView >
+            </SafeAreaView >
+        </LiquidBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: 'transparent',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingTop: 14,
+        paddingBottom: 14,
+        gap: 12,
+    },
+    navGlassCircle: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    monthGlassPill: {
+        flex: 1,
+        height: 44,
+        borderRadius: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 16,
     },
     monthTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 17,
+        fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
+        includeFontPadding: false,
+        textAlignVertical: 'center',
+    },
+    calendarCard: {
+        borderRadius: 24,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(15, 23, 42, 0.08)',
+        marginBottom: 8,
     },
     weekRow: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        paddingHorizontal: 10,
-        marginBottom: 10,
+        marginBottom: 8,
+        paddingBottom: 6,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: 'rgba(15, 23, 42, 0.08)',
     },
     weekText: {
-        width: 40,
+        width: '14.28%',
         textAlign: 'center',
         color: Colors.textLight,
-        fontWeight: '600',
+        fontSize: 11,
+        fontFamily: 'Poppins_600SemiBold',
     },
     grid: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 20,
     },
     calendarGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
     },
     dayCell: {
-        width: '14.28%', // 1/7
-        aspectRatio: 0.8,
+        width: '14.28%',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 4,
+        paddingVertical: 6,
     },
     dayCircle: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    todayBorder: {
-        borderWidth: 1,
-        borderColor: Colors.primaryDark,
-        borderRadius: 8,
+    todayCircle: {
+        backgroundColor: Colors.primary,
     },
     dayText: {
-        fontSize: 16,
-        fontWeight: '500',
+        fontSize: 14,
+        fontFamily: 'Poppins_600SemiBold',
+        color: Colors.text,
+        fontVariant: ['tabular-nums'],
     },
-    tinyLabel: {
+    todayText: {
+        color: '#FFFFFF',
+        fontFamily: 'Poppins_700Bold',
+    },
+    dayOrderChip: {
+        marginTop: 3,
+        paddingHorizontal: 6,
+        paddingVertical: 1.5,
+        borderRadius: 999,
+        minWidth: 28,
+        alignItems: 'center',
+    },
+    dayOrderChipText: {
         fontSize: 10,
-        color: Colors.textLight,
-        marginTop: 2,
+        fontFamily: 'Poppins_600SemiBold',
+        color: Colors.text,
     },
-    dot: {
-        width: 4,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: Colors.error,
-        marginTop: 2,
+    holidayChip: {
+        backgroundColor: '#FFE4E6',
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: '#FDA4AF',
+    },
+    holidayChipText: {
+        fontSize: 10,
+        fontFamily: 'Poppins_600SemiBold',
+        color: '#9F1239',
+    },
+    dayOrderChipSpacer: {
+        height: 17,
+        marginTop: 3,
+    },
+    legendRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: 6,
+        marginTop: 12,
+        paddingTop: 10,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: 'rgba(15, 23, 42, 0.08)',
+    },
+    legendPill: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 999,
+    },
+    legendText: {
+        fontSize: 10.5,
+        fontFamily: 'Poppins_600SemiBold',
+        color: Colors.text,
     },
 
     // Modal
@@ -469,8 +603,7 @@ const styles = StyleSheet.create({
 
     // Events Section
     eventsSection: {
-        padding: 20,
-        marginTop: 10,
+        marginTop: 18,
     },
     sectionTitle: {
         fontSize: 20,

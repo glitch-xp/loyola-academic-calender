@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { Env } from '../types';
 import { authMiddleware, createJWT, hashPassword, verifyPassword } from '../middleware/auth';
+import { scrapeCalendar } from '../scraper';
 
 const admin = new Hono<{ Bindings: Env; Variables: { adminUser: any } }>();
 
@@ -370,6 +371,12 @@ admin.delete('/calendar/:date', async (c) => {
     const date = c.req.param('date');
     await c.env.DB.prepare('DELETE FROM calendar_days WHERE date = ?').bind(date).run();
     return c.json({ success: true });
+});
+
+// Trigger calendar sync from Loyola College website
+admin.post('/calendar/sync', async (c) => {
+    const result = await scrapeCalendar(c.env);
+    return c.json({ success: true, ...result });
 });
 
 // ─── Releases ────────────────────────────────────────────────────────────────

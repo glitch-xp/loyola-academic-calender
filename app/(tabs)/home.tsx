@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, StatusBar, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Colors } from '@/constants/Colors';
@@ -8,17 +8,29 @@ import { TimetableHelper, SubjectWithTiming } from '@/utils/TimetableHelper';
 import { StorageService } from '@/services/StorageService';
 import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
-import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile } from '@/types';
+import { Subject, TimeTable, DayOrderConfig, MasterConfig, UserProfile, AttendanceData } from '@/types';
 import { ErrorScreen } from '@/components/ErrorScreen';
 import { router } from 'expo-router';
 import { LiquidBackground } from '@/components/LiquidBackground';
 import { DataService } from '@/services/DataService';
+import { AttendanceService, findSubjectAttendance, getAttendanceTheme } from '@/services/AttendanceService';
 
 interface NextClassInfo {
     current: SubjectWithTiming | null;
     next: SubjectWithTiming | null;
     status: 'before' | 'during' | 'between' | 'after';
     minutesUntilNext: number;
+}
+
+let lastHomeSyncAt = 0;
+
+function isHomeSyncDue(force: boolean): boolean {
+    if (force) return true;
+    return Date.now() - lastHomeSyncAt > 60000;
+}
+
+function markHomeSynced(): void {
+    lastHomeSyncAt = Date.now();
 }
 
 export default function HomeScreen() {
@@ -35,6 +47,7 @@ export default function HomeScreen() {
     const [nextClassInfo, setNextClassInfo] = useState<NextClassInfo | null>(null);
     const [contributor, setContributor] = useState<string | null>(null);
     const [isCustom, setIsCustom] = useState(false);
+    const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(null);
 
     const loadData = async (shouldSync = true) => {
         if (loading) setLoading(true); // show loading only for initial load or manual refresh
@@ -54,6 +67,8 @@ export default function HomeScreen() {
             currentMasterConfig = await StorageService.getData<MasterConfig>('master_config');
             currentUserProfile = await StorageService.getUserProfile();
             const storedContributor = customTT ? null : await StorageService.getData<string>('contributor');
+            const attCache = await AttendanceService.getCachedAttendance();
+            setAttendanceData(attCache.data);
 
             // Check if critical data is missing
             if (!currentTimetable || !currentCalendar || !currentUserProfile) {
@@ -73,8 +88,8 @@ export default function HomeScreen() {
                 calculateDay(currentTimetable, currentCalendar, currentMasterConfig, currentUserProfile);
             }
 
-            // 2. Sync with Server (Background)
-            if (shouldSync && currentUserProfile) {
+            // 2. Sync with Server (Background, throttled to once per 60s unless cache is empty)
+            if (shouldSync && isHomeSyncDue(!currentTimetable) && currentUserProfile) {
                 try {
                     const courseData = await DataService.fetchCourseData(
                         currentUserProfile.department,
@@ -82,6 +97,7 @@ export default function HomeScreen() {
                         currentUserProfile.shift,
                         currentUserProfile.section
                     );
+                    markHomeSynced();
 
                     // Check for custom timetable
                     const customTT = await StorageService.getData<TimeTable>('custom_timetable');
@@ -123,6 +139,72 @@ export default function HomeScreen() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Helper function to calculate next class information
+    const calculateNextClass = (enrichedSubjects: SubjectWithTiming[], currentTime: Date): NextClassInfo | null => {
+        if (enrichedSubjects.length === 0) return null;
+
+        const now = currentTime.getHours() * 60 + currentTime.getMinutes();
+
+        // Parse "HH:MM" or "HH:MM AM/PM" safely
+        const parseTime = (timeStr: string): number => {
+            if (!timeStr) return 0;
+            const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+            if (!match) return 0;
+            let hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const meridiem = match[3]?.toUpperCase();
+            if (meridiem === 'PM' && hours < 12) hours += 12;
+            if (meridiem === 'AM' && hours === 12) hours = 0;
+            return hours * 60 + minutes;
+        };
+
+        let currentClass: SubjectWithTiming | null = null;
+        let nextClass: SubjectWithTiming | null = null;
+        let status: 'before' | 'during' | 'between' | 'after' = 'before';
+        let minutesUntilNext = 0;
+
+        for (let i = 0; i < enrichedSubjects.length; i++) {
+            const subject = enrichedSubjects[i];
+            const startMinutes = parseTime(subject.startTime);
+            const endMinutes = parseTime(subject.endTime);
+
+            // Check if current time is during this class
+            if (now >= startMinutes && now < endMinutes) {
+                currentClass = subject;
+                nextClass = i + 1 < enrichedSubjects.length ? enrichedSubjects[i + 1] : null;
+                status = 'during';
+                if (nextClass) {
+                    minutesUntilNext = parseTime(nextClass.startTime) - now;
+                }
+                break;
+            }
+
+            // Check if this is the next upcoming class
+            if (now < startMinutes) {
+                nextClass = subject;
+                status = i === 0 ? 'before' : 'between';
+                minutesUntilNext = startMinutes - now;
+                if (i > 0) {
+                    currentClass = enrichedSubjects[i - 1];
+                }
+                break;
+            }
+        }
+
+        // If we've gone through all classes and haven't found a current or next one
+        if (!currentClass && !nextClass) {
+            status = 'after';
+            currentClass = enrichedSubjects[enrichedSubjects.length - 1];
+        }
+
+        return {
+            current: currentClass,
+            next: nextClass,
+            status,
+            minutesUntilNext
+        };
     };
 
     const calculateDay = (
@@ -188,69 +270,17 @@ export default function HomeScreen() {
         return () => clearInterval(interval);
     }, [subjects, todayConfig]);
 
-    // Helper function to calculate next class information
-    const calculateNextClass = (enrichedSubjects: SubjectWithTiming[], currentTime: Date): NextClassInfo | null => {
-        if (enrichedSubjects.length === 0) return null;
-
-        const now = currentTime.getHours() * 60 + currentTime.getMinutes();
-
-        // Parse time string (HH:MM) to minutes since midnight
-        const parseTime = (timeStr: string): number => {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            return hours * 60 + minutes;
-        };
-
-        let currentClass: SubjectWithTiming | null = null;
-        let nextClass: SubjectWithTiming | null = null;
-        let status: 'before' | 'during' | 'between' | 'after' = 'before';
-        let minutesUntilNext = 0;
-
-        for (let i = 0; i < enrichedSubjects.length; i++) {
-            const subject = enrichedSubjects[i];
-            const startMinutes = parseTime(subject.startTime);
-            const endMinutes = parseTime(subject.endTime);
-
-            // Check if current time is during this class
-            if (now >= startMinutes && now < endMinutes) {
-                currentClass = subject;
-                nextClass = i + 1 < enrichedSubjects.length ? enrichedSubjects[i + 1] : null;
-                status = 'during';
-                if (nextClass) {
-                    minutesUntilNext = parseTime(nextClass.startTime) - now;
-                }
-                break;
-            }
-
-            // Check if this is the next upcoming class
-            if (now < startMinutes) {
-                nextClass = subject;
-                status = i === 0 ? 'before' : 'between';
-                minutesUntilNext = startMinutes - now;
-                if (i > 0) {
-                    currentClass = enrichedSubjects[i - 1];
-                }
-                break;
-            }
-        }
-
-        // If we've gone through all classes and haven't found a current or next one
-        if (!currentClass && !nextClass) {
-            status = 'after';
-            currentClass = enrichedSubjects[enrichedSubjects.length - 1];
-        }
-
-        return {
-            current: currentClass,
-            next: nextClass,
-            status,
-            minutesUntilNext
-        };
-    };
-
     const getDayOrderColor = (order: number | null) => {
         if (!order) return Colors.dayOrder.holiday;
         // @ts-ignore
         return Colors.dayOrder[order] || Colors.primary;
+    };
+
+    const formatUpcomingDate = (dateStr: string): string => {
+        const raw = dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`;
+        const parsed = new Date(raw);
+        if (Number.isNaN(parsed.getTime())) return dateStr;
+        return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     // Show error screen if data is missing or error occurred
@@ -277,65 +307,121 @@ export default function HomeScreen() {
                         <Text style={styles.date}>{DayOrderHelper.formatDate(currentDate)}</Text>
                     </View>
 
-                    {/* Day Order Card */}
-                    <Card style={{ backgroundColor: getDayOrderColor(todayConfig?.dayOrder || null) }}>
-                        <View style={styles.dayOrderContainer}>
-                            <View style={styles.dayOrderTextContainer}>
+                    {/* Day Order & Upcoming Event Row (separate sibling cards, zero extra vertical bloat) */}
+                    <View style={styles.topSummaryRow}>
+                        <Card
+                            style={[
+                                styles.dayOrderCard,
+                                nextEvent
+                                    ? todayConfig === null || todayConfig.isHoliday || !!todayConfig.event
+                                        ? styles.dayOrderCardMedium
+                                        : styles.dayOrderCardCompact
+                                    : styles.dayOrderCardFull,
+                                { backgroundColor: getDayOrderColor(todayConfig?.dayOrder || null) },
+                            ]}
+                        >
+                            <View style={styles.dayOrderInner}>
                                 <Text style={styles.dayLabel}>
                                     {todayConfig === null ? 'Today' : todayConfig.isHoliday ? 'Holiday' : 'Day Order'}
                                 </Text>
-                                <Text style={styles.dayValue}>
+                                <Text
+                                    style={[
+                                        styles.dayValue,
+                                        (todayConfig === null || todayConfig.isHoliday) && styles.dayValueText,
+                                    ]}
+                                    numberOfLines={2}
+                                >
                                     {todayConfig === null ? 'No Info' : todayConfig.isHoliday ? (todayConfig.event || 'No Classes') : todayConfig.dayOrder || '-'}
                                 </Text>
                                 {todayConfig === null && (
-                                    <Text style={styles.eventSubText}>
+                                    <Text style={styles.eventSubText} numberOfLines={2}>
                                         Calendar not updated yet
                                     </Text>
                                 )}
                                 {todayConfig !== null && !todayConfig.isHoliday && todayConfig.event && (
-                                    <Text style={styles.eventSubText}>
+                                    <Text style={styles.eventSubText} numberOfLines={1}>
                                         {todayConfig.event}
                                     </Text>
                                 )}
                             </View>
-                            {todayConfig !== null && !todayConfig.isHoliday && todayConfig.dayOrder && (
-                                <View style={styles.totalClasses}>
-                                    <Text style={styles.classCount}>{subjects.length}</Text>
-                                    <Text style={styles.classLabel}>Classes</Text>
-                                </View>
-                            )}
-                        </View>
-                    </Card>
+                        </Card>
+
+                        {nextEvent && (
+                            <TouchableOpacity
+                                activeOpacity={0.78}
+                                onPress={() => router.navigate('/(tabs)/calendar')}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Upcoming ${nextEvent.isHoliday ? 'holiday' : 'event'}: ${nextEvent.name}, in ${nextEvent.daysLeft} ${nextEvent.daysLeft === 1 ? 'day' : 'days'}. Open calendar`}
+                                style={styles.upcomingCardWrap}
+                            >
+                                <Card style={styles.upcomingCard}>
+                                    <View style={styles.upcomingCardInner}>
+                                        <View style={styles.upcomingHeaderRow}>
+                                            <Text
+                                                style={[
+                                                    styles.upcomingTypeLabel,
+                                                    nextEvent.isHoliday && styles.upcomingTypeHoliday,
+                                                ]}
+                                                numberOfLines={1}
+                                            >
+                                                {nextEvent.isHoliday ? 'HOLIDAY' : 'UPCOMING'}
+                                            </Text>
+                                            <View
+                                                style={[
+                                                    styles.upcomingDaysBadge,
+                                                    nextEvent.isHoliday ? styles.upcomingBadgeHoliday : styles.upcomingBadgeEvent,
+                                                ]}
+                                            >
+                                                <Text style={styles.upcomingDaysText}>
+                                                    {nextEvent.daysLeft === 0 ? 'Today' : `${nextEvent.daysLeft}d`}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <Text style={styles.upcomingTitle} numberOfLines={2} ellipsizeMode="tail">
+                                            {nextEvent.name}
+                                        </Text>
+                                        <Text style={styles.upcomingMeta} numberOfLines={1}>
+                                            {formatUpcomingDate(nextEvent.date)}
+                                        </Text>
+                                    </View>
+                                </Card>
+                            </TouchableOpacity>
+                        )}
+                    </View>
 
                     {/* Next Class Card */}
                     {todayConfig !== null && !todayConfig.isHoliday && nextClassInfo && (
                         <Card style={styles.nextClassCard}>
                             <View style={styles.nextClassContainer}>
                                 <View style={styles.nextClassHeader}>
-                                    <Text style={styles.nextClassLabel}>
-                                        {nextClassInfo.status === 'during' ? 'CURRENT CLASS' :
-                                            nextClassInfo.status === 'before' ? 'FIRST CLASS TODAY' :
-                                                nextClassInfo.status === 'between' ? 'NEXT CLASS' :
-                                                    'CLASSES COMPLETED'}
-                                    </Text>
+                                    <View style={styles.nextClassTag}>
+                                        <Text style={styles.nextClassLabel}>
+                                            {nextClassInfo.status === 'during' ? 'Current Class' :
+                                                nextClassInfo.status === 'before' ? 'First Class' :
+                                                    nextClassInfo.status === 'between' ? 'Up Next' :
+                                                        'Classes Completed'}
+                                        </Text>
+                                    </View>
                                 </View>
 
                                 {nextClassInfo.status === 'during' && nextClassInfo.current && (
                                     <View style={styles.classDetailsContainer}>
-                                        <View style={styles.currentClassInfo}>
-                                            <Text style={styles.nextClassName}>{nextClassInfo.current.name}</Text>
-                                            {(nextClassInfo.current.code || nextClassInfo.current.teacher) && (
-                                                <Text style={styles.nextClassCode}>
-                                                    {[nextClassInfo.current.code, nextClassInfo.current.teacher].filter(Boolean).join(' • ')}
+                                        <View style={styles.nextClassRow}>
+                                            <View style={styles.currentClassInfo}>
+                                                <Text style={styles.nextClassName}>{nextClassInfo.current.name}</Text>
+                                                {!!nextClassInfo.current.teacher?.trim() && (
+                                                    <Text style={styles.nextClassCode}>
+                                                        {nextClassInfo.current.teacher.trim()}
+                                                    </Text>
+                                                )}
+                                                <Text style={styles.nextClassTime}>
+                                                    {nextClassInfo.current.startTime} - {nextClassInfo.current.endTime}
                                                 </Text>
-                                            )}
-                                            <Text style={styles.nextClassTime}>
-                                                {nextClassInfo.current.startTime} - {nextClassInfo.current.endTime}
-                                            </Text>
+                                            </View>
                                         </View>
                                         {nextClassInfo.next && (
                                             <View style={styles.upNextContainer}>
-                                                <Text style={styles.upNextLabel}>Up Next</Text>
+                                                <Text style={styles.upNextLabel}>Following next</Text>
                                                 <Text style={styles.upNextName}>{nextClassInfo.next.name}</Text>
                                                 <Text style={styles.upNextTime}>
                                                     in {Math.floor(nextClassInfo.minutesUntilNext / 60)}h {nextClassInfo.minutesUntilNext % 60}m
@@ -346,12 +432,12 @@ export default function HomeScreen() {
                                 )}
 
                                 {(nextClassInfo.status === 'before' || nextClassInfo.status === 'between') && nextClassInfo.next && (
-                                    <View style={styles.classDetailsContainer}>
+                                    <View style={styles.nextClassRow}>
                                         <View style={styles.nextClassMainInfo}>
                                             <Text style={styles.nextClassName}>{nextClassInfo.next.name}</Text>
-                                            {(nextClassInfo.next.code || nextClassInfo.next.teacher) && (
+                                            {!!nextClassInfo.next.teacher?.trim() && (
                                                 <Text style={styles.nextClassCode}>
-                                                    {[nextClassInfo.next.code, nextClassInfo.next.teacher].filter(Boolean).join(' • ')}
+                                                    {nextClassInfo.next.teacher.trim()}
                                                 </Text>
                                             )}
                                             <Text style={styles.nextClassTime}>
@@ -360,10 +446,10 @@ export default function HomeScreen() {
                                         </View>
                                         <View style={styles.countdownBox}>
                                             <Text style={styles.countdownTime}>
-                                                {Math.floor(nextClassInfo.minutesUntilNext / 60)}:{String(nextClassInfo.minutesUntilNext % 60).padStart(2, '0')}
+                                                {String(Math.floor(nextClassInfo.minutesUntilNext / 60)).padStart(2, '0')}:{String(nextClassInfo.minutesUntilNext % 60).padStart(2, '0')}
                                             </Text>
                                             <Text style={styles.countdownLabel}>
-                                                {nextClassInfo.minutesUntilNext < 60 ? 'minutes' : 'hours'}
+                                                {nextClassInfo.minutesUntilNext < 60 ? 'min' : 'hrs'}
                                             </Text>
                                         </View>
                                     </View>
@@ -373,7 +459,7 @@ export default function HomeScreen() {
                                     <View style={styles.classDetailsContainer}>
                                         <View style={styles.nextClassMainInfo}>
                                             <Text style={styles.nextClassName}>All Classes Completed</Text>
-                                            <Text style={styles.nextClassCode}>Great work today! 🎉</Text>
+                                            <Text style={styles.nextClassCode}>Great work today</Text>
                                         </View>
                                     </View>
                                 )}
@@ -388,45 +474,56 @@ export default function HomeScreen() {
                         </View>
                     )}
 
-                    {/* Next Event Countdown */}
-                    {nextEvent && (
-                        <Card style={styles.eventCard}>
-                            <View style={styles.eventRow}>
-                                <View style={styles.eventInfo}>
-                                    <Text style={styles.eventLabel}>UPCOMING {nextEvent.isHoliday ? 'HOLIDAY' : 'EVENT'}</Text>
-                                    <Text style={styles.eventName}>{nextEvent.name}</Text>
-                                    <Text style={styles.eventDate}>{new Date(nextEvent.date).toDateString()}</Text>
-                                </View>
-                                <View style={styles.countdown}>
-                                    <Text style={styles.daysLeft}>{nextEvent.daysLeft}</Text>
-                                    <Text style={styles.daysLabel}>Days</Text>
-                                </View>
-                            </View>
-                        </Card>
-                    )}
-
                     {/* Timetable List */}
                     {todayConfig !== null && !todayConfig.isHoliday && subjects.length > 0 && (
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Today&apos;s Schedule</Text>
-                            {subjects.map((sub, index) => (
-                                <Card key={index} style={styles.subjectCard}>
-                                    <View style={styles.subjectCardContent}>
-                                        <View style={styles.timeContainer}>
-                                            <Text style={styles.time}>{sub.startTime}</Text>
-                                            <Text style={styles.timeEnd}>{sub.endTime}</Text>
-                                        </View>
-                                        <View style={styles.subjectInfo}>
-                                            <Text style={styles.subjectName}>{sub.name}</Text>
-                                            {(sub.code || sub.teacher) && (
-                                                <Text style={styles.subjectCode}>
-                                                    {[sub.code, sub.teacher].filter(Boolean).join(' • ')}
-                                                </Text>
+                            {subjects.map((sub, index) => {
+                                const subAtt = findSubjectAttendance(sub, attendanceData);
+                                const attTheme = subAtt ? getAttendanceTheme(subAtt.percentage) : null;
+                                return (
+                                    <Card
+                                        key={index}
+                                        style={[
+                                            styles.subjectCard,
+                                            attTheme
+                                                ? {
+                                                      backgroundColor: attTheme.cardBg,
+                                                      borderColor: attTheme.cardBorder,
+                                                      borderWidth: 1,
+                                                  }
+                                                : undefined,
+                                        ]}
+                                    >
+                                        <View style={styles.subjectCardContent}>
+                                            <View
+                                                style={[
+                                                    styles.timeContainer,
+                                                    attTheme ? { borderRightColor: attTheme.cardBorder } : undefined,
+                                                ]}
+                                            >
+                                                <Text style={styles.time}>{sub.startTime}</Text>
+                                                <Text style={styles.timeEnd}>{sub.endTime}</Text>
+                                            </View>
+                                            <View style={styles.subjectInfo}>
+                                                <Text style={styles.subjectName}>{sub.name}</Text>
+                                                {!!sub.teacher?.trim() && (
+                                                    <Text style={styles.subjectCode}>
+                                                        {sub.teacher.trim()}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                            {subAtt && attTheme && (
+                                                <View style={[styles.attBadge, { backgroundColor: attTheme.pillBg }]}>
+                                                    <Text style={[styles.attBadgeText, { color: attTheme.pillText }]}>
+                                                        {subAtt.percentage.toFixed(0)}%
+                                                    </Text>
+                                                </View>
                                             )}
                                         </View>
-                                    </View>
-                                </Card>
-                            ))}
+                                    </Card>
+                                );
+                            })}
                         </View>
                     )}
 
@@ -476,131 +573,152 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     scrollContent: {
-        padding: 20,
-        paddingBottom: 100, // Added bottom padding to avoid overlap with floating elements
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        paddingBottom: 120,
     },
     header: {
-        marginBottom: 24,
+        marginBottom: 14,
     },
     greeting: {
-        fontSize: 28,
+        fontSize: 26,
         fontFamily: 'Poppins_700Bold',
         color: Colors.text,
-        letterSpacing: -0.5,
+        letterSpacing: -0.6,
     },
     date: {
-        fontSize: 15,
+        fontSize: 13.5,
         color: Colors.textLight,
-        marginTop: 4,
+        marginTop: 1,
         fontFamily: 'Poppins_500Medium',
     },
-    dayOrderContainer: {
+    topSummaryRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'stretch',
+        gap: 10,
+        marginBottom: 12,
     },
-    dayOrderTextContainer: {
+    dayOrderCard: {
+        borderRadius: 22,
+        borderWidth: 1,
+        borderColor: 'rgba(15, 23, 42, 0.07)',
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        marginBottom: 0,
+    },
+    dayOrderCardCompact: {
+        flexShrink: 0,
+        minWidth: 92,
+    },
+    dayOrderCardMedium: {
+        flex: 0.9,
+        minWidth: 108,
+    },
+    dayOrderCardFull: {
         flex: 1,
-        paddingRight: 8,
+    },
+    dayOrderInner: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     dayLabel: {
-        fontSize: 13,
-        color: Colors.textLight,
-        fontFamily: 'Poppins_600SemiBold',
-        opacity: 0.9,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    dayValue: {
-        fontSize: 34,
-        fontFamily: 'Poppins_800ExtraBold',
-        color: Colors.text,
-        marginTop: 4,
-    },
-    totalClasses: {
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.7)',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 16,
-    },
-    classCount: {
-        fontSize: 24,
-        fontFamily: 'Poppins_800ExtraBold',
-        color: Colors.text,
-    },
-    classLabel: {
         fontSize: 12,
         color: Colors.textLight,
-        fontFamily: 'Poppins_500Medium',
+        fontFamily: 'Poppins_600SemiBold',
+        textAlign: 'center',
     },
-    // Event
-    eventCard: {
-        backgroundColor: Colors.dayOrder[3], // Subtle Amber/Yellow
-        marginTop: 16,
-        borderRadius: 24,
-    },
-    eventRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    eventInfo: {
-        flex: 1,
-    },
-    eventLabel: {
-        fontSize: 11,
-        fontFamily: 'Poppins_700Bold',
-        color: Colors.text, // Darker for better contrast on yellow
-        opacity: 0.7,
-        letterSpacing: 1.5,
-        marginBottom: 4,
-    },
-    eventName: {
-        fontSize: 18,
-        fontFamily: 'Poppins_700Bold',
+    dayValue: {
+        fontSize: 32,
+        lineHeight: 38,
+        fontFamily: 'Poppins_800ExtraBold',
         color: Colors.text,
+        marginTop: 2,
+        fontVariant: ['tabular-nums'],
+        textAlign: 'center',
+    },
+    dayValueText: {
+        fontSize: 19,
         lineHeight: 24,
     },
-    eventDate: {
-        fontSize: 14,
-        color: Colors.text, // Darker for better contrast on yellow
-        marginTop: 4,
-        fontFamily: 'Poppins_500Medium',
-        opacity: 0.8,
+    upcomingCardWrap: {
+        flex: 1,
     },
-    countdown: {
+    upcomingCard: {
+        flex: 1,
+        borderRadius: 22,
+        backgroundColor: Colors.surface,
+        borderWidth: 1,
+        borderColor: 'rgba(15, 23, 42, 0.08)',
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        marginBottom: 0,
+    },
+    upcomingCardInner: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        gap: 3,
+    },
+    upcomingHeaderRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        padding: 12,
-        borderRadius: 16,
-        minWidth: 70,
-        marginLeft: 16,
+        justifyContent: 'space-between',
+        gap: 8,
     },
-    daysLeft: {
-        fontSize: 24,
-        fontFamily: 'Poppins_800ExtraBold',
-        color: Colors.primaryDark,
-    },
-    daysLabel: {
+    upcomingTypeLabel: {
         fontSize: 11,
-        color: Colors.textLight,
+        fontFamily: 'Poppins_700Bold',
+        color: Colors.primaryDark,
+        letterSpacing: 0.5,
+    },
+    upcomingTypeHoliday: {
+        color: '#B45309',
+    },
+    upcomingDaysBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 999,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    upcomingBadgeEvent: {
+        backgroundColor: Colors.primary,
+    },
+    upcomingBadgeHoliday: {
+        backgroundColor: '#B45309',
+    },
+    upcomingDaysText: {
+        fontSize: 11,
+        fontFamily: 'Poppins_700Bold',
+        color: '#FFFFFF',
+        fontVariant: ['tabular-nums'],
+    },
+    upcomingTitle: {
+        fontSize: 14,
+        lineHeight: 19,
         fontFamily: 'Poppins_600SemiBold',
-        textTransform: 'uppercase',
+        color: Colors.text,
+    },
+    upcomingMeta: {
+        fontSize: 12,
+        fontFamily: 'Poppins_500Medium',
+        color: Colors.textLight,
     },
     // Subjects
     section: {
-        marginTop: 28,
+        marginTop: 8,
     },
     sectionTitle: {
-        fontSize: 20,
+        fontSize: 19,
         fontFamily: 'Poppins_700Bold',
         color: Colors.text,
-        marginBottom: 16,
-        letterSpacing: -0.5,
+        marginBottom: 10,
+        letterSpacing: -0.4,
     },
     subjectCard: {
-        marginBottom: 14,
+        marginBottom: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
         width: '100%',
     },
     subjectCardContent: {
@@ -608,40 +726,55 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     timeContainer: {
-        paddingRight: 16,
-        borderRightWidth: 2,
-        borderRightColor: Colors.border,
+        paddingRight: 10,
+        borderRightWidth: 1,
+        borderRightColor: 'rgba(15, 23, 42, 0.10)',
         alignItems: 'center',
-        width: 85,
+        width: 82,
         justifyContent: 'center',
     },
     time: {
-        fontSize: 16,
+        fontSize: 13,
         fontFamily: 'Poppins_700Bold',
         color: Colors.text,
+        fontVariant: ['tabular-nums'],
     },
     timeEnd: {
-        fontSize: 12,
+        fontSize: 11.5,
         color: Colors.textLight,
         marginTop: 2,
         fontFamily: 'Poppins_500Medium',
+        fontVariant: ['tabular-nums'],
     },
     subjectInfo: {
-        paddingLeft: 16,
+        paddingLeft: 12,
         flex: 1,
         justifyContent: 'center',
     },
     subjectName: {
-        fontSize: 16,
+        fontSize: 15.5,
         fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 2,
-        lineHeight: 22,
+        lineHeight: 21,
     },
     subjectCode: {
         fontSize: 13,
         color: Colors.textLight,
         fontFamily: 'Poppins_500Medium',
+    },
+    attBadge: {
+        paddingHorizontal: 11,
+        paddingVertical: 5,
+        borderRadius: 999,
+        marginLeft: 8,
+        minWidth: 50,
+        alignItems: 'center',
+    },
+    attBadgeText: {
+        fontSize: 12.5,
+        fontFamily: 'Poppins_700Bold',
+        fontVariant: ['tabular-nums'],
     },
     holidayContainer: {
         padding: 40,
@@ -656,25 +789,39 @@ const styles = StyleSheet.create({
     // Next Class Card
     nextClassCard: {
         backgroundColor: Colors.surface,
-        borderLeftWidth: 4,
-        borderLeftColor: Colors.primary,
-        marginTop: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(15, 23, 42, 0.08)',
+        borderRadius: 22,
+        paddingHorizontal: 18,
+        paddingVertical: 14,
+        marginBottom: 12,
     },
     nextClassContainer: {
-        gap: 12,
+        gap: 8,
     },
     nextClassHeader: {
-        marginBottom: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    nextClassTag: {
+        backgroundColor: '#E0EAFF',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 999,
     },
     nextClassLabel: {
-        fontSize: 11,
-        fontFamily: 'Poppins_700Bold',
-        color: Colors.primary,
-        letterSpacing: 1,
-        textTransform: 'uppercase',
+        fontSize: 11.5,
+        fontFamily: 'Poppins_600SemiBold',
+        color: Colors.primaryDark,
     },
     classDetailsContainer: {
-        gap: 16,
+        gap: 14,
+    },
+    nextClassRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: 12,
     },
     currentClassInfo: {
         flex: 1,
@@ -683,69 +830,69 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     nextClassName: {
-        fontSize: 22,
+        fontSize: 19,
         fontFamily: 'Poppins_700Bold',
         color: Colors.text,
         marginBottom: 4,
-        lineHeight: 28,
+        lineHeight: 25,
     },
     nextClassCode: {
-        fontSize: 14,
+        fontSize: 13.5,
         color: Colors.textLight,
-        marginBottom: 6,
+        marginBottom: 4,
         fontFamily: 'Poppins_500Medium',
     },
     nextClassTime: {
-        fontSize: 15,
+        fontSize: 13.5,
         color: Colors.textLight,
         fontFamily: 'Poppins_600SemiBold',
+        fontVariant: ['tabular-nums'],
     },
     upNextContainer: {
-        backgroundColor: Colors.background,
+        backgroundColor: '#F3F5F9',
         padding: 12,
-        borderRadius: 12,
-        borderLeftWidth: 3,
-        borderLeftColor: Colors.secondary,
-        marginTop: 8,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(15, 23, 42, 0.07)',
+        marginTop: 4,
     },
     upNextLabel: {
-        fontSize: 10,
+        fontSize: 11,
         fontFamily: 'Poppins_600SemiBold',
-        color: Colors.textLight,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-        marginBottom: 4,
+        color: Colors.primaryDark,
+        marginBottom: 3,
     },
     upNextName: {
-        fontSize: 15,
+        fontSize: 14.5,
         fontFamily: 'Poppins_600SemiBold',
         color: Colors.text,
         marginBottom: 2,
     },
     upNextTime: {
-        fontSize: 13,
+        fontSize: 12.5,
         color: Colors.textLight,
         fontFamily: 'Poppins_500Medium',
     },
     countdownBox: {
         backgroundColor: Colors.primary,
-        padding: 16,
-        borderRadius: 16,
+        paddingHorizontal: 14,
+        paddingVertical: 11,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 90,
+        minWidth: 82,
     },
     countdownTime: {
-        fontSize: 26,
+        fontSize: 21,
         fontFamily: 'Poppins_700Bold',
         color: '#FFFFFF',
+        fontVariant: ['tabular-nums'],
     },
     countdownLabel: {
         fontSize: 11,
         color: '#FFFFFF',
         opacity: 0.9,
-        marginTop: 2,
-        textTransform: 'uppercase',
+        marginTop: 1,
         fontFamily: 'Poppins_600SemiBold',
     },
     afterClassesContainer: {

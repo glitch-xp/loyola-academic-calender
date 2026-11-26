@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Button } from './Button';
 import { Card } from './Card';
+import { LiquidBackground } from './LiquidBackground';
+import { AlertTriangleIcon } from './ui/GlassIcons';
 
 interface Props {
     onRetry?: () => void;
@@ -13,76 +15,74 @@ interface Props {
 
 export function ErrorScreen({ onRetry, title, message }: Props) {
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-            <View style={styles.content}>
-                <Card style={styles.card}>
-                    {/* Error Icon */}
-                    <View style={styles.iconContainer}>
-                        <View style={styles.iconCircle}>
-                            <Text style={styles.iconText}>⚠️</Text>
+        <LiquidBackground>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+                <View style={styles.content}>
+                    <Card style={styles.card}>
+                        <View style={styles.iconContainer}>
+                            <View style={styles.iconCircle}>
+                                <AlertTriangleIcon size={40} color="#DC2626" />
+                            </View>
                         </View>
-                    </View>
 
-                    {/* Title */}
-                    <Text style={styles.title}>
-                        {title || 'Something Went Wrong'}
+                        <Text style={styles.title}>
+                            {title || 'Something Went Wrong'}
+                        </Text>
+
+                        <Text style={styles.message}>
+                            {message || 'We encountered an unexpected error. Please try again.'}
+                        </Text>
+
+                        {onRetry && (
+                            <View style={styles.buttonContainer}>
+                                <Button
+                                    title="Try Again"
+                                    onPress={onRetry}
+                                    variant="primary"
+                                />
+                            </View>
+                        )}
+                    </Card>
+
+                    <Text style={styles.helpText}>
+                        If the problem persists, please contact support
                     </Text>
-
-                    {/* Message */}
-                    <Text style={styles.message}>
-                        {message || 'We encountered an unexpected error. Please try again.'}
-                    </Text>
-
-                    {/* Retry Button */}
-                    {onRetry && (
-                        <View style={styles.buttonContainer}>
-                            <Button
-                                title="Try Again"
-                                onPress={onRetry}
-                                variant="primary"
-                            />
-                        </View>
-                    )}
-                </Card>
-
-                {/* Additional Help Text */}
-                <Text style={styles.helpText}>
-                    If the problem persists, please contact support
-                </Text>
-            </View>
-        </SafeAreaView>
+                </View>
+            </SafeAreaView>
+        </LiquidBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: 'transparent',
     },
     content: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        paddingBottom: 110,
     },
     card: {
         width: '100%',
+        maxWidth: 420,
         alignItems: 'center',
-        paddingVertical: 40,
+        paddingVertical: 32,
     },
     iconContainer: {
-        marginBottom: 24,
+        marginBottom: 20,
     },
     iconCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: Colors.error,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#FEE2E2',
+        borderWidth: 1,
+        borderColor: '#FCA5A5',
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    iconText: {
-        fontSize: 48,
     },
     title: {
         fontSize: 24,

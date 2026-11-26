@@ -2,10 +2,12 @@ import { View, Text, StyleSheet, Alert, Share, ScrollView, Platform } from 'reac
 import { Colors } from '../../constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
 import { StorageService } from '../../services/StorageService';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import { useUpdateChecker } from '../../hooks/useUpdateChecker';
+import { LiquidBackground } from '../../components/LiquidBackground';
 
 export default function SettingsScreen() {
     const { checkUpdates } = useUpdateChecker({ autoCheck: false });
@@ -41,10 +43,11 @@ export default function SettingsScreen() {
         }
     };
 
-    const appVersion = Constants.expoConfig?.version || '2.0.2';
+    const appVersion = Constants.expoConfig?.version || '2.1.0';
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+        <LiquidBackground>
+            <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
             <View style={styles.header}>
                 <Text style={styles.title}>More</Text>
             </View>
@@ -56,7 +59,7 @@ export default function SettingsScreen() {
             >
                 {/* App Updates Section - Hidden on Web */}
                 {Platform.OS !== 'web' && (
-                    <View style={styles.section}>
+                    <Card style={styles.sectionCard}>
                         <Text style={styles.sectionTitle}>App Updates</Text>
                         <Text style={styles.infoText}>
                             Check for the latest version of the app and new features.
@@ -67,10 +70,10 @@ export default function SettingsScreen() {
                             onPress={() => checkUpdates(true)}
                             style={{ marginTop: 12 }}
                         />
-                    </View>
+                    </Card>
                 )}
 
-                <View style={styles.section}>
+                <Card style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Course Management</Text>
                     <Text style={styles.infoText}>
                         Need to change your Department, Year, or Section? Resetting will take you back to the welcome screen.
@@ -82,9 +85,9 @@ export default function SettingsScreen() {
                         textStyle={{ color: Colors.error }}
                         style={{ borderColor: Colors.error, marginTop: 12 }}
                     />
-                </View>
+                </Card>
 
-                <View style={styles.section}>
+                <Card style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>About & Support</Text>
                     <Text style={styles.infoText}>
                         Love the app? Share the source code with your friends or contribute to the project!
@@ -95,7 +98,7 @@ export default function SettingsScreen() {
                         onPress={handleShare}
                         style={{ marginTop: 12 }}
                     />
-                </View>
+                </Card>
 
                 <View style={styles.footer}>
                     <Text style={styles.version}>Version {appVersion}</Text>
@@ -103,14 +106,15 @@ export default function SettingsScreen() {
                     <Text style={styles.developer}>Developed with ❤️ by Yuvaraja.com</Text>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LiquidBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: 'transparent',
     },
     header: {
         padding: 20,
@@ -127,16 +131,8 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 120, // Add extra padding for the tab bar
     },
-    section: {
-        backgroundColor: Colors.surface,
-        padding: 20,
-        borderRadius: 20,
-        marginBottom: 20,
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 10,
-        elevation: 2,
+    sectionCard: {
+        marginBottom: 16,
     },
     sectionTitle: {
         fontSize: 18,

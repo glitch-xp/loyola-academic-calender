@@ -2,22 +2,15 @@
   "expo": {
     "name": "Loyola Time Table App",
     "slug": "loyola-timetable-app",
-    "version": "2.0.2",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "splash": {
-      "image": "./assets/images/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#003366"
-    },
     "scheme": "loyola",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "updates": {
       "url": "https://u.expo.dev/50c8e57e-5092-45df-b5b2-075dd98f4511"
     },
-    "runtimeVersion": "2.0.2",
-    "entryPoint": "expo-router/entry",
+    "runtimeVersion": "2.1.0",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.loyola.timetableapp"
@@ -37,7 +30,16 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#003366"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -45,6 +47,7 @@
     },
     "android": {
       "package": "com.loyola.timetableapp",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#003366"

@@ -1,34 +1,65 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { Colors } from '../constants/Colors';
+import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 
 interface Props {
     children: React.ReactNode;
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
 }
 
 export function Card({ children, style }: Props) {
-    // Extract background color if present to use as tint or fallback
-    const { backgroundColor, ...otherStyles } = (style || {}) as ViewStyle;
+    const flatStyle = (StyleSheet.flatten(style) || {}) as ViewStyle;
+    const {
+        backgroundColor,
+        borderColor,
+        borderWidth,
+        borderLeftColor,
+        borderLeftWidth,
+        padding,
+        paddingTop,
+        paddingRight,
+        paddingBottom,
+        paddingLeft,
+        paddingHorizontal,
+        paddingVertical,
+        ...outerStyles
+    } = flatStyle;
+
+    const surfaceColor = backgroundColor || '#FFFFFF';
+    const hasCustomPadding =
+        padding !== undefined ||
+        paddingTop !== undefined ||
+        paddingRight !== undefined ||
+        paddingBottom !== undefined ||
+        paddingLeft !== undefined ||
+        paddingHorizontal !== undefined ||
+        paddingVertical !== undefined;
+
+    const innerPaddingStyle: ViewStyle = hasCustomPadding
+        ? {
+              ...(padding !== undefined && { padding }),
+              ...(paddingTop !== undefined && { paddingTop }),
+              ...(paddingRight !== undefined && { paddingRight }),
+              ...(paddingBottom !== undefined && { paddingBottom }),
+              ...(paddingLeft !== undefined && { paddingLeft }),
+              ...(paddingHorizontal !== undefined && { paddingHorizontal }),
+              ...(paddingVertical !== undefined && { paddingVertical }),
+          }
+        : {};
+
+    const cardBorderStyle: ViewStyle = {
+        borderWidth: borderWidth ?? StyleSheet.hairlineWidth,
+        borderColor: borderColor ?? 'rgba(60, 60, 67, 0.13)',
+        ...(borderLeftWidth !== undefined && { borderLeftWidth }),
+        ...(borderLeftColor !== undefined && { borderLeftColor }),
+    };
 
     return (
-        <View style={[styles.containerShadow, style]}>
-            <BlurView
-                intensity={80}
-                tint="light"
-                style={[styles.blurContainer, backgroundColor ? { backgroundColor: 'transparent' } : undefined]}
-            >
-                {/* Consistent White Background */}
-                {!backgroundColor && (
-                    <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255, 255, 255, 0.8)' }]} />
-                )}
-
-                {/* Optional overlay for extra tint if needed */}
-                <View style={[styles.content, backgroundColor ? { backgroundColor: typeof backgroundColor === 'string' ? backgroundColor.replace('rgb', 'rgba').replace(')', ', 0.3)') : backgroundColor } : undefined]}>
+        <View style={[styles.containerShadow, outerStyles, { backgroundColor: surfaceColor }]}>
+            <View style={[styles.innerClip, cardBorderStyle, { backgroundColor: surfaceColor }]}>
+                <View style={[styles.content, innerPaddingStyle]}>
                     {children}
                 </View>
-            </BlurView>
+            </View>
         </View>
     );
 }
@@ -36,24 +67,20 @@ export function Card({ children, style }: Props) {
 const styles = StyleSheet.create({
     containerShadow: {
         borderRadius: 24,
-        // Glow Effect
-        shadowColor: Colors.primary, // Using primary color for the glow
-        shadowOffset: { width: 0, height: 0 }, // Centered glow
-        shadowOpacity: 0.15,
-        shadowRadius: 20,
-        // Android Elevation
-        elevation: 5,
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.07,
+        shadowRadius: 12,
+        elevation: 3,
         marginBottom: 16,
-        backgroundColor: 'transparent', // Ensure shadow is visible
     },
-    blurContainer: {
+    innerClip: {
         borderRadius: 24,
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.6)', // Slightly clearer bezel
+        flexGrow: 1,
     },
     content: {
         padding: 20,
-        backgroundColor: 'transparent', // Let gradient show through
-    }
+        flexGrow: 1,
+    },
 });

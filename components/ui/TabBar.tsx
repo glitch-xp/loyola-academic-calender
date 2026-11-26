@@ -1,190 +1,211 @@
-
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, LayoutChangeEvent, Animated, PanResponder } from 'react-native';
-import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
-import { BlurView } from 'expo-blur';
+import React, { useEffect, useState } from 'react';
+import { Animated, LayoutChangeEvent, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Navigator } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { LiquidGlassSurface } from './LiquidGlassSurface';
+import {
+    GlassAttendanceIcon,
+    GlassCalendarIcon,
+    GlassHomeIcon,
+    GlassMoreIcon,
+    GlassTimetableIcon,
+} from './GlassIcons';
 import { Colors } from '../../constants/Colors';
-import { Home, Calendar, Menu, Grid3x3 } from 'lucide-react-native';
 
-export function TabBar({ state, descriptors, navigation, position }: MaterialTopTabBarProps) {
-    const [layout, setLayout] = React.useState<{ width: number; x: number }[]>([]);
+interface TabBarProps {
+    blurTarget?: React.RefObject<React.ComponentRef<typeof View> | null>;
+}
 
-    // Initialize layout array
+const ALL_TAB_ITEMS = [
+    { name: 'home', label: 'Home' },
+    { name: 'timetable', label: 'Timetable' },
+    { name: 'attendance', label: 'Attendance' },
+    { name: 'calendar', label: 'Calendar' },
+    { name: 'settings', label: 'More' },
+] as const;
+
+const TAB_ITEMS =
+    Platform.OS === 'web'
+        ? ALL_TAB_ITEMS.filter((item) => item.name !== 'attendance')
+        : ALL_TAB_ITEMS;
+
+export function TabBar({ blurTarget }: TabBarProps) {
+    const { state, navigation } = Navigator.useContext();
+    const activeRouteName = state.routes[state.index]?.name ?? 'home';
+    const rawIndex = TAB_ITEMS.findIndex((t) => t.name === activeRouteName);
+    const activeIndex = rawIndex >= 0 ? rawIndex : 0;
+
+    const [layout, setLayout] = useState<{ width: number; x: number }[]>([]);
+    const [animatedIndex] = useState(() => new Animated.Value(activeIndex));
+
     useEffect(() => {
-        setLayout(new Array(state.routes.length).fill({ width: 0, x: 0 }));
-    }, [state.routes.length]);
+        Animated.spring(animatedIndex, {
+            toValue: activeIndex,
+            damping: 20,
+            stiffness: 220,
+            mass: 0.7,
+            useNativeDriver: true,
+        }).start();
+    }, [activeIndex, animatedIndex]);
 
     const handleLayout = (event: LayoutChangeEvent, index: number) => {
         const { width, x } = event.nativeEvent.layout;
-
-        setLayout(prev => {
-            const newLayout = [...prev];
-            newLayout[index] = { width, x };
-            return newLayout;
+        setLayout((prev) => {
+            if (prev[index]?.width === width && prev[index]?.x === x) return prev;
+            const base =
+                prev.length === TAB_ITEMS.length
+                    ? prev
+                    : new Array(TAB_ITEMS.length).fill({ width: 0, x: 0 });
+            const next = [...base];
+            next[index] = { width, x };
+            return next;
         });
     };
 
-    // Prepare ranges for interpolation
-    // Ensure we have layout data for all tabs before interpolating effectively
-    const isLayoutReady = layout.length === state.routes.length && layout.every(l => l.width > 0);
-
-    // Default ranges if layout isn't ready yet
-    const inputRange = state.routes.map((_, i) => i);
+    const isLayoutReady =
+        layout.length === TAB_ITEMS.length &&
+        layout.every((l) => l.width > 0);
+    const pillInset = 3;
+    const inputRange = TAB_ITEMS.map((_, i) => i);
     const outputRangeTranslateX = isLayoutReady
-        ? layout.map(l => l.x + 10) // 10px offset
-        : state.routes.map(() => 0);
+        ? layout.map((l) => l.x + pillInset)
+        : TAB_ITEMS.map(() => 0);
 
     const animatedStyle = {
-        transform: [{
-            translateX: position.interpolate({
-                inputRange,
-                outputRange: outputRangeTranslateX,
-            })
-        }]
+        transform: [
+            {
+                translateX: isLayoutReady
+                    ? animatedIndex.interpolate({
+                          inputRange,
+                          outputRange: outputRangeTranslateX,
+                      })
+                    : 0,
+            },
+        ],
     };
 
-    // Calculate width (assuming equal width tabs due to flex: 1)
-    // If layout is not ready, default to 0
-    const indicatorWidth = isLayoutReady ? (layout[0].width - 20) : 0;
+    const indicatorWidth = isLayoutReady ? Math.max(0, layout[0].width - pillInset * 2) : 0;
 
-    const panResponder = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponder: (evt, gestureState) => {
-                // Only capture horizontal swipes
-                return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 20;
-            },
-            onPanResponderRelease: (evt, gestureState) => {
-                if (gestureState.dx < -50) {
-                    // Swipe Left -> Next Tab
-                    const nextIndex = state.index + 1;
-                    if (nextIndex < state.routes.length) {
-                        const route = state.routes[nextIndex];
-                        navigation.navigate(route.name, route.params);
-                    }
-                } else if (gestureState.dx > 50) {
-                    // Swipe Right -> Previous Tab
-                    const prevIndex = state.index - 1;
-                    if (prevIndex >= 0) {
-                        const route = state.routes[prevIndex];
-                        navigation.navigate(route.name, route.params);
-                    }
-                }
-            },
-        })
-    ).current;
+    const renderIcon = (routeName: string, isFocused: boolean) => {
+        const color = isFocused ? '#FFFFFF' : '#1E293B';
+        const glassColor = isFocused ? 'rgba(255, 255, 255, 0.28)' : 'rgba(15, 82, 186, 0.14)';
+        const size = 21;
+
+        if (routeName === 'home') {
+            return <GlassHomeIcon size={size} color={color} glassColor={glassColor} />;
+        }
+        if (routeName === 'timetable') {
+            return <GlassTimetableIcon size={size} color={color} glassColor={glassColor} />;
+        }
+        if (routeName === 'attendance') {
+            return <GlassAttendanceIcon size={size} color={color} glassColor={glassColor} />;
+        }
+        if (routeName === 'calendar') {
+            return <GlassCalendarIcon size={size} color={color} glassColor={glassColor} />;
+        }
+        return <GlassMoreIcon size={size} color={color} glassColor={glassColor} />;
+    };
 
     return (
-        <View style={styles.container} {...panResponder.panHandlers}>
-            <BlurView intensity={100} tint="light" style={StyleSheet.absoluteFill} />
-
+        <LiquidGlassSurface
+            interactive
+            borderRadius={34}
+            blurTarget={blurTarget}
+            refractOptions={{ strength: 1.05, bezel: 16, blur: 10, dispersion: 0.04 }}
+            style={styles.container}
+        >
             <View style={styles.tabsContainer}>
-                {/* Active Tab Indicator (Slider) */}
-                <Animated.View style={[
-                    styles.activeTab,
-                    { width: indicatorWidth },
-                    animatedStyle
-                ]} />
+                {isLayoutReady && (
+                    <Animated.View
+                        pointerEvents="none"
+                        style={[styles.activeTab, { width: indicatorWidth }, animatedStyle]}
+                    >
+                        <LinearGradient
+                            colors={['#2563EB', '#0F52BA']}
+                            start={{ x: 0.1, y: 0 }}
+                            end={{ x: 0.9, y: 1 }}
+                            style={StyleSheet.absoluteFill}
+                        />
+                        <View style={styles.activeTabSpecular} />
+                    </Animated.View>
+                )}
 
-                {state.routes.map((route, index) => {
-                    const { options } = descriptors[route.key];
-                    const isFocused = state.index === index;
+                {TAB_ITEMS.map((item, index) => {
+                    const isFocused = activeIndex === index;
 
                     const onPress = () => {
-                        const event = navigation.emit({
-                            type: 'tabPress',
-                            target: route.key,
-                            canPreventDefault: true,
-                        });
-
-                        if (!isFocused && !event.defaultPrevented) {
-                            navigation.navigate(route.name, route.params);
+                        if (!isFocused) {
+                            navigation.navigate(item.name);
                         }
                     };
 
-                    const onLongPress = () => {
-                        navigation.emit({
-                            type: 'tabLongPress',
-                            target: route.key,
-                        });
-                    };
-
-                    const Icon = () => {
-                        const color = isFocused ? Colors.surface : Colors.textLight;
-                        const size = 24;
-
-                        if (route.name === 'index' || route.name === 'home') return <Home size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
-                        if (route.name === 'timetable') return <Grid3x3 size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
-                        if (route.name === 'calendar') return <Calendar size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
-                        if (route.name === 'settings' || route.name === 'more') return <Menu size={size} color={color} strokeWidth={isFocused ? 2.5 : 2} />;
-                        return null;
-                    };
-
-                    const label = () => {
-                        if (route.name === 'index' || route.name === 'home') return "Home";
-                        if (route.name === 'timetable') return "Timetable";
-                        if (route.name === 'calendar') return "Calendar";
-                        if (route.name === 'settings' || route.name === 'more') return "More";
-                        return "";
-                    };
-
                     return (
-                        <TouchableOpacity
-                            key={index}
-                            accessibilityRole="button"
+                        <Pressable
+                            key={item.name}
+                            accessibilityRole="tab"
                             accessibilityState={isFocused ? { selected: true } : {}}
-                            accessibilityLabel={options.tabBarAccessibilityLabel}
-
+                            accessibilityLabel={item.label}
                             onPress={onPress}
-                            onLongPress={onLongPress}
-                            style={styles.tabItem}
+                            style={({ pressed }) => [
+                                styles.tabItem,
+                                pressed && styles.tabItemPressed,
+                            ]}
                             onLayout={(e) => handleLayout(e, index)}
                         >
                             <View style={styles.iconContainer}>
-                                <Icon />
-                                <Text style={[
-                                    styles.label,
-                                    { color: isFocused ? Colors.surface : Colors.textLight }
-                                ]}>
-                                    {label()}
+                                {renderIcon(item.name, isFocused)}
+                                <Text
+                                    numberOfLines={1}
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.85}
+                                    style={[
+                                        styles.label,
+                                        isFocused && styles.labelFocused,
+                                        { color: isFocused ? '#FFFFFF' : '#1E293B' },
+                                    ]}
+                                >
+                                    {item.label}
                                 </Text>
                             </View>
-                        </TouchableOpacity>
+                        </Pressable>
                     );
                 })}
             </View>
-        </View>
+        </LiquidGlassSurface>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: 30,
-        left: 20,
-        right: 20,
-        height: 70,
-        borderRadius: 35,
-        overflow: 'hidden',
-        backgroundColor: 'rgba(255, 255, 255, 0.35)', // More transparent base for liquid glass
-        borderWidth: 1.5,
-        borderColor: 'rgba(255, 255, 255, 0.7)', // Stronger white border for reflection
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 15,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 25,
-        elevation: 15,
+        bottom: 24,
+        height: 68,
+        borderRadius: 34,
+        zIndex: 50,
         ...Platform.select({
             web: {
                 left: 0,
                 right: 0,
                 marginHorizontal: 'auto',
-                width: '90%',
-                maxWidth: 400,
-            }
-        })
+                width: '96%',
+                maxWidth: 440,
+            },
+            ios: {
+                left: 8,
+                right: 8,
+                shadowColor: '#0F172A',
+                shadowOffset: {
+                    width: 0,
+                    height: 12,
+                },
+                shadowOpacity: 0.14,
+                shadowRadius: 24,
+            },
+            android: {
+                left: 8,
+                right: 8,
+            },
+        }),
     },
     tabsContainer: {
         flexDirection: 'row',
@@ -195,33 +216,54 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        minWidth: 44,
+        minHeight: 44,
         height: '100%',
         zIndex: 1,
+        paddingHorizontal: 2,
+    },
+    tabItemPressed: {
+        transform: [{ scale: 0.94 }],
+        opacity: 0.85,
     },
     iconContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        // Removed fixed width/height to allow auto-sizing
     },
     label: {
         fontSize: 10,
         fontFamily: 'Poppins_500Medium',
         marginTop: 2,
+        letterSpacing: -0.2,
+    },
+    labelFocused: {
+        fontFamily: 'Poppins_600SemiBold',
     },
     activeTab: {
         position: 'absolute',
-        height: '80%',
-        top: '10%',
-        backgroundColor: Colors.primary,
-        borderRadius: 30,
-        shadowColor: '#000',
+        height: '82%',
+        top: '9%',
+        borderRadius: 28,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.56)',
+        shadowColor: Colors.primaryDark,
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 4,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.28,
+        shadowRadius: 10,
+        elevation: 3,
         zIndex: 0,
+    },
+    activeTabSpecular: {
+        position: 'absolute',
+        top: 0,
+        left: 6,
+        right: 6,
+        height: '42%',
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.16)',
     },
 });

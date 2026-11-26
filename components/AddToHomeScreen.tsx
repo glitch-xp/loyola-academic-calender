@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { X, Share, PlusSquare } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
+import { CloseCircleIcon, ShareIcon, AddSquareIcon } from './ui/GlassIcons';
+import { LiquidGlassSurface } from './ui/LiquidGlassSurface';
 
 export default function AddToHomeScreen() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [isVisible, setIsVisible] = useState(false);
-    const [isIOS, setIsIOS] = useState(false);
+    const [isIOS] = useState(() => {
+        if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+        return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    });
 
     useEffect(() => {
         if (Platform.OS !== 'web') return;
@@ -29,9 +32,7 @@ export default function AddToHomeScreen() {
 
         if (checkDismissal()) return;
 
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-        setIsIOS(isIosDevice);
+        const isIosDevice = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
 
         // Check if already in standalone mode
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
@@ -73,8 +74,14 @@ export default function AddToHomeScreen() {
 
     return (
         <View style={styles.wrapper}>
-            <View style={styles.container}>
-                <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
+            <LiquidGlassSurface
+                tone="dark"
+                variant="regular"
+                textHeavy
+                borderRadius={20}
+                style={styles.container}
+            >
+                <View style={styles.blurContainer}>
                     <View style={styles.content}>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>Install App</Text>
@@ -90,28 +97,32 @@ export default function AddToHomeScreen() {
                             </TouchableOpacity>
                         )}
                     </View>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => {
-                        setIsVisible(false);
-                        localStorage.setItem('pwaPromptDismissed', Date.now().toString());
-                    }}>
-                        <X size={20} color="#fff" />
+                    <TouchableOpacity
+                        style={styles.closeButton}
+                        accessibilityLabel="Dismiss install prompt"
+                        onPress={() => {
+                            setIsVisible(false);
+                            localStorage.setItem('pwaPromptDismissed', Date.now().toString());
+                        }}
+                    >
+                        <CloseCircleIcon size={20} color="#fff" />
                     </TouchableOpacity>
 
                     {isIOS && (
                         <View style={styles.iosInstructions}>
                             <View style={styles.iconInstruction}>
-                                <Share size={20} color="#fff" />
+                                <ShareIcon size={20} color="#fff" />
                                 <Text style={styles.instructionText}>Share</Text>
                             </View>
                             <Text style={styles.arrow}>→</Text>
                             <View style={styles.iconInstruction}>
-                                <PlusSquare size={20} color="#fff" />
+                                <AddSquareIcon size={20} color="#fff" />
                                 <Text style={styles.instructionText}>Add to Home Screen</Text>
                             </View>
                         </View>
                     )}
-                </BlurView>
-            </View>
+                </View>
+            </LiquidGlassSurface>
         </View>
     );
 }
@@ -128,17 +139,16 @@ const styles = StyleSheet.create({
     container: {
         width: '90%',
         maxWidth: 500,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
-        // shadow
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.3,
         shadowRadius: 20,
+        elevation: 12,
     },
     blurContainer: {
         padding: 16,
-        backgroundColor: 'rgba(30, 30, 30, 0.85)', // Slightly more opaque for better readability
     },
     content: {
         flexDirection: 'row',
@@ -195,7 +205,7 @@ const styles = StyleSheet.create({
     },
     instructionText: {
         color: '#fff',
-        fontSize: 10,
+        fontSize: 11,
         fontFamily: 'Poppins_400Regular',
     },
     arrow: {

@@ -12,6 +12,7 @@ import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { Subject, TimeTable, UserProfile, MasterConfig } from '@/types';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { LiquidBackground } from '@/components/LiquidBackground';
 
 const DAYS = [1, 2, 3, 4, 5, 6];
 const PERIODS = [1, 2, 3, 4, 5];
@@ -273,35 +274,38 @@ export default function MyTimetableScreen() {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
-                <View style={styles.scrollContent}>
-                    <View style={styles.header}>
-                        <Skeleton width={200} height={32} borderRadius={8} style={{ marginBottom: 8 }} />
-                        <Skeleton width={150} height={16} borderRadius={4} />
-                    </View>
-                    <View style={styles.statusRow}>
-                        <Skeleton width={80} height={28} borderRadius={14} />
-                    </View>
-                    <View style={styles.daySelectorContainer}>
-                        <View style={[styles.daySelector, { flexDirection: 'row', gap: 8 }]}>
-                            {DAYS.map(d => <Skeleton key={d} width={60} height={36} borderRadius={18} />)}
+            <LiquidBackground>
+                <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+                    <View style={styles.scrollContent}>
+                        <View style={styles.header}>
+                            <Skeleton width={200} height={32} borderRadius={8} style={{ marginBottom: 8 }} />
+                            <Skeleton width={150} height={16} borderRadius={4} />
+                        </View>
+                        <View style={styles.statusRow}>
+                            <Skeleton width={80} height={28} borderRadius={14} />
+                        </View>
+                        <View style={styles.daySelectorContainer}>
+                            <View style={[styles.daySelector, { flexDirection: 'row', gap: 8 }]}>
+                                {DAYS.map(d => <Skeleton key={d} width={60} height={36} borderRadius={18} />)}
+                            </View>
+                        </View>
+                        <View style={styles.periodList}>
+                            {PERIODS.map(p => (
+                                <View key={p} style={[styles.periodCard, { height: 80, justifyContent: 'center' }]}>
+                                    <Skeleton width={100} height={16} borderRadius={4} style={{ marginBottom: 12 }} />
+                                    <Skeleton width="100%" height={20} borderRadius={4} />
+                                </View>
+                            ))}
                         </View>
                     </View>
-                    <View style={styles.periodList}>
-                        {PERIODS.map(p => (
-                            <View key={p} style={[styles.periodCard, { height: 80, justifyContent: 'center' }]}>
-                                <Skeleton width={100} height={16} borderRadius={4} style={{ marginBottom: 12 }} />
-                                <Skeleton width="100%" height={20} borderRadius={4} />
-                            </View>
-                        ))}
-                    </View>
-                </View>
-            </SafeAreaView>
+                </SafeAreaView>
+            </LiquidBackground>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
+        <LiquidBackground>
+            <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -564,14 +568,15 @@ export default function MyTimetableScreen() {
                     </View>
                 </KeyboardAvoidingView>
             </Modal>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LiquidBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: 'transparent',
     },
     center: {
         justifyContent: 'center',
@@ -661,10 +666,15 @@ const styles = StyleSheet.create({
     },
     periodCard: {
         backgroundColor: Colors.surface,
-        borderRadius: 12,
+        borderRadius: 18,
         padding: 16,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: 'rgba(15, 23, 42, 0.08)',
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
     },
     periodHeader: {
         flexDirection: 'row',
@@ -674,10 +684,8 @@ const styles = StyleSheet.create({
     },
     periodLabel: {
         fontSize: 13,
-        fontWeight: '700',
-        color: Colors.primary,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        fontFamily: 'Poppins_600SemiBold',
+        color: Colors.primaryDark,
     },
     periodBadge: {
         backgroundColor: Colors.highlight,

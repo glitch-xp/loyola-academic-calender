@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Colors';
 import { Button } from './Button';
 import { Card } from './Card';
+import { LiquidBackground } from './LiquidBackground';
+import { WifiOffIcon } from './ui/GlassIcons';
 
 interface Props {
     onRetry?: () => void;
@@ -12,74 +14,72 @@ interface Props {
 
 export function NoNetworkScreen({ onRetry, message }: Props) {
     return (
-        <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
-            <View style={styles.content}>
-                <Card style={styles.card}>
-                    {/* Network Icon */}
-                    <View style={styles.iconContainer}>
-                        <View style={styles.iconCircle}>
-                            <Text style={styles.iconText}>📡</Text>
+        <LiquidBackground>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+                <View style={styles.content}>
+                    <Card style={styles.card}>
+                        <View style={styles.iconContainer}>
+                            <View style={styles.iconCircle}>
+                                <WifiOffIcon size={40} color={Colors.primary} />
+                            </View>
                         </View>
-                    </View>
 
-                    {/* Title */}
-                    <Text style={styles.title}>No Internet Connection</Text>
+                        <Text style={styles.title}>No Internet Connection</Text>
 
-                    {/* Message */}
-                    <Text style={styles.message}>
-                        {message || 'Please check your internet connection and try again.'}
+                        <Text style={styles.message}>
+                            {message || 'Please check your internet connection and try again.'}
+                        </Text>
+
+                        {onRetry && (
+                            <View style={styles.buttonContainer}>
+                                <Button
+                                    title="Try Again"
+                                    onPress={onRetry}
+                                    variant="primary"
+                                />
+                            </View>
+                        )}
+                    </Card>
+
+                    <Text style={styles.helpText}>
+                        Make sure you&apos;re connected to Wi-Fi or mobile data
                     </Text>
-
-                    {/* Retry Button */}
-                    {onRetry && (
-                        <View style={styles.buttonContainer}>
-                            <Button
-                                title="Try Again"
-                                onPress={onRetry}
-                                variant="primary"
-                            />
-                        </View>
-                    )}
-                </Card>
-
-                {/* Additional Help Text */}
-                <Text style={styles.helpText}>
-                    Make sure you&apos;re connected to Wi-Fi or mobile data
-                </Text>
-            </View>
-        </SafeAreaView>
+                </View>
+            </SafeAreaView>
+        </LiquidBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: 'transparent',
     },
     content: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
+        paddingBottom: 110,
     },
     card: {
         width: '100%',
+        maxWidth: 420,
         alignItems: 'center',
-        paddingVertical: 40,
+        paddingVertical: 32,
     },
     iconContainer: {
-        marginBottom: 24,
+        marginBottom: 20,
     },
     iconCircle: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         backgroundColor: Colors.highlight,
+        borderWidth: 1,
+        borderColor: 'rgba(15, 82, 186, 0.2)',
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    iconText: {
-        fontSize: 48,
     },
     title: {
         fontSize: 24,

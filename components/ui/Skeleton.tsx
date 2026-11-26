@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Animated, ViewStyle, DimensionValue } from 'react-native';
 import { Colors } from '../../constants/Colors';
 
 interface SkeletonProps {
@@ -10,7 +10,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ width, height, borderRadius = 8, style }: SkeletonProps) {
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [animatedValue] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.loop(

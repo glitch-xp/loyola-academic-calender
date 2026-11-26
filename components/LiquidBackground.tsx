@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { AccessibilityInfo, Animated, Dimensions, Easing, Platform, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { Colors } from '../constants/Colors';
 
 const { width, height } = Dimensions.get('window');
@@ -10,94 +11,146 @@ interface Props {
 }
 
 export function LiquidBackground({ children }: Props) {
-    // Blob animations using standard Animated API
-    const blob1Y = useRef(new Animated.Value(0)).current;
-    const blob1X = useRef(new Animated.Value(0)).current;
-    const blob2Y = useRef(new Animated.Value(0)).current;
-    const blob2X = useRef(new Animated.Value(0)).current;
-    const blob3Y = useRef(new Animated.Value(0)).current;
+    const [driftY] = useState(() => new Animated.Value(0));
+    const [driftX] = useState(() => new Animated.Value(0));
+    const [reduceMotion, setReduceMotion] = useState(() =>
+        Platform.OS === 'web' && typeof window !== 'undefined'
+            ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            : false
+    );
 
     useEffect(() => {
-        const createAnimation = (
-            value: Animated.Value,
-            toValue: number,
-            duration: number
-        ) => {
-            return Animated.loop(
-                Animated.sequence([
-                    Animated.timing(value, {
-                        toValue,
-                        duration,
-                        easing: Easing.inOut(Easing.ease),
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(value, {
-                        toValue: 0, // Return to start
-                        duration,
-                        easing: Easing.inOut(Easing.ease),
-                        useNativeDriver: true,
-                    })
-                ])
-            );
-        };
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+            const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const onChange = () => setReduceMotion(mq.matches);
+            onChange();
+            if (mq.addEventListener) mq.addEventListener('change', onChange);
+            return () => {
+                if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+            };
+        }
 
-        const anim1Y = createAnimation(blob1Y, 100, 10000);
-        const anim1X = createAnimation(blob1X, 50, 12000);
-        const anim2Y = createAnimation(blob2Y, -80, 15000);
-        const anim2X = createAnimation(blob2X, -50, 13000);
-        const anim3Y = createAnimation(blob3Y, 60, 18000);
+        let mounted = true;
+        AccessibilityInfo.isReduceMotionEnabled()
+            .then((enabled) => {
+                if (mounted) setReduceMotion(Boolean(enabled));
+            })
+            .catch(() => {});
 
-        anim1Y.start();
-        anim1X.start();
-        anim2Y.start();
-        anim2X.start();
-        anim3Y.start();
+        const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', (enabled: boolean) => {
+            setReduceMotion(Boolean(enabled));
+        });
 
         return () => {
-            blob1Y.stopAnimation();
-            blob1X.stopAnimation();
-            blob2Y.stopAnimation();
-            blob2X.stopAnimation();
-            blob3Y.stopAnimation();
+            mounted = false;
+            sub.remove();
         };
     }, []);
 
-    const animatedStyle1 = {
-        transform: [{ translateY: blob1Y }, { translateX: blob1X }],
-    };
+    useEffect(() => {
+        if (reduceMotion) {
+            driftY.setValue(0);
+            driftX.setValue(0);
+            return;
+        }
 
-    const animatedStyle2 = {
-        transform: [{ translateY: blob2Y }, { translateX: blob2X }],
-    };
+        const animY = Animated.loop(
+            Animated.sequence([
+                Animated.timing(driftY, {
+                    toValue: 18,
+                    duration: 14000,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(driftY, {
+                    toValue: 0,
+                    duration: 14000,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+            ])
+        );
 
-    const animatedStyle3 = {
-        transform: [{ translateY: blob3Y }],
+        const animX = Animated.loop(
+            Animated.sequence([
+                Animated.timing(driftX, {
+                    toValue: 14,
+                    duration: 16000,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(driftX, {
+                    toValue: 0,
+                    duration: 16000,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+            ])
+        );
+
+        animY.start();
+        animX.start();
+
+        return () => {
+            driftY.stopAnimation();
+            driftX.stopAnimation();
+        };
+    }, [reduceMotion, driftY, driftX]);
+
+    const animatedWashStyle = {
+        transform: [{ translateY: driftY }, { translateX: driftX }],
     };
 
     return (
         <View style={styles.container}>
-            {/* Base Gradient - Lighter/Cleaner for academic app */}
+            {/* Clean Alabaster base canvas */}
             <LinearGradient
-                colors={['#F0F4FF', '#E5E9F5', '#FFFFFF']}
-                style={StyleSheet.absoluteFillObject}
+                colors={['#F3F5F9', '#EEF2F8', '#F3F5F9']}
+                style={StyleSheet.absoluteFill}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             />
 
-            {/* Animated Orbs/Blobs */}
-            {/* Primary Blue Blob - Top Right */}
-            <Animated.View style={[styles.blob, styles.blob1, animatedStyle1]} />
+            {/* Smooth radial ambient color washes (no hard circle edges on Android/iOS/Web) */}
+            <Animated.View pointerEvents="none" style={[styles.ambientCanvas, animatedWashStyle]}>
+                <Svg
+                    width={width + 80}
+                    height={height + 80}
+                    viewBox="0 0 400 840"
+                    preserveAspectRatio="none"
+                    style={styles.svgFill}
+                >
+                    <Defs>
+                        <RadialGradient id="topSapphireWash" cx="18%" cy="8%" r="55%">
+                            <Stop offset="0%" stopColor="#93C5FD" stopOpacity="0.26" />
+                            <Stop offset="45%" stopColor="#BFDBFE" stopOpacity="0.10" />
+                            <Stop offset="100%" stopColor="#93C5FD" stopOpacity="0" />
+                        </RadialGradient>
+                        <RadialGradient id="topGoldWash" cx="88%" cy="10%" r="48%">
+                            <Stop offset="0%" stopColor="#FDE68A" stopOpacity="0.22" />
+                            <Stop offset="45%" stopColor="#FEF3C7" stopOpacity="0.08" />
+                            <Stop offset="100%" stopColor="#FDE68A" stopOpacity="0" />
+                        </RadialGradient>
+                        <RadialGradient id="dockSapphireGlow" cx="22%" cy="94%" r="50%">
+                            <Stop offset="0%" stopColor="#3B82F6" stopOpacity="0.26" />
+                            <Stop offset="42%" stopColor="#60A5FA" stopOpacity="0.11" />
+                            <Stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                        </RadialGradient>
+                        <RadialGradient id="dockGoldGlow" cx="80%" cy="95%" r="46%">
+                            <Stop offset="0%" stopColor="#F59E0B" stopOpacity="0.20" />
+                            <Stop offset="42%" stopColor="#FBBF24" stopOpacity="0.08" />
+                            <Stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
+                        </RadialGradient>
+                    </Defs>
+                    <Rect x="0" y="0" width="400" height="840" fill="url(#topSapphireWash)" />
+                    <Rect x="0" y="0" width="400" height="840" fill="url(#topGoldWash)" />
+                    <Rect x="0" y="0" width="400" height="840" fill="url(#dockSapphireGlow)" />
+                    <Rect x="0" y="0" width="400" height="840" fill="url(#dockGoldGlow)" />
+                </Svg>
+            </Animated.View>
 
-            {/* Secondary Gold Blob - Bottom Left */}
-            <Animated.View style={[styles.blob, styles.blob2, animatedStyle2]} />
-
-            {/* Accent Light Blue Blob - Center/Top */}
-            <Animated.View style={[styles.blob, styles.blob3, animatedStyle3]} />
-
-            {/* Content Overlay */}
-            <View style={styles.content}>
-                {children}
-            </View>
+            {/* Screen Content */}
+            <View style={styles.content}>{children}</View>
         </View>
     );
 }
@@ -106,45 +159,21 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.background,
+        overflow: 'hidden',
+    },
+    ambientCanvas: {
+        position: 'absolute',
+        top: -40,
+        left: -40,
+        right: -40,
+        bottom: -40,
+    },
+    svgFill: {
+        width: '100%',
+        height: '100%',
     },
     content: {
         flex: 1,
         zIndex: 1,
     },
-    blob: {
-        position: 'absolute',
-        borderRadius: 999,
-        opacity: 0.6,
-        // filter: 'blur(60px)', // removed as it is not supported in native properly
-    },
-    blob1: {
-        width: width * 0.8,
-        height: width * 0.8,
-        backgroundColor: '#C8D9FF', // Light Blue
-        top: -width * 0.2,
-        right: -width * 0.2,
-        shadowColor: '#4A90E2',
-        shadowOpacity: 0.4,
-        shadowRadius: 60,
-        elevation: 10,
-    },
-    blob2: {
-        width: width * 0.7,
-        height: width * 0.7,
-        backgroundColor: '#FFE8CC', // Light Gold
-        bottom: height * 0.1,
-        left: -width * 0.2,
-        shadowColor: '#F59E0B',
-        shadowOpacity: 0.3,
-        shadowRadius: 50,
-        elevation: 10,
-    },
-    blob3: {
-        width: width * 0.6,
-        height: width * 0.6,
-        backgroundColor: '#E0F2FE', // Very Light Cyan
-        top: height * 0.3,
-        right: -width * 0.1,
-        opacity: 0.4,
-    }
 });

@@ -28,23 +28,15 @@ export default function WelcomeScreen() {
     const [customDept, setCustomDept] = useState('');
     const [customSection, setCustomSection] = useState('');
 
-    useEffect(() => {
-        loadConfig();
-    }, []);
-
-    const loadConfig = async () => {
-        setLoading(true);
+    const loadConfig = async (showLoading = true) => {
+        if (showLoading) setLoading(true);
         setError(null);
         try {
             const data = await DataService.fetchMasterConfig();
             setConfig(data);
             // Pre-select first options if available to save clicks
             if (data.departments.length > 0) setDept(data.departments[0].name);
-            // Default year will be handled by useEffect or user selection logic, 
-            // but we can try to key off the first department
             if (data.departments[0]?.years.length > 0) setYear(data.departments[0].years[0].year);
-
-            // Note: shift will be auto-selected in useEffect when availableShifts changes
         } catch (e) {
             if (e instanceof NetworkError) {
                 setError({ type: 'network', message: e.message });
@@ -57,6 +49,33 @@ export default function WelcomeScreen() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        let active = true;
+        DataService.fetchMasterConfig()
+            .then((data) => {
+                if (!active) return;
+                setConfig(data);
+                if (data.departments.length > 0) setDept(data.departments[0].name);
+                if (data.departments[0]?.years.length > 0) setYear(data.departments[0].years[0].year);
+            })
+            .catch((e) => {
+                if (!active) return;
+                if (e instanceof NetworkError) {
+                    setError({ type: 'network', message: e.message });
+                } else if (e instanceof DataFetchError) {
+                    setError({ type: 'general', message: e.message });
+                } else {
+                    setError({ type: 'general', message: 'Failed to load configuration. Please try again.' });
+                }
+            })
+            .finally(() => {
+                if (active) setLoading(false);
+            });
+        return () => {
+            active = false;
+        };
+    }, []);
 
     // Compute available shifts based on selected department and year
     const availableShifts = React.useMemo(() => {
@@ -83,46 +102,42 @@ export default function WelcomeScreen() {
         return config.shifts.filter(s => shiftIds.includes(s.id));
     }, [config, dept, year]);
 
-    // Auto-select shift when only one is available or reset when selection changes
-    React.useEffect(() => {
-        if (availableShifts.length === 1) {
-            setShift(availableShifts[0].id);
-        } else if (availableShifts.length > 1 && !availableShifts.find(s => s.id === shift)) {
-            // Reset shift if current selection is not in available shifts
-            setShift(availableShifts[0]?.id || '');
+    const effectiveShift = React.useMemo(() => {
+        if (availableShifts.length === 1) return availableShifts[0].id;
+        if (availableShifts.length > 1) {
+            return availableShifts.find(s => s.id === shift) ? shift : (availableShifts[0]?.id || '');
         }
-    }, [availableShifts]);
+        return shift;
+    }, [availableShifts, shift]);
 
     // Compute available sections based on selected department, year, and shift
     const availableSections = React.useMemo(() => {
-        if (!config || !dept || !year || !shift) return [];
+        if (!config || !dept || !year || !effectiveShift) return [];
         if (dept === 'Other') return [];
 
         const selectedDept = config.departments.find(d => d.name === dept);
         const selectedYear = selectedDept?.years.find(y => y.year === year);
 
         if (selectedYear?.shiftDetails) {
-            const shiftDetail = selectedYear.shiftDetails.find(s => s.shiftId === shift);
+            const shiftDetail = selectedYear.shiftDetails.find(s => s.shiftId === effectiveShift);
             if (shiftDetail?.sections) {
                 return shiftDetail.sections;
             }
         }
         return [];
-    }, [config, dept, year, shift]);
+    }, [config, dept, year, effectiveShift]);
 
-    // Auto-select section when only one is available
-    React.useEffect(() => {
-        if (availableSections.length === 1) {
-            setSection(availableSections[0].name);
-        } else if (availableSections.length > 1 && !availableSections.find(s => s.name === section)) {
-            setSection('');
+    const effectiveSection = React.useMemo(() => {
+        if (availableSections.length === 1) return availableSections[0].name;
+        if (availableSections.length > 1) {
+            return availableSections.find(s => s.name === section) ? section : '';
         }
-    }, [availableSections]);
-
+        return '';
+    }, [availableSections, section]);
 
     const handleComplete = async () => {
         // Validation
-        if (!dept || !year || (availableShifts.length > 1 && !shift)) {
+        if (!dept || !year || (availableShifts.length > 1 && !effectiveShift)) {
             Alert.alert('Incomplete', 'Please select all required fields');
             return;
         }
@@ -132,23 +147,23 @@ export default function WelcomeScreen() {
             return;
         }
 
-        if (availableSections.length > 0 && !section && dept !== 'Other') {
+        if (availableSections.length > 0 && !effectiveSection && dept !== 'Other') {
             Alert.alert('Incomplete', 'Please select a section');
             return;
         }
 
         const finalDept = dept === 'Other' ? customDept.trim() : dept;
-        const finalSection = dept === 'Other' ? customSection.trim() : section;
+        const finalSection = dept === 'Other' ? customSection.trim() : effectiveSection;
 
         setSubmitting(true);
         setError(null);
         try {
             // Fetch and cache the initial data for this course
-            const courseData = await DataService.fetchCourseData(finalDept, year, shift, finalSection);
+            const courseData = await DataService.fetchCourseData(finalDept, year, effectiveShift, finalSection);
 
             // Save Config & Data
             await StorageService.removeData('custom_timetable');
-            await StorageService.saveUserProfile({ department: finalDept, year: year as any, shift, section: finalSection });
+            await StorageService.saveUserProfile({ department: finalDept, year: year as any, shift: effectiveShift, section: finalSection });
             await StorageService.saveData('master_config', config);
             await StorageService.saveData('timetable', courseData.timetable);
             await StorageService.saveData('day_order_config', courseData.calendar);
@@ -272,7 +287,7 @@ export default function WelcomeScreen() {
                             <Text style={styles.label}>Shift</Text>
                             <View style={styles.pillsContainer}>
                                 {availableShifts.map((s) => (
-                                    <OptionPill key={s.id} label={s.name} selected={shift === s.id} onPress={() => setShift(s.id)} />
+                                    <OptionPill key={s.id} label={s.name} selected={effectiveShift === s.id} onPress={() => setShift(s.id)} />
                                 ))}
                             </View>
                         </>
@@ -284,7 +299,7 @@ export default function WelcomeScreen() {
                             <Text style={styles.label}>Section</Text>
                             <View style={styles.pillsContainer}>
                                 {availableSections.map((s) => (
-                                    <OptionPill key={s.name} label={s.name} selected={section === s.name} onPress={() => setSection(s.name)} />
+                                    <OptionPill key={s.name} label={s.name} selected={effectiveSection === s.name} onPress={() => setSection(s.name)} />
                                 ))}
                             </View>
                         </>

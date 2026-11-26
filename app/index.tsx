@@ -10,14 +10,13 @@ export default function Index() {
     const [hasProfile, setHasProfile] = useState(false);
 
     useEffect(() => {
+        const checkProfile = async () => {
+            const profile = await StorageService.getUserProfile();
+            setHasProfile(!!profile);
+            setLoading(false);
+        };
         checkProfile();
     }, []);
-
-    const checkProfile = async () => {
-        const profile = await StorageService.getUserProfile();
-        setHasProfile(!!profile);
-        setLoading(false);
-    };
 
     if (loading) {
         return (

@@ -1,6 +1,13 @@
 import { DayOrderConfig } from '../types';
 import { differenceInDays, startOfDay, startOfMonth, endOfMonth } from 'date-fns';
 
+function safeParseCalendarDate(dateStr: string): Date | null {
+    if (!dateStr) return null;
+    const raw = dateStr.includes('T') ? dateStr : `${dateStr}T00:00:00`;
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? null : startOfDay(parsed);
+}
+
 export const DayOrderHelper = {
     /**
      * Get the configuration for a specific date from the calendar config.
@@ -69,7 +76,8 @@ export const DayOrderHelper = {
 
         for (const dateStr of sortedDates) {
             const entry = calendar[dateStr];
-            const eventDate = startOfDay(new Date(dateStr));
+            const eventDate = safeParseCalendarDate(dateStr);
+            if (!eventDate) continue;
             if (entry.event && eventDate > today) {
                 const daysLeft = differenceInDays(eventDate, today);
                 return {
@@ -95,7 +103,8 @@ export const DayOrderHelper = {
             if (events.length >= limit) break;
 
             const entry = calendar[dateStr];
-            const eventDate = startOfDay(new Date(dateStr));
+            const eventDate = safeParseCalendarDate(dateStr);
+            if (!eventDate) continue;
 
             // Only future events/holidays
             if (eventDate >= today) {
@@ -130,7 +139,8 @@ export const DayOrderHelper = {
 
         for (const dateStr of sortedDates) {
             const entry = calendar[dateStr];
-            const eventDate = startOfDay(new Date(dateStr));
+            const eventDate = safeParseCalendarDate(dateStr);
+            if (!eventDate) continue;
 
             if (eventDate >= start && eventDate <= end) {
                 if (entry.isHoliday || entry.event) {

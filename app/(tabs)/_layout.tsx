@@ -1,56 +1,93 @@
-import { withLayoutContext } from 'expo-router';
-import { createMaterialTopTabNavigator, MaterialTopTabNavigationOptions, MaterialTopTabNavigationEventMap } from '@react-navigation/material-top-tabs';
-import { ParamListBase, TabNavigationState } from '@react-navigation/native';
+import React, { useRef, useState } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
+import { Navigator } from 'expo-router';
+import { Tabs, TabList, TabTrigger } from 'expo-router/ui';
+import { BlurTargetView } from 'expo-blur';
 import { TabBar } from '../../components/ui/TabBar';
 
-const { Navigator } = createMaterialTopTabNavigator();
+function TabScenes() {
+    const { state, descriptors } = Navigator.useContext();
 
-// Create a custom navigator that uses Material Top Tabs so we get swiping,
-// but style it to look like bottom tabs.
-export const MaterialTopTabs = withLayoutContext<
-    MaterialTopTabNavigationOptions,
-    typeof Navigator,
-    TabNavigationState<ParamListBase>,
-    MaterialTopTabNavigationEventMap
->(Navigator);
-
-export default function TabLayout() {
     return (
-        <MaterialTopTabs
-            tabBar={props => <TabBar {...props} />}
-            initialRouteName="home"
-            tabBarPosition="bottom"
-            screenOptions={{
-                tabBarStyle: {
-                    // This is handled by our custom TabBar, but we might need to set standard prop defaults
-                },
-                swipeEnabled: true,
-            }}
-        >
-            <MaterialTopTabs.Screen
-                name="home"
-                options={{
-                    title: 'Today',
-                }}
-            />
-            <MaterialTopTabs.Screen
-                name="timetable"
-                options={{
-                    title: 'Timetable',
-                }}
-            />
-            <MaterialTopTabs.Screen
-                name="calendar"
-                options={{
-                    title: 'Calendar',
-                }}
-            />
-            <MaterialTopTabs.Screen
-                name="settings"
-                options={{
-                    title: 'More',
-                }}
-            />
-        </MaterialTopTabs>
+        <View style={styles.scenesWrap}>
+            {state.routes.map((route, index) => {
+                if (Platform.OS === 'web' && route.name === 'attendance') {
+                    return null;
+                }
+                const isFocused = state.index === index;
+                return (
+                    <View
+                        key={route.key}
+                        pointerEvents={isFocused ? 'auto' : 'none'}
+                        style={[
+                            StyleSheet.absoluteFill,
+                            { display: isFocused ? 'flex' : 'none' },
+                        ]}
+                    >
+                        {descriptors[route.key]?.render()}
+                    </View>
+                );
+            })}
+        </View>
     );
 }
+
+export default function TabLayout() {
+    const screenBlurRef = useRef<React.ComponentRef<typeof View> | null>(null);
+    const [blurTargetReady, setBlurTargetReady] = useState(false);
+
+    return (
+        <Tabs style={styles.root}>
+            {/* Single static BlurTargetView on Android strictly outside TabBar so blur never recurses or detaches */}
+            {Platform.OS === 'android' ? (
+                <BlurTargetView
+                    ref={screenBlurRef}
+                    collapsable={false}
+                    onLayout={(e) => {
+                        if (e.nativeEvent.layout.width > 0 && !blurTargetReady) {
+                            setBlurTargetReady(true);
+                        }
+                    }}
+                    style={styles.slotHost}
+                >
+                    <TabScenes />
+                </BlurTargetView>
+            ) : (
+                <View style={styles.slotHost}>
+                    <TabScenes />
+                </View>
+            )}
+
+            {/* Route registry triggers for expo-router/ui headless Tabs */}
+            <TabList style={styles.hiddenTriggers}>
+                <TabTrigger name="home" href="/(tabs)/home" />
+                <TabTrigger name="timetable" href="/(tabs)/timetable" />
+                {Platform.OS !== 'web' && <TabTrigger name="attendance" href="/(tabs)/attendance" />}
+                <TabTrigger name="calendar" href="/(tabs)/calendar" />
+                <TabTrigger name="settings" href="/(tabs)/settings" />
+            </TabList>
+
+            {/* Floating Liquid Glass Tab Dock rendered strictly outside BlurTargetView */}
+            <TabBar blurTarget={blurTargetReady ? screenBlurRef : undefined} />
+        </Tabs>
+    );
+}
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        width: '100%',
+    },
+    slotHost: {
+        flex: 1,
+        width: '100%',
+    },
+    scenesWrap: {
+        flex: 1,
+        width: '100%',
+        position: 'relative',
+    },
+    hiddenTriggers: {
+        display: 'none',
+    },
+});

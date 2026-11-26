@@ -91,3 +91,24 @@ export interface ContributionSubmission {
     contributor_name?: string;
     timetable_data: TimeTable;
 }
+
+export interface SubjectAttendance {
+    code: string;
+    name: string;
+    totalHours: number;
+    presentHours: number;
+    absentHours: number;
+    odMlHours: number;
+    percentage: number;
+}
+
+export interface AttendanceData {
+    periodFrom?: string;
+    periodTo?: string;
+    subjects: SubjectAttendance[];
+    overallPercentage: number;
+    totalHours: number;
+    presentHours: number;
+    absentHours: number;
+    fetchedAt: number;
+}
