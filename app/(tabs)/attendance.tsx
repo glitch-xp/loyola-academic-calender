@@ -78,9 +78,27 @@ export default function AttendanceScreen() {
     const lastAttemptRef = useRef<number>(0);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const syncStepRef = useRef<SyncStep>('idle');
+
+    // Captcha prefill tracking — true once the user manually edits the field.
+    const captchaEditedRef = useRef(false);
+
+    // Modal scroll refs for keeping the captcha input above the keyboard.
+    // NOTE: React.ComponentRef<typeof ScrollView> resolves to the instance type
+    // (has scrollTo). Using useRef<ScrollView> gives the component type and fails.
+    const modalScrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+    const captchaYRef = useRef(0);
+
     useEffect(() => {
         syncStepRef.current = syncStep;
     }, [syncStep]);
+
+    // Auto-prefill the captcha answer as soon as the server sends it.
+    // Only fills if the user hasn't manually edited the field yet.
+    useEffect(() => {
+        if (captchaText && !captchaEditedRef.current) {
+            setCaptchaInput(captchaText);
+        }
+    }, [captchaText]);
 
     const clearSyncTimeout = () => {
         if (timeoutRef.current) {
@@ -159,6 +177,7 @@ export default function AttendanceScreen() {
         setCaptchaInput('');
         setCaptchaText('');
         setCaptchaImgSrc('');
+        captchaEditedRef.current = false;
         setWebViewUri(ERP_URLS.attendance);
         setWebViewKey(prev => prev + 1);
         setSyncStep('checking');
@@ -177,6 +196,7 @@ export default function AttendanceScreen() {
         setCaptchaInput('');
         setCaptchaText('');
         setCaptchaImgSrc('');
+        captchaEditedRef.current = false;
         setWebViewUri(ERP_URLS.login);
         setWebViewKey(prev => prev + 1);
         setSyncStep('checking');
@@ -204,6 +224,16 @@ export default function AttendanceScreen() {
         setSyncStep('submitting');
         startSyncTimeout();
         webViewRef.current?.injectJavaScript(buildLoginSubmitJS(cleanId, password, cleanCaptcha));
+    };
+
+    // Keep the captcha input visible above the keyboard when focused.
+    const handleCaptchaFocus = () => {
+        setTimeout(() => {
+            modalScrollRef.current?.scrollTo({
+                y: Math.max(0, captchaYRef.current - 24),
+                animated: true,
+            });
+        }, 200);
     };
 
     const handleWebViewMessage = async (event: any) => {
@@ -241,15 +271,17 @@ export default function AttendanceScreen() {
             setSyncError(null);
             setModalError(null);
             setCaptchaInput('');
+            captchaEditedRef.current = false;
             return;
         }
 
         if (msg.type === 'LOGIN_REQUIRED') {
             clearSyncTimeout();
             const wasSubmitting = syncStepRef.current === 'submitting';
+            captchaEditedRef.current = false;
             setCaptchaText(msg.captchaText || '');
             setCaptchaImgSrc(msg.captchaImgSrc || '');
-            setCaptchaInput('');
+            setCaptchaInput(''); // effect will refill from captchaText
 
             if (wasSubmitting) {
                 setModalError(
@@ -355,162 +387,162 @@ export default function AttendanceScreen() {
                         </Card>
                     )}
 
-                            {/* Overall Attendance Card */}
-                            {attendance && overallTheme ? (
-                                <Card
+                    {/* Overall Attendance Card */}
+                    {attendance && overallTheme ? (
+                        <Card
+                            style={[
+                                styles.summaryCard,
+                                {
+                                    backgroundColor: overallTheme.cardBg,
+                                    borderColor: overallTheme.cardBorder,
+                                    borderWidth: 1,
+                                },
+                            ]}
+                        >
+                            <View style={styles.summaryTopRow}>
+                                <View style={styles.summaryMetricCol}>
+                                    <Text style={[styles.summaryLabel, { color: overallTheme.text }]}>
+                                        Overall Attendance
+                                    </Text>
+                                    <Text style={[styles.summaryPercent, { color: overallTheme.text }]}>
+                                        {attendance.overallPercentage.toFixed(1)}%
+                                    </Text>
+                                    {(attendance.periodFrom || attendance.periodTo) && (
+                                        <Text style={[styles.periodText, { color: overallTheme.text }]}>
+                                            {attendance.periodFrom} – {attendance.periodTo}
+                                        </Text>
+                                    )}
+                                </View>
+                                <View style={[styles.hoursBox, { backgroundColor: 'rgba(255,255,255,0.75)', borderColor: overallTheme.cardBorder }]}>
+                                    <Text style={styles.hoursValue}>
+                                        {attendance.presentHours}/{attendance.totalHours}
+                                    </Text>
+                                    <Text style={styles.hoursLabel}>Hours Present</Text>
+                                </View>
+                            </View>
+
+                            <View style={[styles.progressTrack, { backgroundColor: 'rgba(255,255,255,0.7)' }]}>
+                                <View
                                     style={[
-                                        styles.summaryCard,
+                                        styles.progressFill,
                                         {
-                                            backgroundColor: overallTheme.cardBg,
-                                            borderColor: overallTheme.cardBorder,
-                                            borderWidth: 1,
+                                            width: `${Math.min(100, Math.max(0, attendance.overallPercentage))}%`,
+                                            backgroundColor: overallTheme.accent,
                                         },
                                     ]}
-                                >
-                                    <View style={styles.summaryTopRow}>
-                                        <View style={styles.summaryMetricCol}>
-                                            <Text style={[styles.summaryLabel, { color: overallTheme.text }]}>
-                                                Overall Attendance
-                                            </Text>
-                                            <Text style={[styles.summaryPercent, { color: overallTheme.text }]}>
-                                                {attendance.overallPercentage.toFixed(1)}%
-                                            </Text>
-                                            {(attendance.periodFrom || attendance.periodTo) && (
-                                                <Text style={[styles.periodText, { color: overallTheme.text }]}>
-                                                    {attendance.periodFrom} – {attendance.periodTo}
-                                                </Text>
-                                            )}
-                                        </View>
-                                        <View style={[styles.hoursBox, { backgroundColor: 'rgba(255,255,255,0.75)', borderColor: overallTheme.cardBorder }]}>
-                                            <Text style={styles.hoursValue}>
-                                                {attendance.presentHours}/{attendance.totalHours}
-                                            </Text>
-                                            <Text style={styles.hoursLabel}>Hours Present</Text>
-                                        </View>
-                                    </View>
+                                />
+                            </View>
 
-                                    <View style={[styles.progressTrack, { backgroundColor: 'rgba(255,255,255,0.7)' }]}>
-                                        <View
-                                            style={[
-                                                styles.progressFill,
-                                                {
-                                                    width: `${Math.min(100, Math.max(0, attendance.overallPercentage))}%`,
-                                                    backgroundColor: overallTheme.accent,
-                                                },
-                                            ]}
-                                        />
-                                    </View>
-
-                                    <View style={styles.summaryFooterRow}>
-                                        <View style={styles.cacheStatusPill}>
-                                            <ClockCircleIcon size={13} color={isCacheExpired ? '#B45309' : overallTheme.text} />
-                                            <Text
-                                                style={[
-                                                    styles.cacheStatusText,
-                                                    { color: isCacheExpired ? '#B45309' : overallTheme.text },
-                                                ]}
-                                            >
-                                                {isCacheExpired
-                                                    ? 'Cache expired'
-                                                    : `Expires in ${AttendanceService.formatDuration(expiresInMs)}`}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={styles.actionRow}>
-                                        <TouchableOpacity
-                                            style={[styles.refreshBtn, isSyncing && styles.btnDisabled]}
-                                            onPress={beginSync}
-                                            disabled={isSyncing}
-                                            activeOpacity={0.8}
-                                        >
-                                            {isSyncing ? (
-                                                <ActivityIndicator size="small" color="#FFFFFF" />
-                                            ) : (
-                                                <RefreshIcon size={16} color="#FFFFFF" />
-                                            )}
-                                            <Text style={styles.refreshBtnText}>
-                                                {isSyncing ? 'Syncing...' : 'Refresh Attendance'}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </Card>
-                            ) : !loadingCache ? (
-                                <Card style={styles.emptyCard}>
-                                    <LockKeyholeIcon size={32} color={Colors.primary} />
-                                    <Text style={styles.emptyTitle}>Connect Loyola ERP</Text>
-                                    <Text style={styles.emptyBody}>
-                                        View your subject-wise attendance directly in the app. Your credentials are stored encrypted on this phone only, and synced attendance is cached locally for 2 hours.
+                            <View style={styles.summaryFooterRow}>
+                                <View style={styles.cacheStatusPill}>
+                                    <ClockCircleIcon size={13} color={isCacheExpired ? '#B45309' : overallTheme.text} />
+                                    <Text
+                                        style={[
+                                            styles.cacheStatusText,
+                                            { color: isCacheExpired ? '#B45309' : overallTheme.text },
+                                        ]}
+                                    >
+                                        {isCacheExpired
+                                            ? 'Cache expired'
+                                            : `Expires in ${AttendanceService.formatDuration(expiresInMs)}`}
                                     </Text>
-                                    <Button
-                                        title={isSyncing ? 'Connecting...' : 'Sync Attendance'}
-                                        onPress={beginSync}
-                                        loading={isSyncing}
-                                        style={{ width: '100%', marginTop: 16 }}
-                                    />
-                                </Card>
-                            ) : null}
+                                </View>
+                            </View>
 
-                            {/* Subject-wise Breakdown */}
-                            {attendance && attendance.subjects.length > 0 && (
-                                <View style={styles.section}>
-                                    <Text style={styles.sectionTitle}>Subject Breakdown</Text>
-                                    {attendance.subjects.map((sub, idx) => {
-                                        const theme = getAttendanceTheme(sub.percentage);
-                                        return (
-                                            <Card
-                                                key={`${sub.code}-${idx}`}
+                            <View style={styles.actionRow}>
+                                <TouchableOpacity
+                                    style={[styles.refreshBtn, isSyncing && styles.btnDisabled]}
+                                    onPress={beginSync}
+                                    disabled={isSyncing}
+                                    activeOpacity={0.8}
+                                >
+                                    {isSyncing ? (
+                                        <ActivityIndicator size="small" color="#FFFFFF" />
+                                    ) : (
+                                        <RefreshIcon size={16} color="#FFFFFF" />
+                                    )}
+                                    <Text style={styles.refreshBtnText}>
+                                        {isSyncing ? 'Syncing...' : 'Refresh Attendance'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </Card>
+                    ) : !loadingCache ? (
+                        <Card style={styles.emptyCard}>
+                            <LockKeyholeIcon size={32} color={Colors.primary} />
+                            <Text style={styles.emptyTitle}>Connect Loyola ERP</Text>
+                            <Text style={styles.emptyBody}>
+                                View your subject-wise attendance directly in the app. Your credentials are stored encrypted on this phone only, and synced attendance is cached locally for 2 hours.
+                            </Text>
+                            <Button
+                                title={isSyncing ? 'Connecting...' : 'Sync Attendance'}
+                                onPress={beginSync}
+                                loading={isSyncing}
+                                style={{ width: '100%', marginTop: 16 }}
+                            />
+                        </Card>
+                    ) : null}
+
+                    {/* Subject-wise Breakdown */}
+                    {attendance && attendance.subjects.length > 0 && (
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Subject Breakdown</Text>
+                            {attendance.subjects.map((sub, idx) => {
+                                const theme = getAttendanceTheme(sub.percentage);
+                                return (
+                                    <Card
+                                        key={`${sub.code}-${idx}`}
+                                        style={[
+                                            styles.subjectCard,
+                                            {
+                                                backgroundColor: theme.cardBg,
+                                                borderColor: theme.cardBorder,
+                                                borderWidth: 1,
+                                            },
+                                        ]}
+                                    >
+                                        <View style={styles.subjectTopRow}>
+                                            <View style={styles.subjectTitleCol}>
+                                                <Text style={styles.subjectName}>
+                                                    {formatSubjectTitle(sub.name)}
+                                                </Text>
+                                                <Text style={[styles.subjectMeta, { color: theme.text }]}>
+                                                    {sub.code} • {sub.presentHours}/{sub.totalHours} hrs
+                                                    {sub.absentHours > 0 ? ` • ${sub.absentHours} absent` : ''}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.subjectPercentCol}>
+                                                <Text style={[styles.subjectPercent, { color: theme.text }]}>
+                                                    {sub.percentage.toFixed(1)}%
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <View style={[styles.subjectTrack, { backgroundColor: 'rgba(255,255,255,0.7)' }]}>
+                                            <View
                                                 style={[
-                                                    styles.subjectCard,
+                                                    styles.subjectFill,
                                                     {
-                                                        backgroundColor: theme.cardBg,
-                                                        borderColor: theme.cardBorder,
-                                                        borderWidth: 1,
+                                                        width: `${Math.min(100, Math.max(0, sub.percentage))}%`,
+                                                        backgroundColor: theme.accent,
                                                     },
                                                 ]}
-                                            >
-                                                <View style={styles.subjectTopRow}>
-                                                    <View style={styles.subjectTitleCol}>
-                                                        <Text style={styles.subjectName}>
-                                                            {formatSubjectTitle(sub.name)}
-                                                        </Text>
-                                                        <Text style={[styles.subjectMeta, { color: theme.text }]}>
-                                                            {sub.code} • {sub.presentHours}/{sub.totalHours} hrs
-                                                            {sub.absentHours > 0 ? ` • ${sub.absentHours} absent` : ''}
-                                                        </Text>
-                                                    </View>
-                                                    <View style={styles.subjectPercentCol}>
-                                                        <Text style={[styles.subjectPercent, { color: theme.text }]}>
-                                                            {sub.percentage.toFixed(1)}%
-                                                        </Text>
-                                                    </View>
-                                                </View>
+                                            />
+                                        </View>
+                                    </Card>
+                                );
+                            })}
+                        </View>
+                    )}
 
-                                                <View style={[styles.subjectTrack, { backgroundColor: 'rgba(255,255,255,0.7)' }]}>
-                                                    <View
-                                                        style={[
-                                                            styles.subjectFill,
-                                                            {
-                                                                width: `${Math.min(100, Math.max(0, sub.percentage))}%`,
-                                                                backgroundColor: theme.accent,
-                                                            },
-                                                        ]}
-                                                    />
-                                                </View>
-                                            </Card>
-                                        );
-                                    })}
-                                </View>
-                            )}
-
-                            {/* Direct Portal Fallback Link */}
-                            <TouchableOpacity
-                                style={styles.portalLinkRow}
-                                onPress={() => Linking.openURL(ERP_URLS.login)}
-                            >
-                                <SquareTopDownIcon size={14} color={Colors.textLight} />
-                                <Text style={styles.portalLinkText}>Open ERP in Browser</Text>
-                            </TouchableOpacity>
+                    {/* Direct Portal Fallback Link */}
+                    <TouchableOpacity
+                        style={styles.portalLinkRow}
+                        onPress={() => Linking.openURL(ERP_URLS.login)}
+                    >
+                        <SquareTopDownIcon size={14} color={Colors.textLight} />
+                        <Text style={styles.portalLinkText}>Open ERP in Browser</Text>
+                    </TouchableOpacity>
                 </ScrollView>
 
                 {/* Off-screen WebView for direct device-to-ERP session & DOM read */}
@@ -550,133 +582,150 @@ export default function AttendanceScreen() {
                 >
                     <KeyboardAvoidingView
                         style={styles.modalOverlay}
-                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        keyboardVerticalOffset={0}
                     >
                         <View style={styles.modalCard}>
-                            <View style={styles.modalHeader}>
-                                <View>
-                                    <Text style={styles.modalTitle}>Loyola ERP Login</Text>
-                                    <Text style={styles.modalSubtitle}>
-                                        Stays on your phone • Direct ERP session
-                                    </Text>
+                            <ScrollView
+                                ref={modalScrollRef}
+                                keyboardShouldPersistTaps="handled"
+                                showsVerticalScrollIndicator={false}
+                                contentContainerStyle={{ paddingBottom: 8 }}
+                            >
+                                <View style={styles.modalHeader}>
+                                    <View>
+                                        <Text style={styles.modalTitle}>Loyola ERP Login</Text>
+                                        <Text style={styles.modalSubtitle}>
+                                            Stays on your phone • Direct ERP session
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={cancelSync}
+                                        style={styles.modalCloseBtn}
+                                        accessibilityLabel="Close login modal"
+                                    >
+                                        <CloseCircleIcon size={22} color={Colors.textLight} />
+                                    </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity
-                                    onPress={cancelSync}
-                                    style={styles.modalCloseBtn}
-                                    accessibilityLabel="Close login modal"
-                                >
-                                    <CloseCircleIcon size={22} color={Colors.textLight} />
-                                </TouchableOpacity>
-                            </View>
 
-                            {modalError && (
-                                <View style={styles.modalErrorBox}>
-                                    <Text style={styles.modalErrorText}>{modalError}</Text>
-                                </View>
-                            )}
+                                {modalError && (
+                                    <View style={styles.modalErrorBox}>
+                                        <Text style={styles.modalErrorText}>{modalError}</Text>
+                                    </View>
+                                )}
 
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>Department Number</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={deptNo}
-                                    onChangeText={setDeptNo}
-                                    placeholder="e.g. 25-UCC-016"
-                                    placeholderTextColor={Colors.textLight}
-                                    autoCapitalize="characters"
-                                    autoCorrect={false}
-                                    editable={syncStep !== 'submitting'}
-                                />
-                            </View>
-
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.inputLabel}>ERP Password</Text>
-                                <View style={styles.passwordRow}>
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>Department Number</Text>
                                     <TextInput
-                                        style={[styles.input, styles.passwordInput]}
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        placeholder="Enter your password"
+                                        style={styles.input}
+                                        value={deptNo}
+                                        onChangeText={setDeptNo}
+                                        placeholder="e.g. 25-UCC-016"
                                         placeholderTextColor={Colors.textLight}
-                                        secureTextEntry={!showPassword}
-                                        autoCapitalize="none"
+                                        autoCapitalize="characters"
                                         autoCorrect={false}
                                         editable={syncStep !== 'submitting'}
                                     />
-                                    <TouchableOpacity
-                                        style={styles.eyeBtn}
-                                        onPress={() => setShowPassword(prev => !prev)}
-                                        accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
-                                    >
-                                        {showPassword ? (
-                                            <EyeClosedIcon size={18} color={Colors.textLight} />
-                                        ) : (
-                                            <EyeIcon size={18} color={Colors.textLight} />
-                                        )}
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            <View style={styles.inputGroup}>
-                                <View style={styles.captchaHeaderRow}>
-                                    <Text style={styles.inputLabel}>Captcha Verification</Text>
-                                    <TouchableOpacity
-                                        onPress={reloadCaptcha}
-                                        style={styles.reloadCaptchaBtn}
-                                        disabled={syncStep === 'submitting'}
-                                        accessibilityLabel="Reload captcha"
-                                    >
-                                        <RestartIcon size={14} color={Colors.primary} />
-                                        <Text style={styles.reloadCaptchaText}>Reload</Text>
-                                    </TouchableOpacity>
                                 </View>
 
-                                <View style={styles.captchaChallengeBox}>
-                                    {captchaImgSrc ? (
-                                        <Image
-                                            source={{ uri: captchaImgSrc }}
-                                            style={styles.captchaImage}
-                                            resizeMode="contain"
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.inputLabel}>ERP Password</Text>
+                                    <View style={styles.passwordRow}>
+                                        <TextInput
+                                            style={[styles.input, styles.passwordInput]}
+                                            value={password}
+                                            onChangeText={setPassword}
+                                            placeholder="Enter your password"
+                                            placeholderTextColor={Colors.textLight}
+                                            secureTextEntry={!showPassword}
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            editable={syncStep !== 'submitting'}
                                         />
-                                    ) : (
-                                        <Text style={styles.captchaChallengeText} selectable={false}>
-                                            {captchaText || 'Loading Captcha...'}
-                                        </Text>
-                                    )}
+                                        <TouchableOpacity
+                                            style={styles.eyeBtn}
+                                            onPress={() => setShowPassword(prev => !prev)}
+                                            accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                                        >
+                                            {showPassword ? (
+                                                <EyeClosedIcon size={18} color={Colors.textLight} />
+                                            ) : (
+                                                <EyeIcon size={18} color={Colors.textLight} />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
 
-                                <TextInput
-                                    style={[styles.input, { marginTop: 10 }]}
-                                    value={captchaInput}
-                                    onChangeText={setCaptchaInput}
-                                    placeholder="Type the captcha shown above"
-                                    placeholderTextColor={Colors.textLight}
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                    editable={syncStep !== 'submitting'}
-                                    returnKeyType="done"
-                                    onSubmitEditing={handleSubmitLogin}
-                                />
-                            </View>
+                                <View
+                                    style={styles.inputGroup}
+                                    onLayout={(e) => {
+                                        captchaYRef.current = e.nativeEvent.layout.y;
+                                    }}
+                                >
+                                    <View style={styles.captchaHeaderRow}>
+                                        <Text style={styles.inputLabel}>Captcha Verification</Text>
+                                        <TouchableOpacity
+                                            onPress={reloadCaptcha}
+                                            style={styles.reloadCaptchaBtn}
+                                            disabled={syncStep === 'submitting'}
+                                            accessibilityLabel="Reload captcha"
+                                        >
+                                            <RestartIcon size={14} color={Colors.primary} />
+                                            <Text style={styles.reloadCaptchaText}>Reload</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
-                            <View style={styles.rememberRow}>
-                                <Text style={styles.rememberLabel}>
-                                    Save credentials securely on this device
-                                </Text>
-                                <Switch
-                                    value={rememberCreds}
-                                    onValueChange={setRememberCreds}
-                                    trackColor={{ false: Colors.border, true: Colors.primary }}
-                                    thumbColor="#FFFFFF"
-                                />
-                            </View>
+                                    <View style={styles.captchaChallengeBox}>
+                                        {captchaImgSrc ? (
+                                            <Image
+                                                source={{ uri: captchaImgSrc }}
+                                                style={styles.captchaImage}
+                                                resizeMode="contain"
+                                            />
+                                        ) : (
+                                            <Text style={styles.captchaChallengeText} selectable={false}>
+                                                {captchaText || 'Loading Captcha...'}
+                                            </Text>
+                                        )}
+                                    </View>
 
-                            <Button
-                                title={syncStep === 'submitting' ? 'Signing In...' : 'Verify & Sync'}
-                                onPress={handleSubmitLogin}
-                                loading={syncStep === 'submitting'}
-                                style={{ marginTop: 8 }}
-                            />
+                                    <TextInput
+                                        style={[styles.input, { marginTop: 10 }]}
+                                        value={captchaInput}
+                                        onChangeText={(v) => {
+                                            captchaEditedRef.current = true;
+                                            setCaptchaInput(v);
+                                        }}
+                                        onFocus={handleCaptchaFocus}
+                                        placeholder="Type the captcha shown above"
+                                        placeholderTextColor={Colors.textLight}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                        editable={syncStep !== 'submitting'}
+                                        returnKeyType="done"
+                                        onSubmitEditing={handleSubmitLogin}
+                                    />
+                                </View>
+
+                                <View style={styles.rememberRow}>
+                                    <Text style={styles.rememberLabel}>
+                                        Save credentials securely on this device
+                                    </Text>
+                                    <Switch
+                                        value={rememberCreds}
+                                        onValueChange={setRememberCreds}
+                                        trackColor={{ false: Colors.border, true: Colors.primary }}
+                                        thumbColor="#FFFFFF"
+                                    />
+                                </View>
+
+                                <Button
+                                    title={syncStep === 'submitting' ? 'Signing In...' : 'Verify & Sync'}
+                                    onPress={handleSubmitLogin}
+                                    loading={syncStep === 'submitting'}
+                                    style={{ marginTop: 8 }}
+                                />
+                            </ScrollView>
                         </View>
                     </KeyboardAvoidingView>
                 </Modal>
@@ -943,6 +992,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 24,
         padding: 22,
         paddingBottom: 32,
+        maxHeight: '90%',
     },
     modalHeader: {
         flexDirection: 'row',
