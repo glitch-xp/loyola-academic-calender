@@ -12,7 +12,20 @@ import { LiquidBackground } from '../../components/LiquidBackground';
 export default function SettingsScreen() {
     const { checkUpdates } = useUpdateChecker({ autoCheck: false });
 
+    const performReset = async () => {
+        await StorageService.clearUser();
+        // @ts-ignore
+        router.replace('/welcome');
+    };
+
     const handleReset = () => {
+        if (Platform.OS === 'web') {
+            if (typeof window !== 'undefined' && window.confirm('Are you sure you want to change your course? This will clear your current data.')) {
+                performReset();
+            }
+            return;
+        }
+
         Alert.alert(
             'Reset App',
             'Are you sure you want to change your course? This will clear your current data.',
@@ -21,11 +34,7 @@ export default function SettingsScreen() {
                 {
                     text: 'Reset',
                     style: 'destructive',
-                    onPress: async () => {
-                        await StorageService.clearUser();
-                        // @ts-ignore
-                        router.replace('/welcome');
-                    }
+                    onPress: performReset
                 }
             ]
         );

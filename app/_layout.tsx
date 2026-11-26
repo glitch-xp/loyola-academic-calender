@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
@@ -9,6 +10,7 @@ import * as SystemUI from 'expo-system-ui';
 import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold, Poppins_700Bold, Poppins_800ExtraBold } from '@expo-google-fonts/poppins';
 import * as SplashScreen from 'expo-splash-screen';
 import AddToHomeScreen from '../components/AddToHomeScreen';
+import { Colors } from '../constants/Colors';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,7 +18,7 @@ export default function RootLayout() {
   useFrameworkReady();
   useUpdateChecker({ autoCheck: true });
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
@@ -25,18 +27,21 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, fontError]);
 
   useEffect(() => {
-    // Set system UI background to black to ensure white navigation bar icons are visible
-    // or to ensure the bar itself is visible against the app background
+    if (Platform.OS === 'web') {
+      SystemUI.setBackgroundColorAsync(Colors.background);
+      return;
+    }
+    // Set system UI background to black on native so white navigation bar icons remain visible
     SystemUI.setBackgroundColorAsync("#000000");
   }, []);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded && !fontError) {
     return null;
   }
 

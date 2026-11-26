@@ -28,7 +28,7 @@ jobs:
         run: npm ci
 
       - name: Build Web App
-        run: npx expo export --platform web
+        run: npm run build:web
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
