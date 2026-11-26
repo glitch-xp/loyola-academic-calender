@@ -43,7 +43,7 @@ export default function SettingsScreen() {
         }
     };
 
-    const appVersion = Constants.expoConfig?.version || '2.1.0';
+    const appVersion = Constants.expoConfig?.version || '2.1.1';
 
     return (
         <LiquidBackground>
